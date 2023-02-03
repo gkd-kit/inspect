@@ -1,0 +1,76 @@
+<script setup lang="ts">
+import type { AttrData } from '@/types';
+import { toGkdLiteral } from '@/utils';
+import { NTable, NTbody, NTd, NTh, NThead, NTr } from 'naive-ui';
+import { computed, reactive, ref } from 'vue';
+
+const props = withDefaults(defineProps<{ attr: AttrData }>(), {});
+
+const attrs = computed(() => {
+  return Object.entries(props.attr)
+    .map(([name, value]) => {
+      return {
+        name,
+        value,
+      };
+    })
+    .filter((o) => !['bottom', 'right', 'top', 'left'].includes(o.name));
+});
+
+const offset = reactive({ x: 0, y: 0 });
+const movingRef = ref(false);
+let lastEv: MouseEvent | undefined = undefined;
+const mousemoveRef = async (ev: MouseEvent) => {
+  if (!movingRef.value) {
+    lastEv = undefined;
+    return;
+  }
+  lastEv ??= ev;
+  const dx = ev.pageX - lastEv.pageX;
+  const dy = ev.pageY - lastEv.pageY;
+  lastEv = ev;
+  offset.x += dx;
+  offset.y += dy;
+};
+</script>
+
+<template>
+  <div
+    class="AttrCard"
+    :style="{ transform: `translate(${offset.x}px, ${offset.y}px)` }"
+  >
+    <NTable size="small" striped :single-line="false">
+      <thead
+        @mousedown="movingRef = true"
+        @mousemove="mousemoveRef"
+        @mouseup="movingRef = false"
+      >
+        <NTr>
+          <NTh> Name </NTh>
+          <NTh> Value </NTh>
+        </NTr>
+      </thead>
+      <NTbody>
+        <NTr v-for="(attrx, index) in attrs" :key="index" class="code-text">
+          <NTd>{{ attrx.name }}</NTd>
+          <NTd>
+            {{ toGkdLiteral(attrx.value) }}
+          </NTd>
+        </NTr>
+      </NTbody>
+    </NTable>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.AttrCard {
+  display: flex;
+  flex-direction: column;
+  thead {
+    cursor: all-scroll;
+  }
+  .code-text {
+    font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace;
+  }
+}
+</style>

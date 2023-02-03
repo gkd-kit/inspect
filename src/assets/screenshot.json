@@ -1,0 +1,3016 @@
+{
+  "appId": "com.zhihu.android",
+  "activityId": "com.zhihu.android.mix.activity.ContentMixProfileActivity",
+  "width": 1080,
+  "height": 2400,
+  "nodes": [
+    {
+      "id": 0,
+      "pid": -1,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 1,
+      "pid": 0,
+      "attr": {
+        "id": null,
+        "className": "android.widget.LinearLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 2,
+      "pid": 1,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 3,
+      "pid": 2,
+      "attr": {
+        "id": "com.zhihu.android:id/action_bar_root",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 4,
+      "pid": 3,
+      "attr": {
+        "id": "android:id/content",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 5,
+      "pid": 4,
+      "attr": {
+        "id": "com.zhihu.android:id/content_container",
+        "className": "android.widget.FrameLayout",
+        "childCount": 3,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 6,
+      "pid": 5,
+      "attr": {
+        "id": "com.zhihu.android:id/overlay_container",
+        "className": "android.widget.FrameLayout",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 7,
+      "pid": 5,
+      "attr": {
+        "id": "android:id/content",
+        "className": "android.widget.FrameLayout",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 8,
+      "pid": 5,
+      "attr": {
+        "id": "com.zhihu.android:id/fragment_container",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 9,
+      "pid": 8,
+      "attr": {
+        "id": "com.zhihu.android:id/parent_fragment_content_id",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 10,
+      "pid": 9,
+      "attr": {
+        "id": null,
+        "className": "androidx.viewpager.widget.ViewPager",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 11,
+      "pid": 10,
+      "attr": {
+        "id": null,
+        "className": "androidx.recyclerview.widget.RecyclerView",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 12,
+      "pid": 11,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 13,
+      "pid": 12,
+      "attr": {
+        "id": null,
+        "className": "android.widget.RelativeLayout",
+        "childCount": 3,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 14,
+      "pid": 13,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 2,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 15,
+      "pid": 13,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 80
+      }
+    },
+    {
+      "id": 16,
+      "pid": 13,
+      "attr": {
+        "id": "com.zhihu.android:id/system_bar",
+        "className": "android.view.ViewGroup",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 80,
+        "right": 1080,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 17,
+      "pid": 16,
+      "attr": {
+        "id": "com.zhihu.android:id/awesome_toolbar",
+        "className": "android.view.ViewGroup",
+        "childCount": 3,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": 80,
+        "right": 1080,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 18,
+      "pid": 17,
+      "attr": {
+        "id": null,
+        "className": "android.widget.ImageButton",
+        "childCount": 0,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": 80,
+        "right": 154,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 19,
+      "pid": 17,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 3,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 154,
+        "top": 80,
+        "right": 1080,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 20,
+      "pid": 17,
+      "attr": {
+        "id": null,
+        "className": "androidx.appcompat.widget.LinearLayoutCompat",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 1080,
+        "top": 80,
+        "right": 1080,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 21,
+      "pid": 19,
+      "attr": {
+        "id": null,
+        "className": "android.view.ViewGroup",
+        "childCount": 2,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 154,
+        "top": 80,
+        "right": 948,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 22,
+      "pid": 19,
+      "attr": {
+        "id": null,
+        "className": "android.view.ViewGroup",
+        "childCount": 0,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 154,
+        "top": 80,
+        "right": 926,
+        "bottom": 223
+      }
+    },
+    {
+      "id": 23,
+      "pid": 19,
+      "attr": {
+        "id": null,
+        "className": "android.view.ViewGroup",
+        "childCount": 2,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 775,
+        "top": 85,
+        "right": 1080,
+        "bottom": 217
+      }
+    },
+    {
+      "id": 24,
+      "pid": 23,
+      "attr": {
+        "id": "com.zhihu.android:id/btn_write",
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "写回答",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 775,
+        "top": 124,
+        "right": 948,
+        "bottom": 179
+      }
+    },
+    {
+      "id": 25,
+      "pid": 23,
+      "attr": {
+        "id": "com.zhihu.android:id/btn_more",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 981,
+        "top": 85,
+        "right": 1080,
+        "bottom": 217
+      }
+    },
+    {
+      "id": 26,
+      "pid": 25,
+      "attr": {
+        "id": "com.zhihu.android:id/more",
+        "className": "android.widget.ImageView",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 981,
+        "top": 85,
+        "right": 1047,
+        "bottom": 217
+      }
+    },
+    {
+      "id": 27,
+      "pid": 21,
+      "attr": {
+        "id": "com.zhihu.android:id/info_title",
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "太平天国最大的贡献是什么？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 154,
+        "top": 98,
+        "right": 742,
+        "bottom": 153
+      }
+    },
+    {
+      "id": 28,
+      "pid": 21,
+      "attr": {
+        "id": "com.zhihu.android:id/info_sub_title",
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "知乎 · 95 个回答",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 154,
+        "top": 156,
+        "right": 465,
+        "bottom": 205
+      }
+    },
+    {
+      "id": 29,
+      "pid": 14,
+      "attr": {
+        "id": "com.zhihu.android:id/clearScreenLayout",
+        "className": "android.widget.LinearLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 30,
+      "pid": 14,
+      "attr": {
+        "id": "com.zhihu.android:id/clearScreenBar",
+        "className": "android.view.ViewGroup",
+        "childCount": 3,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 80,
+        "right": 1080,
+        "bottom": 224
+      }
+    },
+    {
+      "id": 31,
+      "pid": 30,
+      "attr": {
+        "id": "com.zhihu.android:id/backBtn",
+        "className": "android.widget.FrameLayout",
+        "childCount": 0,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 44,
+        "top": 97,
+        "right": 143,
+        "bottom": 196
+      }
+    },
+    {
+      "id": 32,
+      "pid": 30,
+      "attr": {
+        "id": "com.zhihu.android:id/editBtn",
+        "className": "android.widget.FrameLayout",
+        "childCount": 0,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 937,
+        "top": 119,
+        "right": 1036,
+        "bottom": 218
+      }
+    },
+    {
+      "id": 33,
+      "pid": 30,
+      "attr": {
+        "id": "com.zhihu.android:id/editBtnIc",
+        "className": "android.widget.ImageView",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 965,
+        "top": 147,
+        "right": 1009,
+        "bottom": 191
+      }
+    },
+    {
+      "id": 34,
+      "pid": 29,
+      "attr": {
+        "id": "com.zhihu.android:id/mix_container",
+        "className": "android.widget.FrameLayout",
+        "childCount": 3,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 35,
+      "pid": 34,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 0
+      }
+    },
+    {
+      "id": 36,
+      "pid": 34,
+      "attr": {
+        "id": null,
+        "className": "androidx.viewpager.widget.ViewPager",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 37,
+      "pid": 34,
+      "attr": {
+        "id": null,
+        "className": "androidx.appcompat.widget.LinearLayoutCompat",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 920,
+        "top": 1574,
+        "right": 1052,
+        "bottom": 1706
+      }
+    },
+    {
+      "id": 38,
+      "pid": 37,
+      "attr": {
+        "id": "com.zhihu.android:id/container_layout_view",
+        "className": "androidx.appcompat.widget.LinearLayoutCompat",
+        "childCount": 2,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 937,
+        "top": 1614,
+        "right": 1035,
+        "bottom": 1712
+      }
+    },
+    {
+      "id": 39,
+      "pid": 38,
+      "attr": {
+        "id": "com.zhihu.android:id/next_arrow_view",
+        "className": "android.widget.ImageView",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 959,
+        "top": 1636,
+        "right": 1014,
+        "bottom": 1691
+      }
+    },
+    {
+      "id": 40,
+      "pid": 38,
+      "attr": {
+        "id": "com.zhihu.android:id/next_text_view",
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "下一个",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 1014,
+        "top": 1636,
+        "right": 1014,
+        "bottom": 1690
+      }
+    },
+    {
+      "id": 41,
+      "pid": 36,
+      "attr": {
+        "id": null,
+        "className": "androidx.recyclerview.widget.RecyclerView",
+        "childCount": 3,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 42,
+      "pid": 41,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2039
+      }
+    },
+    {
+      "id": 43,
+      "pid": 41,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2039,
+        "right": 1080,
+        "bottom": 2171
+      }
+    },
+    {
+      "id": 44,
+      "pid": 41,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 45,
+      "pid": 44,
+      "attr": {
+        "id": "com.zhihu.android:id/root_view",
+        "className": "android.view.ViewGroup",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 46,
+      "pid": 45,
+      "attr": {
+        "id": "com.zhihu.android:id/view_content",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 47,
+      "pid": 46,
+      "attr": {
+        "id": null,
+        "className": "android.webkit.WebView",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1080,
+        "bottom": 2400
+      }
+    },
+    {
+      "id": 48,
+      "pid": 47,
+      "attr": {
+        "id": null,
+        "className": "android.webkit.WebView",
+        "childCount": 1,
+        "text": "知乎 - 知乎",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1083,
+        "bottom": 4572
+      }
+    },
+    {
+      "id": 49,
+      "pid": 48,
+      "attr": {
+        "id": "root",
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1083,
+        "bottom": 4572
+      }
+    },
+    {
+      "id": 50,
+      "pid": 49,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1083,
+        "bottom": 4572
+      }
+    },
+    {
+      "id": 51,
+      "pid": 50,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 6,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2171,
+        "right": 1083,
+        "bottom": 4572
+      }
+    },
+    {
+      "id": 52,
+      "pid": 51,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 5,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2204,
+        "right": 1083,
+        "bottom": 2355
+      }
+    },
+    {
+      "id": 53,
+      "pid": 51,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2352,
+        "right": 1083,
+        "bottom": 3133
+      }
+    },
+    {
+      "id": 54,
+      "pid": 51,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 3295,
+        "right": 1039,
+        "bottom": 3532
+      }
+    },
+    {
+      "id": 55,
+      "pid": 51,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 3526,
+        "right": 1039,
+        "bottom": 3763
+      }
+    },
+    {
+      "id": 56,
+      "pid": 51,
+      "attr": {
+        "id": null,
+        "className": "android.widget.ListView",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 3812,
+        "right": 1039,
+        "bottom": 4371
+      }
+    },
+    {
+      "id": 57,
+      "pid": 51,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 5,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 4365,
+        "right": 1083,
+        "bottom": 4503
+      }
+    },
+    {
+      "id": 58,
+      "pid": 57,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 33,
+        "top": 4384,
+        "right": 418,
+        "bottom": 4486
+      }
+    },
+    {
+      "id": 59,
+      "pid": 57,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 519,
+        "top": 4376,
+        "right": 660,
+        "bottom": 4492
+      }
+    },
+    {
+      "id": 60,
+      "pid": 57,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "收藏，总收藏数2 ",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 654,
+        "top": 4376,
+        "right": 797,
+        "bottom": 4492
+      }
+    },
+    {
+      "id": 61,
+      "pid": 57,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "评论，总评论数3 ",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 794,
+        "top": 4376,
+        "right": 935,
+        "bottom": 4492
+      }
+    },
+    {
+      "id": 62,
+      "pid": 57,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 929,
+        "top": 4376,
+        "right": 1061,
+        "bottom": 4492
+      }
+    },
+    {
+      "id": 63,
+      "pid": 62,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 937,
+        "top": 4448,
+        "right": 1067,
+        "bottom": 4494
+      }
+    },
+    {
+      "id": 64,
+      "pid": 63,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 970,
+        "top": 4448,
+        "right": 1034,
+        "bottom": 4489
+      }
+    },
+    {
+      "id": 65,
+      "pid": 64,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 990,
+        "top": 4453,
+        "right": 1014,
+        "bottom": 4481
+      }
+    },
+    {
+      "id": 66,
+      "pid": 64,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 984,
+        "top": 4450,
+        "right": 1020,
+        "bottom": 4486
+      }
+    },
+    {
+      "id": 67,
+      "pid": 66,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 984,
+        "top": 4450,
+        "right": 1020,
+        "bottom": 4486
+      }
+    },
+    {
+      "id": 68,
+      "pid": 65,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 990,
+        "top": 4453,
+        "right": 1014,
+        "bottom": 4481
+      }
+    },
+    {
+      "id": 69,
+      "pid": 59,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 552,
+        "top": 4376,
+        "right": 624,
+        "bottom": 4448
+      }
+    },
+    {
+      "id": 70,
+      "pid": 59,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "11",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 574,
+        "top": 4450,
+        "right": 602,
+        "bottom": 4492
+      }
+    },
+    {
+      "id": 71,
+      "pid": 69,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 552,
+        "top": 4376,
+        "right": 624,
+        "bottom": 4448
+      }
+    },
+    {
+      "id": 72,
+      "pid": 58,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "赞同，总赞同数75 ",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 33,
+        "top": 4384,
+        "right": 297,
+        "bottom": 4486
+      }
+    },
+    {
+      "id": 73,
+      "pid": 58,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "反对",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 297,
+        "top": 4384,
+        "right": 418,
+        "bottom": 4486
+      }
+    },
+    {
+      "id": 74,
+      "pid": 56,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 3812,
+        "right": 1039,
+        "bottom": 3911
+      }
+    },
+    {
+      "id": 75,
+      "pid": 56,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 3991,
+        "right": 1039,
+        "bottom": 4090
+      }
+    },
+    {
+      "id": 76,
+      "pid": 53,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": "75 人赞同了该回答",
+        "left": 44,
+        "top": 2369,
+        "right": 346,
+        "bottom": 2418
+      }
+    },
+    {
+      "id": 77,
+      "pid": 53,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2426,
+        "right": 1039,
+        "bottom": 3133
+      }
+    },
+    {
+      "id": 78,
+      "pid": 77,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 5,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2426,
+        "right": 1039,
+        "bottom": 3051
+      }
+    },
+    {
+      "id": 79,
+      "pid": 77,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "发布于 2023-01-24 08:25・IP 属地吉林・著作权归作者所有",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 44,
+        "top": 3070,
+        "right": 998,
+        "bottom": 3133
+      }
+    },
+    {
+      "id": 80,
+      "pid": 78,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2448,
+        "right": 1039,
+        "bottom": 2523
+      }
+    },
+    {
+      "id": 81,
+      "pid": 78,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "江宁x族自治县？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2580,
+        "right": 1039,
+        "bottom": 2655
+      }
+    },
+    {
+      "id": 82,
+      "pid": 78,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "番禺x族自治县？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2712,
+        "right": 1039,
+        "bottom": 2787
+      }
+    },
+    {
+      "id": 83,
+      "pid": 78,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "华阳x族自治县？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2844,
+        "right": 1039,
+        "bottom": 2919
+      }
+    },
+    {
+      "id": 84,
+      "pid": 78,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "余杭x族自治县？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2976,
+        "right": 1039,
+        "bottom": 3051
+      }
+    },
+    {
+      "id": 85,
+      "pid": 80,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "江陵x族",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2454,
+        "right": 198,
+        "bottom": 2517
+      }
+    },
+    {
+      "id": 86,
+      "pid": 80,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 195,
+        "top": 2454,
+        "right": 360,
+        "bottom": 2517
+      }
+    },
+    {
+      "id": 87,
+      "pid": 80,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 354,
+        "top": 2454,
+        "right": 404,
+        "bottom": 2517
+      }
+    },
+    {
+      "id": 88,
+      "pid": 86,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 195,
+        "top": 2454,
+        "right": 360,
+        "bottom": 2517
+      }
+    },
+    {
+      "id": 89,
+      "pid": 88,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "自治县",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 195,
+        "top": 2454,
+        "right": 330,
+        "bottom": 2517
+      }
+    },
+    {
+      "id": 90,
+      "pid": 88,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 327,
+        "top": 2459,
+        "right": 360,
+        "bottom": 2490
+      }
+    },
+    {
+      "id": 91,
+      "pid": 76,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "75 人赞同了该回答",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2369,
+        "right": 346,
+        "bottom": 2418
+      }
+    },
+    {
+      "id": 92,
+      "pid": 52,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2228,
+        "right": 143,
+        "bottom": 2330
+      }
+    },
+    {
+      "id": 93,
+      "pid": 52,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "Ryzen",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 167,
+        "top": 2226,
+        "right": 294,
+        "bottom": 2281
+      }
+    },
+    {
+      "id": 94,
+      "pid": 52,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "社交达人",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 305,
+        "top": 2228,
+        "right": 352,
+        "bottom": 2278
+      }
+    },
+    {
+      "id": 95,
+      "pid": 52,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "C/C++程序员",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 167,
+        "top": 2286,
+        "right": 387,
+        "bottom": 2333
+      }
+    },
+    {
+      "id": 96,
+      "pid": 52,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "​ 关注",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 838,
+        "top": 2237,
+        "right": 1039,
+        "bottom": 2322
+      }
+    },
+    {
+      "id": 97,
+      "pid": 92,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 2228,
+        "right": 143,
+        "bottom": 2330
+      }
+    },
+    {
+      "id": 98,
+      "pid": 43,
+      "attr": {
+        "id": null,
+        "className": "android.widget.LinearLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2039,
+        "right": 1080,
+        "bottom": 2171
+      }
+    },
+    {
+      "id": 99,
+      "pid": 98,
+      "attr": {
+        "id": null,
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 2039,
+        "right": 1080,
+        "bottom": 2171
+      }
+    },
+    {
+      "id": 100,
+      "pid": 99,
+      "attr": {
+        "id": null,
+        "className": "android.widget.LinearLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 382,
+        "top": 2080,
+        "right": 697,
+        "bottom": 2129
+      }
+    },
+    {
+      "id": 101,
+      "pid": 100,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "该问题的下一个回答",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 382,
+        "top": 2080,
+        "right": 697,
+        "bottom": 2129
+      }
+    },
+    {
+      "id": 102,
+      "pid": 42,
+      "attr": {
+        "id": "com.zhihu.android:id/root_view",
+        "className": "android.view.ViewGroup",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2039
+      }
+    },
+    {
+      "id": 103,
+      "pid": 102,
+      "attr": {
+        "id": "com.zhihu.android:id/view_content",
+        "className": "android.widget.FrameLayout",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2039
+      }
+    },
+    {
+      "id": 104,
+      "pid": 103,
+      "attr": {
+        "id": null,
+        "className": "android.webkit.WebView",
+        "childCount": 1,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 0,
+        "right": 1080,
+        "bottom": 2039
+      }
+    },
+    {
+      "id": 105,
+      "pid": 104,
+      "attr": {
+        "id": null,
+        "className": "android.webkit.WebView",
+        "childCount": 1,
+        "text": "知乎 - 知乎",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": -361,
+        "right": 1083,
+        "bottom": 2040
+      }
+    },
+    {
+      "id": 106,
+      "pid": 105,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": -361,
+        "right": 1083,
+        "bottom": 2040
+      }
+    },
+    {
+      "id": 107,
+      "pid": 106,
+      "attr": {
+        "id": "root",
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": -361,
+        "right": 1083,
+        "bottom": 2040
+      }
+    },
+    {
+      "id": 108,
+      "pid": 107,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 0,
+        "top": -361,
+        "right": 1083,
+        "bottom": 2040
+      }
+    },
+    {
+      "id": 109,
+      "pid": 108,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 12,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": -361,
+        "right": 1083,
+        "bottom": 2040
+      }
+    },
+    {
+      "id": 110,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": -361,
+        "right": 1083,
+        "bottom": -356
+      }
+    },
+    {
+      "id": 111,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 4,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": -328,
+        "right": 1083,
+        "bottom": -174
+      }
+    },
+    {
+      "id": 112,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": -177,
+        "right": 1083,
+        "bottom": 409
+      }
+    },
+    {
+      "id": 113,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 110,
+        "top": 692,
+        "right": 280,
+        "bottom": 783
+      }
+    },
+    {
+      "id": 114,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 316,
+        "top": 692,
+        "right": 514,
+        "bottom": 783
+      }
+    },
+    {
+      "id": 115,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 550,
+        "top": 692,
+        "right": 709,
+        "bottom": 783
+      }
+    },
+    {
+      "id": 116,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 745,
+        "top": 692,
+        "right": 970,
+        "bottom": 783
+      }
+    },
+    {
+      "id": 117,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 843,
+        "right": 1039,
+        "bottom": 1451
+      }
+    },
+    {
+      "id": 118,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "评论",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 1514,
+        "right": 1039,
+        "bottom": 1588
+      }
+    },
+    {
+      "id": 119,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 1635,
+        "right": 129,
+        "bottom": 1723
+      }
+    },
+    {
+      "id": 120,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 154,
+        "top": 1630,
+        "right": 1039,
+        "bottom": 1731
+      }
+    },
+    {
+      "id": 121,
+      "pid": 109,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 5,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 0,
+        "top": 1839,
+        "right": 1083,
+        "bottom": 1973
+      }
+    },
+    {
+      "id": 122,
+      "pid": 121,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 33,
+        "top": 1852,
+        "right": 418,
+        "bottom": 1957
+      }
+    },
+    {
+      "id": 123,
+      "pid": 121,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 519,
+        "top": 1850,
+        "right": 660,
+        "bottom": 1962
+      }
+    },
+    {
+      "id": 124,
+      "pid": 121,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "收藏，总收藏数10 ",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 654,
+        "top": 1850,
+        "right": 797,
+        "bottom": 1962
+      }
+    },
+    {
+      "id": 125,
+      "pid": 121,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "评论",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 794,
+        "top": 1850,
+        "right": 935,
+        "bottom": 1962
+      }
+    },
+    {
+      "id": 126,
+      "pid": 121,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 929,
+        "top": 1850,
+        "right": 1061,
+        "bottom": 1962
+      }
+    },
+    {
+      "id": 127,
+      "pid": 126,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 937,
+        "top": 1918,
+        "right": 1067,
+        "bottom": 1965
+      }
+    },
+    {
+      "id": 128,
+      "pid": 127,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 970,
+        "top": 1918,
+        "right": 1034,
+        "bottom": 1960
+      }
+    },
+    {
+      "id": 129,
+      "pid": 128,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 990,
+        "top": 1927,
+        "right": 1014,
+        "bottom": 1951
+      }
+    },
+    {
+      "id": 130,
+      "pid": 128,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 984,
+        "top": 1921,
+        "right": 1020,
+        "bottom": 1954
+      }
+    },
+    {
+      "id": 131,
+      "pid": 130,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 984,
+        "top": 1921,
+        "right": 1020,
+        "bottom": 1954
+      }
+    },
+    {
+      "id": 132,
+      "pid": 129,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 990,
+        "top": 1927,
+        "right": 1014,
+        "bottom": 1951
+      }
+    },
+    {
+      "id": 133,
+      "pid": 123,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 552,
+        "top": 1850,
+        "right": 624,
+        "bottom": 1918
+      }
+    },
+    {
+      "id": 134,
+      "pid": 123,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "29",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 569,
+        "top": 1918,
+        "right": 607,
+        "bottom": 1962
+      }
+    },
+    {
+      "id": 135,
+      "pid": 133,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 552,
+        "top": 1850,
+        "right": 624,
+        "bottom": 1918
+      }
+    },
+    {
+      "id": 136,
+      "pid": 122,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "赞同，总赞同数245 ",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 33,
+        "top": 1852,
+        "right": 297,
+        "bottom": 1957
+      }
+    },
+    {
+      "id": 137,
+      "pid": 122,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "反对",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 297,
+        "top": 1852,
+        "right": 418,
+        "bottom": 1957
+      }
+    },
+    {
+      "id": 138,
+      "pid": 120,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": "写评论 icon icon",
+        "left": 198,
+        "top": 1630,
+        "right": 1028,
+        "bottom": 1731
+      }
+    },
+    {
+      "id": 139,
+      "pid": 138,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "写评论",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 198,
+        "top": 1652,
+        "right": 316,
+        "bottom": 1707
+      }
+    },
+    {
+      "id": 140,
+      "pid": 138,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "icon",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 882,
+        "top": 1652,
+        "right": 940,
+        "bottom": 1709
+      }
+    },
+    {
+      "id": 141,
+      "pid": 138,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "icon",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 948,
+        "top": 1652,
+        "right": 1006,
+        "bottom": 1709
+      }
+    },
+    {
+      "id": 142,
+      "pid": 119,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": "v2-703154510fb1cf6120684b762932940a_l",
+        "left": 44,
+        "top": 1635,
+        "right": 129,
+        "bottom": 1734
+      }
+    },
+    {
+      "id": 143,
+      "pid": 142,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "v2-703154510fb1cf6120684b762932940a_l",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 1635,
+        "right": 129,
+        "bottom": 1723
+      }
+    },
+    {
+      "id": 144,
+      "pid": 117,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 843,
+        "right": 1039,
+        "bottom": 1451
+      }
+    },
+    {
+      "id": 145,
+      "pid": 144,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 44,
+        "top": 887,
+        "right": 1039,
+        "bottom": 1407
+      }
+    },
+    {
+      "id": 146,
+      "pid": 145,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 887,
+        "right": 1039,
+        "bottom": 994
+      }
+    },
+    {
+      "id": 147,
+      "pid": 145,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 992,
+        "right": 1039,
+        "bottom": 1407
+      }
+    },
+    {
+      "id": 148,
+      "pid": 147,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 992,
+        "right": 1039,
+        "bottom": 1407
+      }
+    },
+    {
+      "id": 149,
+      "pid": 147,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "×",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 948,
+        "top": 1025,
+        "right": 1006,
+        "bottom": 1082
+      }
+    },
+    {
+      "id": 150,
+      "pid": 147,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "拍拖 的广告",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 66,
+        "top": 1341,
+        "right": 244,
+        "bottom": 1388
+      }
+    },
+    {
+      "id": 151,
+      "pid": 148,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "拍拖",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 992,
+        "right": 1039,
+        "bottom": 1407
+      }
+    },
+    {
+      "id": 152,
+      "pid": 146,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "一个人在本地，加个好友吗？认识一下？",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 68,
+        "top": 909,
+        "right": 866,
+        "bottom": 970
+      }
+    },
+    {
+      "id": 153,
+      "pid": 146,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 973,
+        "top": 909,
+        "right": 1012,
+        "bottom": 972
+      }
+    },
+    {
+      "id": 154,
+      "pid": 116,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "​",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 767,
+        "top": 697,
+        "right": 825,
+        "bottom": 777
+      }
+    },
+    {
+      "id": 155,
+      "pid": 116,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 767,
+        "top": 708,
+        "right": 825,
+        "bottom": 766
+      }
+    },
+    {
+      "id": 156,
+      "pid": 116,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "图片分享",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 830,
+        "top": 711,
+        "right": 943,
+        "bottom": 763
+      }
+    },
+    {
+      "id": 157,
+      "pid": 115,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "​",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 572,
+        "top": 697,
+        "right": 629,
+        "bottom": 777
+      }
+    },
+    {
+      "id": 158,
+      "pid": 115,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 572,
+        "top": 708,
+        "right": 629,
+        "bottom": 766
+      }
+    },
+    {
+      "id": 159,
+      "pid": 115,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "QQ",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 635,
+        "top": 711,
+        "right": 682,
+        "bottom": 763
+      }
+    },
+    {
+      "id": 160,
+      "pid": 114,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "​",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 338,
+        "top": 697,
+        "right": 396,
+        "bottom": 777
+      }
+    },
+    {
+      "id": 161,
+      "pid": 114,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 338,
+        "top": 708,
+        "right": 396,
+        "bottom": 766
+      }
+    },
+    {
+      "id": 162,
+      "pid": 114,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "朋友圈",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 401,
+        "top": 711,
+        "right": 486,
+        "bottom": 763
+      }
+    },
+    {
+      "id": 163,
+      "pid": 113,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "​",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 132,
+        "top": 697,
+        "right": 189,
+        "bottom": 777
+      }
+    },
+    {
+      "id": 164,
+      "pid": 113,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 132,
+        "top": 708,
+        "right": 189,
+        "bottom": 766
+      }
+    },
+    {
+      "id": 165,
+      "pid": 113,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "微信",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 195,
+        "top": 711,
+        "right": 253,
+        "bottom": 763
+      }
+    },
+    {
+      "id": 166,
+      "pid": 112,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": null,
+        "isClickable": true,
+        "contentDescription": "245 人赞同了该回答",
+        "left": 44,
+        "top": -161,
+        "right": 368,
+        "bottom": -111
+      }
+    },
+    {
+      "id": 167,
+      "pid": 112,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": -103,
+        "right": 1039,
+        "bottom": 409
+      }
+    },
+    {
+      "id": 168,
+      "pid": 167,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": -103,
+        "right": 1039,
+        "bottom": 329
+      }
+    },
+    {
+      "id": 169,
+      "pid": 167,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "发布于 2023-01-21 10:22・IP 属地山东・禁止转载",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 44,
+        "top": 345,
+        "right": 841,
+        "bottom": 409
+      }
+    },
+    {
+      "id": 170,
+      "pid": 168,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "即是最卑劣的反抗也胜过麻木的沉沦。",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": -81,
+        "right": 1039,
+        "bottom": -7
+      }
+    },
+    {
+      "id": 171,
+      "pid": 168,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 3,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 51,
+        "right": 1039,
+        "bottom": 197
+      }
+    },
+    {
+      "id": 172,
+      "pid": 168,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "天下一家！同享太平！",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 255,
+        "right": 1039,
+        "bottom": 329
+      }
+    },
+    {
+      "id": 173,
+      "pid": 171,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "而",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 57,
+        "right": 88,
+        "bottom": 120
+      }
+    },
+    {
+      "id": 174,
+      "pid": 171,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 88,
+        "top": 57,
+        "right": 294,
+        "bottom": 120
+      }
+    },
+    {
+      "id": 175,
+      "pid": 171,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "的反抗却并不卑劣，在民族主义和宗教信仰的相互迸发下，怒吼出最强的呼声！",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": 57,
+        "right": 998,
+        "bottom": 189
+      }
+    },
+    {
+      "id": 176,
+      "pid": 174,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 2,
+        "text": "",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 88,
+        "top": 57,
+        "right": 294,
+        "bottom": 120
+      }
+    },
+    {
+      "id": 177,
+      "pid": 176,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "太平天国",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 88,
+        "top": 57,
+        "right": 264,
+        "bottom": 120
+      }
+    },
+    {
+      "id": 178,
+      "pid": 176,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Image",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 264,
+        "top": 62,
+        "right": 294,
+        "bottom": 92
+      }
+    },
+    {
+      "id": 179,
+      "pid": 166,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "245 人赞同了该回答",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": -161,
+        "right": 368,
+        "bottom": -111
+      }
+    },
+    {
+      "id": 180,
+      "pid": 111,
+      "attr": {
+        "id": null,
+        "className": "android.view.View",
+        "childCount": 1,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": -301,
+        "right": 143,
+        "bottom": -199
+      }
+    },
+    {
+      "id": 181,
+      "pid": 111,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "柯引",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 167,
+        "top": -306,
+        "right": 253,
+        "bottom": -246
+      }
+    },
+    {
+      "id": 182,
+      "pid": 111,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "领袖来来去去，只有人民永存。",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 167,
+        "top": -243,
+        "right": 671,
+        "bottom": -196
+      }
+    },
+    {
+      "id": 183,
+      "pid": 111,
+      "attr": {
+        "id": null,
+        "className": "android.widget.Button",
+        "childCount": 0,
+        "text": "​ 关注",
+        "isClickable": true,
+        "contentDescription": null,
+        "left": 838,
+        "top": -293,
+        "right": 1039,
+        "bottom": -207
+      }
+    },
+    {
+      "id": 184,
+      "pid": 180,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 44,
+        "top": -301,
+        "right": 143,
+        "bottom": -199
+      }
+    },
+    {
+      "id": 185,
+      "pid": 35,
+      "attr": {
+        "id": null,
+        "className": "android.widget.LinearLayout",
+        "childCount": 2,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 431,
+        "top": 0,
+        "right": 648,
+        "bottom": -55
+      }
+    },
+    {
+      "id": 186,
+      "pid": 185,
+      "attr": {
+        "id": null,
+        "className": "android.widget.TextView",
+        "childCount": 0,
+        "text": "下拉查看",
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 431,
+        "top": 0,
+        "right": 571,
+        "bottom": -64
+      }
+    },
+    {
+      "id": 187,
+      "pid": 185,
+      "attr": {
+        "id": null,
+        "className": "android.widget.ImageView",
+        "childCount": 0,
+        "text": null,
+        "isClickable": false,
+        "contentDescription": null,
+        "left": 582,
+        "top": 0,
+        "right": 648,
+        "bottom": -55
+      }
+    }
+  ]
+}
