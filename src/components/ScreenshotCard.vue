@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import type { NodeX, SizeX } from '@/types';
+import type { NodeX, SizeX } from '@/utils/types';
 import { getImageSize, traverseNode, xyInNode } from '@/utils';
 import { computed, ref, watch, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{
     url: string;
-    node: NodeX;
-    focusNode: NodeX;
+    node?: NodeX;
+    focusNode?: NodeX;
+    skipKeys?: number[];
   }>(),
-  {}
+  { skipKeys: () => [] },
 );
 
 const emit = defineEmits<{
@@ -22,7 +23,8 @@ watchEffect(async () => {
 });
 
 const evRef = ref<MouseEvent>();
-watch(evRef, () => {
+watchEffect(() => {
+  if (!props.node) return;
   const ev = evRef.value;
   const img = ev?.target;
   if (!ev || !img || !(img instanceof HTMLImageElement)) {
@@ -33,7 +35,7 @@ watch(evRef, () => {
   const ox = ((ev.clientX - imgRect.left) / img.offsetWidth) * img.naturalWidth;
   const oy =
     ((ev.clientY - imgRect.top) / img.offsetHeight) * img.naturalHeight;
-  for (const childNode of traverseNode(props.node)) {
+  for (const childNode of traverseNode(props.node, props.skipKeys)) {
     if (
       xyInNode(childNode, ox, oy) &&
       (childNode.children.length == 0 ||
@@ -47,7 +49,7 @@ watch(evRef, () => {
 
 const positionStyleRef = computed(() => {
   const size = sizeRef.value;
-  if (!size) {
+  if (!size || !props.focusNode) {
     return ``;
   }
   const attr = props.focusNode.value.attr;
@@ -61,34 +63,17 @@ const positionStyleRef = computed(() => {
 </script>
 
 <template>
-  <div class="ScreenshotCard">
-    <img :src="url" @click="evRef = $event" />
-    <div class="focus-box" :style="positionStyleRef"></div>
+  <div flex flex-col relative>
+    <img :src="url" @click="evRef = $event" class="h-100%" cursor-crosshair />
+    <div
+      class="focus-box"
+      :style="positionStyleRef"
+      absolute
+      pointer-events-none
+      transition-all-300
+      b-1px
+      b-red
+      b-solid
+    ></div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.ScreenshotCard {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  // overflow: hidden;
-  img {
-    height: 100%;
-    cursor: crosshair;
-  }
-  .focus-box {
-    pointer-events: none;
-    position: absolute;
-    border-width: 1px;
-    border-color: red;
-    border-style: solid;
-    transition: all 300ms;
-
-    top: -1px;
-    left: -1px;
-    height: 100%;
-    width: 100%;
-  }
-}
-</style>

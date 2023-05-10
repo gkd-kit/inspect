@@ -1,5 +1,5 @@
-import type { NodeData, NodeX, SizeX } from '@/types';
-import { h, type Directive } from 'vue';
+import type { NodeData, NodeX, SizeX } from '@/utils/types';
+import { h, ref } from 'vue';
 
 export const toGkdLiteral = (s: string | number | null | boolean): string => {
   if (typeof s == 'string') {
@@ -24,27 +24,38 @@ export const getImageSize = async (src: string) => {
   });
 };
 
-export function* traverseNode(node: NodeX) {
+export function* traverseNode(node: NodeX, skipKeys: number[] = []) {
   const stack: NodeX[] = [];
   stack.push(node);
   while (stack.length > 0) {
     const top = stack.pop()!;
+    if (skipKeys.includes(top.key)) {
+      continue;
+    }
     yield top;
     stack.push(...top.children);
   }
 }
 
 export const toNodeTree = (nodes: NodeData[]) => {
-  const nodeXs = nodes.map<NodeX>((n) => ({
-    value: n,
-    children: [],
-    key: n.id,
-    label: n.attr.className.split(`.`).at(-1)!,
-    prefix:
-      n.attr.childCount > 0
-        ? () => h('div', n.attr.childCount.toString())
-        : undefined,
-  }));
+  const nodeXs = nodes.map<NodeX>((n) => {
+    let label = n.attr.className.split(`.`).at(-1) ?? ``;
+    if (n.attr.text) {
+      label = `${label} : ${n.attr.text}`;
+    } else if (n.attr.desc) {
+      label = `${label} : ${n.attr.desc}`;
+    }
+    return {
+      value: n,
+      children: [],
+      key: n.id,
+      label,
+      prefix:
+        n.attr.childCount > 0
+          ? () => h('div', n.attr.childCount.toString())
+          : undefined,
+    };
+  });
   nodeXs.forEach((node) => {
     node.parent = nodeXs[node.value.pid];
     if (node.parent) {
@@ -71,4 +82,37 @@ export const xyInNode = (nodeX: NodeX, ox: number, oy: number) => {
   return (
     attr.left <= ox && ox <= attr.right && attr.top <= oy && oy <= attr.bottom
   );
+};
+export const delay = async (n = 0) => {
+  return new Promise<void>((res) => {
+    setTimeout(res, n);
+  });
+};
+
+export const useThrottle = <T extends (...args: any[]) => Promise<void>>(
+  fn: T,
+  miniInterval = 0,
+  handler?: (error: any) => void
+) => {
+  const loadingRef = ref(false);
+  return {
+    get loading() {
+      return loadingRef.value;
+    },
+    invoke: async (...args: Parameters<T>) => {
+      if (loadingRef.value) {
+        return;
+      }
+      loadingRef.value = true;
+      await fn(...args).catch((e) => {
+        if (handler) {
+          handler(e);
+        } else {
+          console.error(e);
+        }
+      });
+      await delay(miniInterval);
+      loadingRef.value = false;
+    },
+  };
 };

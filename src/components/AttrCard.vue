@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import type { AttrData } from '@/types';
 import { toGkdLiteral } from '@/utils';
-import { NTable, NTbody, NTd, NTh, NThead, NTr } from 'naive-ui';
+import type { AttrData } from '@/utils/types';
+import { NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
 import { computed, reactive, ref } from 'vue';
 
 const props = withDefaults(defineProps<{ attr: AttrData }>(), {});
 
 const attrs = computed(() => {
-  return Object.entries(props.attr)
-    .map(([name, value]) => {
-      return {
-        name,
-        value,
-      };
-    })
-    .filter((o) => !['bottom', 'right', 'top', 'left'].includes(o.name));
+  return Object.entries(props.attr).map(([name, value]) => {
+    return {
+      name,
+      value,
+    };
+  });
 });
 
 const offset = reactive({ x: 0, y: 0 });
@@ -38,12 +36,15 @@ const mousemoveRef = async (ev: MouseEvent) => {
   <div
     class="AttrCard"
     :style="{ transform: `translate(${offset.x}px, ${offset.y}px)` }"
+    flex
+    flex-col
   >
     <NTable size="small" striped :single-line="false">
       <thead
         @mousedown="movingRef = true"
         @mousemove="mousemoveRef"
         @mouseup="movingRef = false"
+        cursor-all-scroll
       >
         <NTr>
           <NTh> Name </NTh>
@@ -61,16 +62,3 @@ const mousemoveRef = async (ev: MouseEvent) => {
     </NTable>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.AttrCard {
-  display: flex;
-  flex-direction: column;
-  thead {
-    cursor: all-scroll;
-  }
-  .code-text {
-    font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace;
-  }
-}
-</style>

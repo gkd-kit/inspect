@@ -22,6 +22,8 @@ export type AttrData = {
   bottom: number;
   depth: number;
   index: number;
+  text?: string;
+  desc?: string;
 };
 
 export type NodeX = {
@@ -56,3 +58,46 @@ export type WindowX = {
   activityId: string;
   node: NodeX;
 };
+
+export type Snapshot = {
+  id: number;
+  device: string;
+  versionRelease: string;
+  model: string;
+  manufacturer: string;
+  androidVersion: string;
+  appId: string;
+  appName: string;
+  activityId: string;
+  comment: string;
+};
+// {
+//   id: 1677839140151,
+//   device: 'alioth',
+//   versionRelease: '12',
+//   model: 'M2012K11AC',
+//   manufacturer: 'Xiaomi',
+//   androidVersion: 31,
+//   appId: 'li.songe.gkd.debug',
+//   appName: '搞快点-dev',
+//   activityId: 'li.songe.gkd.MainActivity',
+// };
+
+export type Device = {
+  device: string;
+  model: string;
+  manufacturer: string;
+  brand: string;
+  sdkInt: number;
+  release: string;
+};
+/*
+{
+  "device": "diting",
+  "model": "22081212C",
+  "manufacturer": "Xiaomi",
+  "brand": "Redmi",
+  "sdkInt": 33,
+  "release": "13"
+}
+*/

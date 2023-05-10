@@ -1,3 +1,3 @@
-# gkd-ui-viewer
+# gkd-viewer
 
-gkd-ui-viewer
+gkd-viewer
