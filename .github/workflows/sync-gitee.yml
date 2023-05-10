@@ -14,7 +14,7 @@ jobs:
       - name: Sync Gitee Mirror
         uses: abersheeran/sync-gitee-mirror@v1-beta
         with:
-          repository: abersheeran/sync-gitee-mirror
+          repository: gkd-viewer/gkd-viewer
           username: ${{ secrets.GITEE_USERNAME }}
           password: ${{ secrets.GITEE_PASSWORD }}
 
