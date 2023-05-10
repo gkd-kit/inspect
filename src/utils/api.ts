@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import type { Device, Snapshot, RpcError, WindowData } from './types';
 import { message } from './discrete';
 
-const GM_fetch = window.__GmNetworkExtension?.GM_fetch;
+const enhanceFetch = window.__GmNetworkExtension?.GM_fetch ?? fetch;
 
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = ref(initOrigin);
@@ -15,7 +15,7 @@ export const useDeviceApi = (initOrigin?: string) => {
       if (value === undefined) return;
       u.searchParams.set(key, String(value));
     });
-    const response = await GM_fetch(u).catch((e) => {
+    const response = await enhanceFetch(u).catch((e) => {
       message.error(`网络错误:rpc/` + rpcName);
       throw e;
     });
