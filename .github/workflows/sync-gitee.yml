@@ -11,13 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Sync Gitee Mirror
-        uses: wearerequired/git-mirror-action@master
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
+
+      - name: Black list
+        uses: Yikun/hub-mirror-action@master
         with:
-          source-repo: git@github.com:lisonge/gkd-viewer.git
-          destination-repo: git@gitee.com:gkd-viewer/gkd-viewer.git
+          src: github/lisonge
+          dst: gitee/gkd-viewer
+          dst_key: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
+          dst_token: ${{ secrets.GITEE_TOKEN }}
+          static_list: 'gkd-viewer'
 
       - name: Build Gitee Pages
         uses: yanglbme/gitee-pages-action@main
