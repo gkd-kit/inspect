@@ -1,26 +1,25 @@
 <script lang="tsx" setup>
 import { delay, useThrottle } from '@/utils';
+import { useDeviceApi } from '@/utils/api';
+import { message } from '@/utils/discrete';
+import { errorWrap } from '@/utils/error';
 import storage from '@/utils/storage';
-import type { Snapshot, WindowData } from '@/utils/types';
+import type { Device, Snapshot, WindowData } from '@/utils/types';
+import { exportSnapshotAsZip } from '@/utils/zip';
+import { fileOpen } from 'browser-fs-access';
 import dayjs from 'dayjs';
-import { saveAs } from 'file-saver';
-import JSZip, { loadAsync } from 'jszip';
+import { loadAsync } from 'jszip';
 import {
   NButton,
   NDataTable,
+  NInput,
+  NInputGroup,
   NSpace,
   type DataTableColumns,
   type PaginationProps,
 } from 'naive-ui';
 import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useDeviceApi } from '@/utils/api';
-import { message } from '@/utils/discrete';
-import { errorWrap } from '@/utils/error';
-import type { Device } from '@/utils/types';
-import { NInput, NInputGroup } from 'naive-ui';
-import FilePicker from '@/components/FilePicker.vue';
-import { fileOpen } from 'browser-fs-access';
 
 const router = useRouter();
 
@@ -35,21 +34,11 @@ const preview = (snapshot: Snapshot) => {
   window.open(
     router.resolve({
       name: 'snapshot',
-      params: { id: snapshot.id },
+      params: { snapshotId: snapshot.id },
     }).href,
   );
 };
 
-const exportSnapshotAsZip = async (snapshot: Snapshot) => {
-  const zip = new JSZip();
-  zip
-    .file(`snapshot.json`, JSON.stringify(snapshot))
-    .file(`window.json`, JSON.stringify(await storage.getWindow(snapshot.id)))
-    .file(`screenshot.png`, (await storage.getScreenshot(snapshot.id))!);
-  const content = await zip.generateAsync({ type: 'blob' });
-  saveAs(content, `snapshot-${snapshot.id}.zip`);
-  await delay(500);
-};
 const executors = computed(() => {
   return snapshots.value.map(() => useThrottle(exportSnapshotAsZip));
 });

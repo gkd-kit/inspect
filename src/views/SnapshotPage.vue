@@ -11,7 +11,7 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
-const snapshotId = computed(() => String(route.params.id || route.query.id));
+const snapshotId = computed(() => String(route.params.snapshotId));
 
 const screenshotUrl = ref(``);
 

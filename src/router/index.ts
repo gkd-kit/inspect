@@ -8,7 +8,7 @@ const router = createRouter({
       component: () => import('@/views/HomePage.vue'),
     },
     {
-      path: '/snapshot/:id',
+      path: '/snapshot/:snapshotId',
       name: 'snapshot',
       component: () => import('@/views/SnapshotPage.vue'),
     },

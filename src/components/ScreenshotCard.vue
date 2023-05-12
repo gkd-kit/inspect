@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { NodeX, SizeX } from '@/utils/types';
 import { getImageSize, traverseNode, xyInNode } from '@/utils';
-import { computed, ref, watch, watchEffect } from 'vue';
+import type { NodeX, SizeX } from '@/utils/types';
+import { computed, ref, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{

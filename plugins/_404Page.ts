@@ -1,7 +1,7 @@
 import type { Plugin } from 'vite';
 export const _404Page = (): Plugin => {
   return {
-    name: `404Page`,
+    name: `_404Page`,
     enforce: 'post',
     apply: 'build',
     generateBundle(_, bundle) {
