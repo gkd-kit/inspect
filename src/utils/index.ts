@@ -1,7 +1,9 @@
-import type { NodeData, NodeX, SizeX } from '@/utils/types';
-import { h, ref } from 'vue';
+import type { NaiveNode, RawNode, SizeExt } from '@/utils/types';
+import { h } from 'vue';
 
-export const toGkdLiteral = (s: string | number | null | boolean): string => {
+export const toSelectorLiteral = (
+  s: string | number | null | boolean,
+): string => {
   if (typeof s == 'string') {
     const s2 = JSON.stringify(s);
     const s3 = s2.substring(1, s2.length - 1).replaceAll('`', '\\`');
@@ -11,7 +13,7 @@ export const toGkdLiteral = (s: string | number | null | boolean): string => {
 };
 
 export const getImageSize = async (src: string) => {
-  return new Promise<SizeX>((res, rej) => {
+  return new Promise<SizeExt>((res, rej) => {
     const img = new Image();
     img.onload = () => {
       res({
@@ -24,8 +26,8 @@ export const getImageSize = async (src: string) => {
   });
 };
 
-export function* traverseNode(node: NodeX, skipKeys: number[] = []) {
-  const stack: NodeX[] = [];
+export function* traverseNode(node: NaiveNode, skipKeys: number[] = []) {
+  const stack: NaiveNode[] = [];
   stack.push(node);
   while (stack.length > 0) {
     const top = stack.pop()!;
@@ -33,13 +35,13 @@ export function* traverseNode(node: NodeX, skipKeys: number[] = []) {
       continue;
     }
     yield top;
-    stack.push(...top.children);
+    stack.push(...[...top.children].reverse());
   }
 }
 
-export const toNodeTree = (nodes: NodeData[]) => {
-  const nodeXs = nodes.map<NodeX>((n) => {
-    let label = n.attr.className.split(`.`).at(-1) ?? ``;
+export const toNodeTree = (nodes: RawNode[]) => {
+  const nodeXs = nodes.map<NaiveNode>((n) => {
+    let label = n.attr.name.split(`.`).at(-1) ?? ``;
     if (n.attr.text) {
       label = `${label} : ${n.attr.text}`;
     } else if (n.attr.desc) {
@@ -57,6 +59,8 @@ export const toNodeTree = (nodes: NodeData[]) => {
     };
   });
   nodeXs.forEach((node) => {
+    node.value.attr._id = node.value.id;
+    node.value.attr._pid = node.value.pid;
     node.parent = nodeXs[node.value.pid];
     if (node.parent) {
       node.value.attr.index = node.parent.children.length;
@@ -77,7 +81,7 @@ export const toNodeTree = (nodes: NodeData[]) => {
   return nodeXs[0];
 };
 
-export const xyInNode = (nodeX: NodeX, ox: number, oy: number) => {
+export const xyInNode = (nodeX: NaiveNode, ox: number, oy: number) => {
   const attr = nodeX.value.attr;
   return (
     attr.left <= ox && ox <= attr.right && attr.top <= oy && oy <= attr.bottom
@@ -87,32 +91,4 @@ export const delay = async (n = 0) => {
   return new Promise<void>((res) => {
     setTimeout(res, n);
   });
-};
-
-export const useThrottle = <T extends (...args: any[]) => Promise<void>>(
-  fn: T,
-  miniInterval = 0,
-  handler?: (error: any) => void
-) => {
-  const loadingRef = ref(false);
-  return {
-    get loading() {
-      return loadingRef.value;
-    },
-    invoke: async (...args: Parameters<T>) => {
-      if (loadingRef.value) {
-        return;
-      }
-      loadingRef.value = true;
-      await fn(...args).catch((e) => {
-        if (handler) {
-          handler(e);
-        } else {
-          console.error(e);
-        }
-      });
-      await delay(miniInterval);
-      loadingRef.value = false;
-    },
-  };
 };

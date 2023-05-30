@@ -1,45 +1,63 @@
-import type { Snapshot, WindowData } from '@/utils/types';
+import type { Snapshot } from '@/utils/types';
 import localforage from 'localforage';
 
-localforage.config({
-  driver: localforage.INDEXEDDB,
+const snapshotStore = localforage.createInstance({
   version: 1,
+  driver: localforage.INDEXEDDB,
+  name: `snapshot`,
+});
+const screenshotStore = localforage.createInstance({
+  version: 1,
+  driver: localforage.INDEXEDDB,
+  name: `screenshot`,
 });
 
-const storage = {
+const importStore = localforage.createInstance({
+  version: 1,
+  driver: localforage.INDEXEDDB,
+  name: `import`,
+});
+
+export const storage = {
   setSnapshot: async (p: Snapshot) => {
-    return localforage.setItem(`snapshot-${p.id}`, p);
+    return snapshotStore.setItem(p.id.toString(), p);
   },
   deleteSnapshot: async (snapshotId: number | string) => {
-    await Promise.any(
-      [
-        `snapshot-${snapshotId}`,
-        `windw-${snapshotId}`,
-        `screenshot-${snapshotId}`,
-      ].map((d) => localforage.removeItem(d))
-    );
+    await Promise.all([
+      snapshotStore.removeItem(snapshotId.toString()),
+      screenshotStore.removeItem(snapshotId.toString()),
+    ]);
   },
   getSnapshot: async (snapshotId: number | string) => {
-    return localforage.getItem<Snapshot>(`snapshot-${snapshotId}`);
+    return snapshotStore.getItem<Snapshot>(snapshotId.toString());
+  },
+  hasSnapshot: async (snapshotId: number | string) => {
+    return (await snapshotStore.keys()).includes(snapshotId.toString());
   },
   getAllSnapshots: async () => {
     return Promise.all(
-      (await localforage.keys())
-        .filter((k) => k.startsWith(`snapshot-`))
-        .map((k) => localforage.getItem(k) as Promise<Snapshot>)
+      (await snapshotStore.keys()).map(
+        (k) => snapshotStore.getItem(k) as Promise<Snapshot>,
+      ),
     );
   },
-  setWindow: async (snapshotId: number | string, p: WindowData) => {
-    return localforage.setItem(`windw-${snapshotId}`, p);
-  },
-  getWindow: async (snapshotId: number | string) => {
-    return localforage.getItem<WindowData>(`windw-${snapshotId}`);
+
+  hasScreenshot: async (snapshotId: number | string) => {
+    return (await screenshotStore.keys()).includes(snapshotId.toString());
   },
   setScreenshot: async (snapshotId: number | string, p: ArrayBuffer) => {
-    return localforage.setItem(`screenshot-${snapshotId}`, p);
+    return screenshotStore.setItem(snapshotId.toString(), p);
   },
   getScreenshot: async (snapshotId: number | string) => {
-    return localforage.getItem<ArrayBuffer>(`screenshot-${snapshotId}`);
+    return screenshotStore.getItem<ArrayBuffer>(snapshotId.toString());
+  },
+  getImportId: async (url: string) => {
+    return importStore.getItem<number>(url);
+  },
+  setImportId: async (url: string, p: number) => {
+    return importStore.setItem<number>(url, p);
+  },
+  deleteImportId: async (url: string) => {
+    return importStore.removeItem(url);
   },
 };
-export default storage;

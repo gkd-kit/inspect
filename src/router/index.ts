@@ -12,6 +12,16 @@ const router = createRouter({
       name: 'snapshot',
       component: () => import('@/views/SnapshotPage.vue'),
     },
+    {
+      path: '/import',
+      name: 'import',
+      component: () => import('@/views/ImportPage.vue'),
+    },
+    {
+      path: '/device',
+      name: 'device',
+      component: () => import('@/views/DevicePage.vue'),
+    },
   ],
 });
 

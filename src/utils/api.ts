@@ -1,8 +1,7 @@
 import { ref } from 'vue';
-import type { Device, Snapshot, RpcError, WindowData } from './types';
 import { message } from './discrete';
-
-const enhanceFetch = window.__GmNetworkExtension?.GM_fetch ?? fetch;
+import type { Device, RpcError, Snapshot } from './types';
+import { enhanceFetch } from './fetch';
 
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = ref(initOrigin);
@@ -10,21 +9,21 @@ export const useDeviceApi = (initOrigin?: string) => {
     if (!origin.value) {
       throw new Error(`origin must exist`);
     }
-    const u = new URL(`/api/rpc/` + rpcName, origin.value);
+    const u = new URL(`/api/` + rpcName, origin.value);
     Object.entries(query).forEach(([key, value]) => {
       if (value === undefined) return;
       u.searchParams.set(key, String(value));
     });
     const response = await enhanceFetch(u).catch((e) => {
-      message.error(`网络错误:rpc/` + rpcName);
+      message.error(`网络错误:/` + rpcName);
       throw e;
     });
     if (!response.ok) {
-      message.error(`接口错误:rpc/` + rpcName + `:` + response.status);
+      message.error(`接口错误:/` + rpcName + `:` + response.status);
       throw response;
     }
     const X_Rpc_Result = response.headers.get(`X_Rpc_Result`);
-    if (X_Rpc_Result == `error`) {
+    if (X_Rpc_Result != `ok`) {
       const error = (await response.json()) as RpcError;
       message.error(error.message);
       throw response;
@@ -45,16 +44,13 @@ export const useDeviceApi = (initOrigin?: string) => {
   };
   const api = {
     device: async () => jsonRpc<Device>(`device`),
-    capture: async () => jsonRpc<Snapshot>(`capture`),
-    snapshot: async (query: { id: string | number }) => {
+    snapshot: async (query?: { id?: string | number }) => {
       return jsonRpc<Snapshot>(`snapshot`, query);
-    },
-    window: async (query: { id: string | number }) => {
-      return jsonRpc<WindowData>(`window`, query);
     },
     screenshot: async (query: { id: string | number }) => {
       return arrayBufferRpc(`screenshot`, query);
     },
+    snapshotIds: async () => jsonRpc<number[]>(`snapshotIds`),
   };
   return { origin, api };
 };

@@ -1,24 +1,28 @@
 <script setup lang="tsx">
-import type { NodeX, WindowX } from '@/utils/types';
+import type { NaiveNode, SnapshotExt } from '@/utils/types';
 import {
-  NTree,
   NTable,
   NTbody,
   NTd,
   NTh,
   NThead,
   NTr,
+  NTree,
   type TreeInst,
   type TreeOption,
 } from 'naive-ui';
 import { nextTick, ref, watchEffect } from 'vue';
 
 const props = withDefaults(
-  defineProps<{ windowX: WindowX; focusNode?: NodeX; skipKeys?: number[] }>(),
+  defineProps<{
+    windowX: SnapshotExt;
+    focusNode?: NaiveNode;
+    skipKeys?: number[];
+  }>(),
   { skipKeys: () => [] },
 );
 const emit = defineEmits<{
-  (e: 'update:focusNode', data: NodeX): void;
+  (e: 'update:focusNode', data: NaiveNode): void;
   (e: 'update:skipKeys', data: number[]): void;
 }>();
 
@@ -56,7 +60,7 @@ const updateCheckedKeys = (
   emit('update:skipKeys', keys as number[]);
 };
 
-const renderSuffix = (node: NodeX) => {
+const renderSuffix = (node: NaiveNode) => {
   if (props.skipKeys.includes(node.key)) {
     return <div style={{ marginLeft: `10px`, color: `#ccc` }}>已隐藏</div>;
   }
@@ -68,21 +72,32 @@ const renderSuffix = (node: NodeX) => {
     <NTable size="small" striped :single-line="false">
       <NThead>
         <NTr>
+          <NTh> Device </NTh>
+          <NTh> Name </NTh>
           <NTh> AppId </NTh>
           <NTh> ActivityId </NTh>
+          <NTh> 操作 </NTh>
         </NTr>
       </NThead>
       <NTbody>
         <NTr class="code-text">
+          <NTd>
+            {{
+              `${windowX.device.manufacturer} ${windowX.device.model} Android${windowX.device.release}`
+            }}
+          </NTd>
+          <NTd>{{ windowX.appName }}</NTd>
           <NTd>{{ windowX.appId }}</NTd>
           <NTd>
             {{ windowX.activityId }}
+          </NTd>
+          <NTd>
+            <slot></slot>
           </NTd>
         </NTr>
       </NTbody>
     </NTable>
     <NTree
-      class="hello"
       ref="treeRef"
       checkable
       virtual-scroll
@@ -95,11 +110,11 @@ const renderSuffix = (node: NodeX) => {
       :data="[windowX.node]"
       :default-expanded-keys="defaultExpandedKeysRef"
       :default-checked-keys="skipKeys"
-      :render-suffix="n => renderSuffix(n.option as NodeX)"
+      :render-suffix="n => renderSuffix(n.option as NaiveNode)"
       :node-props="({ option }) => {
           return {
             onClick: () => {
-              emit('update:focusNode', option as NodeX)
+              emit('update:focusNode', option as NaiveNode)
             },
             style: {
               color: option.key == focusNode?.key ? `#00F` : undefined,

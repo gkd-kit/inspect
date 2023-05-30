@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { toGkdLiteral } from '@/utils';
-import type { AttrData } from '@/utils/types';
+import { toSelectorLiteral } from '@/utils';
+import type { RawAttr } from '@/utils/types';
 import { NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
 import { computed, reactive, ref } from 'vue';
 
-const props = withDefaults(defineProps<{ attr: AttrData }>(), {});
+const props = withDefaults(defineProps<{ attr: RawAttr }>(), {});
 
 const attrs = computed(() => {
   return Object.entries(props.attr).map(([name, value]) => {
@@ -55,7 +55,7 @@ const mousemoveRef = async (ev: MouseEvent) => {
         <NTr v-for="(attrx, index) in attrs" :key="index" class="code-text">
           <NTd>{{ attrx.name }}</NTd>
           <NTd>
-            {{ toGkdLiteral(attrx.value) }}
+            {{ toSelectorLiteral(attrx.value) }}
           </NTd>
         </NTr>
       </NTbody>

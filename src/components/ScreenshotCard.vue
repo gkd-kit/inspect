@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import { getImageSize, traverseNode, xyInNode } from '@/utils';
-import type { NodeX, SizeX } from '@/utils/types';
+import type { NaiveNode, SizeExt } from '@/utils/types';
 import { computed, ref, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{
     url: string;
-    node?: NodeX;
-    focusNode?: NodeX;
+    node?: NaiveNode;
+    focusNode?: NaiveNode;
     skipKeys?: number[];
   }>(),
   { skipKeys: () => [] },
 );
 
 const emit = defineEmits<{
-  (e: 'update:focusNode', data: NodeX): void;
+  (e: 'update:focusNode', data: NaiveNode): void;
 }>();
 
-const sizeRef = ref<SizeX>();
+const sizeRef = ref<SizeExt>();
 watchEffect(async () => {
   sizeRef.value = await getImageSize(props.url);
 });
@@ -47,7 +47,7 @@ watchEffect(() => {
   }
 });
 
-const positionStyleRef = computed(() => {
+const positionStyle = computed(() => {
   const size = sizeRef.value;
   if (!size || !props.focusNode) {
     return ``;
@@ -67,7 +67,7 @@ const positionStyleRef = computed(() => {
     <img :src="url" @click="evRef = $event" class="h-100%" cursor-crosshair />
     <div
       class="focus-box"
-      :style="positionStyleRef"
+      :style="positionStyle"
       absolute
       pointer-events-none
       transition-all-300
