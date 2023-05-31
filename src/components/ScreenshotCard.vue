@@ -66,7 +66,6 @@ const positionStyle = computed(() => {
   <div flex flex-col relative>
     <img :src="url" @click="evRef = $event" class="h-100%" cursor-crosshair />
     <div
-      class="focus-box"
       :style="positionStyle"
       absolute
       pointer-events-none
