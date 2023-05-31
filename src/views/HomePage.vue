@@ -5,6 +5,7 @@ import { importFromLocal, importFromNetwork } from '@/utils/import';
 import { storage } from '@/utils/storage';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
+import { useWindowSize } from '@vueuse/core';
 import dayjs from 'dayjs';
 import {
   NButton,
@@ -44,16 +45,17 @@ const columns: DataTableColumns<Snapshot> = [
   },
   {
     key: `versionRelease`,
-    width: `150px`,
+    width: `250px`,
     title: `设备`,
     render(row) {
       if (!row.device) return ``;
-      return `${row.device.manufacturer} Android${row.device.release}`;
+      return `${row.device.manufacturer} ${row.device.model} Android${row.device.release}`;
     },
   },
   {
     key: `appName`,
     title: `name`,
+    width: `130px`,
     render(row) {
       return row.appName;
     },
@@ -61,6 +63,7 @@ const columns: DataTableColumns<Snapshot> = [
   {
     key: `appId`,
     title: `appId`,
+    width: `250px`,
     render(row) {
       return row.appId;
     },
@@ -68,6 +71,7 @@ const columns: DataTableColumns<Snapshot> = [
   {
     key: `activityId`,
     title: `activityId`,
+    className: `whitespace-nowrap`,
     render(row) {
       return row.activityId;
     },
@@ -85,9 +89,9 @@ const columns: DataTableColumns<Snapshot> = [
 
 const pagination = reactive<PaginationProps>({
   page: 1,
-  pageSize: 15,
+  pageSize: 20,
   showSizePicker: true,
-  pageSizes: [10, 15],
+  pageSizes: [10, 20, 30],
   onChange: (page: number) => {
     pagination.page = page;
   },
@@ -148,11 +152,14 @@ const importNetwork = useTask(async () => {
       </RouterLink>
     </NSpace>
     <NDataTable
+      striped
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
       :scroll-x="1200"
       size="small"
+      class="h-85vh"
+      flex-height
     />
   </div>
 </template>

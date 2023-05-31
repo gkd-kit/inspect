@@ -88,13 +88,13 @@ const deleteSnapshot = async () => {
 </script>
 <template>
   <NSpace>
-    <a target="_blank" :href="previewUrl" v-if="showPreview">
-      <NButton size="small">查看</NButton>
+    <a v-if="showPreview" target="_blank" :href="previewUrl">
+      <NButton size="small" tertiary strong>查看</NButton>
     </a>
 
     <NPopover v-if="showExport">
       <template #trigger>
-        <NButton size="small"> 导出 </NButton>
+        <NButton size="small" tertiary strong> 导出 </NButton>
       </template>
       <NSpace vertical>
         <NButton @click="exportPng.invoke" :loading="exportPng.loading">
@@ -108,7 +108,7 @@ const deleteSnapshot = async () => {
 
     <NPopover v-if="showShare">
       <template #trigger>
-        <NButton size="small"> 分享 </NButton>
+        <NButton size="small" tertiary strong> 分享 </NButton>
       </template>
       <NSpace vertical>
         <NButton @click="exportPngUrl.invoke" :loading="exportPngUrl.loading">
@@ -120,7 +120,13 @@ const deleteSnapshot = async () => {
       </NSpace>
     </NPopover>
 
-    <NButton size="small" v-if="showDelete" @click="deleteSnapshot">
+    <NButton
+      v-if="showDelete"
+      size="small"
+      tertiary
+      strong
+      @click="deleteSnapshot"
+    >
       删除
     </NButton>
   </NSpace>
