@@ -36,16 +36,19 @@ const columns: DataTableColumns<Snapshot> = [
   {
     key: `id`,
     title: `创建时间`,
+    fixed: 'left',
+    width: `130px`,
     render(row) {
       return dayjs(row.id).format('MM-DD HH:mm:ss');
     },
   },
   {
     key: `versionRelease`,
+    width: `150px`,
     title: `设备`,
     render(row) {
       if (!row.device) return ``;
-      return `${row.device.manufacturer} ${row.device.model} Android${row.device.release}`;
+      return `${row.device.manufacturer} Android${row.device.release}`;
     },
   },
   {
@@ -71,8 +74,9 @@ const columns: DataTableColumns<Snapshot> = [
   },
   {
     key: `actions`,
-    minWidth: 250,
-    title: `操作`,
+    title: `Action`,
+    fixed: 'right',
+    width: `290px`,
     render(row, index) {
       return <ActionCard snapshot={row} onDelete={updateSnapshots} />;
     },
@@ -81,9 +85,9 @@ const columns: DataTableColumns<Snapshot> = [
 
 const pagination = reactive<PaginationProps>({
   page: 1,
-  pageSize: 10,
+  pageSize: 15,
   showSizePicker: true,
-  pageSizes: [10],
+  pageSizes: [10, 15],
   onChange: (page: number) => {
     pagination.page = page;
   },
@@ -137,17 +141,18 @@ const importNetwork = useTask(async () => {
   </NModal>
   <div flex flex-col p-10px gap-10px>
     <NSpace>
-      <NButton @click="importLoacl.invoke"> 导入本地文件 </NButton>
-      <NButton @click="showModal = true"> 导入网络文件 </NButton>
+      <NButton size="small" @click="importLoacl.invoke"> 导入本地文件 </NButton>
+      <NButton size="small" @click="showModal = true"> 导入网络文件 </NButton>
       <RouterLink to="/device">
-        <NButton> 去连接设备 </NButton>
+        <NButton size="small"> 去连接设备 </NButton>
       </RouterLink>
     </NSpace>
     <NDataTable
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
-      min-height="640px"
+      :scroll-x="1200"
+      size="small"
     />
   </div>
 </template>

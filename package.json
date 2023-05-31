@@ -19,6 +19,7 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "@vue/tsconfig": "^0.4.0",
+    "@vueuse/components": "10.1.2",
     "@vueuse/core": "^10.1.2",
     "browser-fs-access": "^0.34.1",
     "dayjs": "^1.11.7",

@@ -80,21 +80,21 @@ const exportZipUrl = useTask(async () => {
   showShareDlg(githubAsset.href);
 });
 
-const deleteSnapshot = useTask(async () => {
+const deleteSnapshot = async () => {
   await storage.deleteSnapshot(props.snapshot.id);
-  await delay(1500);
+  await delay(500);
   props.onDelete?.();
-});
+};
 </script>
 <template>
   <NSpace>
     <a target="_blank" :href="previewUrl" v-if="showPreview">
-      <NButton>查看</NButton>
+      <NButton size="small">查看</NButton>
     </a>
 
     <NPopover v-if="showExport">
       <template #trigger>
-        <NButton> 导出 </NButton>
+        <NButton size="small"> 导出 </NButton>
       </template>
       <NSpace vertical>
         <NButton @click="exportPng.invoke" :loading="exportPng.loading">
@@ -108,7 +108,7 @@ const deleteSnapshot = useTask(async () => {
 
     <NPopover v-if="showShare">
       <template #trigger>
-        <NButton> 分享 </NButton>
+        <NButton size="small"> 分享 </NButton>
       </template>
       <NSpace vertical>
         <NButton @click="exportPngUrl.invoke" :loading="exportPngUrl.loading">
@@ -120,11 +120,7 @@ const deleteSnapshot = useTask(async () => {
       </NSpace>
     </NPopover>
 
-    <NButton
-      v-if="showDelete"
-      @click="deleteSnapshot.invoke"
-      :loading="deleteSnapshot.loading"
-    >
+    <NButton size="small" v-if="showDelete" @click="deleteSnapshot">
       删除
     </NButton>
   </NSpace>
