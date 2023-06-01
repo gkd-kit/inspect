@@ -1,6 +1,13 @@
 <script lang="tsx" setup>
 import ActionCard from '@/components/ActionCard.vue';
 import { toValidURL } from '@/utils/check';
+import { dialog } from '@/utils/discrete';
+import {
+  batchCreatePngUrl,
+  batchCreateZipUrl,
+  batchPngDownloadZip,
+  batchZipDownloadZip,
+} from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
 import { storage } from '@/utils/storage';
 import { useTask } from '@/utils/task';
@@ -15,22 +22,46 @@ import {
   NPopover,
   NSpace,
   type DataTableColumns,
+  PaginationProps,
 } from 'naive-ui';
 import type {
   SortState,
   TableBaseColumn,
 } from 'naive-ui/es/data-table/src/interface';
-import { reactive, shallowReactive, shallowRef, watchEffect } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
-
-const router = useRouter();
+import {
+  computed,
+  reactive,
+  shallowReactive,
+  shallowRef,
+  watchEffect,
+} from 'vue';
+import { RouterLink } from 'vue-router';
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const updateSnapshots = async () => {
   snapshots.value = (await storage.getAllSnapshots()).reverse();
+  checkedRowKeys.value = [];
 };
-
 updateSnapshots();
+const filterOption = shallowReactive({
+  query: ``,
+  actualQuery: ``,
+  updateQuery: () => {
+    filterOption.actualQuery = filterOption.query.trim();
+    checkedRowKeys.value = [];
+  },
+});
+const filterSnapshots = computed(() => {
+  const actualQuery = filterOption.actualQuery;
+  if (!actualQuery) return snapshots.value;
+  return snapshots.value.filter((s) => {
+    return (
+      s.appName.includes(actualQuery) ||
+      s.appId.includes(actualQuery) ||
+      s.activityId.includes(actualQuery)
+    );
+  });
+});
 
 const importLoacl = useTask(async () => {
   await importFromLocal();
@@ -68,7 +99,7 @@ const deviceCol = shallowReactive<TableBaseColumn<Snapshot>>({
 });
 
 watchEffect(() => {
-  const set = snapshots.value.reduce(
+  const set = filterSnapshots.value.reduce(
     (p, c) => (p.add(renderDveice(c)), p),
     new Set<string>(),
   );
@@ -96,7 +127,7 @@ const nameCol = shallowReactive<TableBaseColumn<Snapshot>>({
 });
 
 watchEffect(() => {
-  const set = snapshots.value.reduce(
+  const set = filterSnapshots.value.reduce(
     (p, c) => (p.add(c.appName), p),
     new Set<string>(),
   );
@@ -133,7 +164,7 @@ const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
 });
 
 watchEffect(() => {
-  const set = snapshots.value.reduce(
+  const set = filterSnapshots.value.reduce(
     (p, c) => (p.add(c.activityId), p),
     new Set<string>(),
   );
@@ -167,6 +198,20 @@ const columns: DataTableColumns<Snapshot> = reactive([
   },
 ]);
 
+const pagination = reactive<PaginationProps>({
+  page: 1,
+  pageSize: 50,
+  showSizePicker: true,
+  pageSizes: [50, 100],
+  onChange: (page: number) => {
+    pagination.page = page;
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize;
+    pagination.page = 1;
+  },
+});
+
 const handleSorterChange = (sorter: SortState) => {
   if (sorter.columnKey == ctimeCol.key) {
     ctimeCol.sortOrder = sorter.order;
@@ -188,6 +233,65 @@ const importNetwork = useTask(async () => {
 });
 
 const checkedRowKeys = shallowRef<number[]>([]);
+const checkedSnapshots = () => {
+  return filterSnapshots.value.filter((s) =>
+    checkedRowKeys.value.includes(s.id),
+  );
+};
+const batchDelete = useTask(async () => {
+  await new Promise((res, rej) => {
+    dialog.warning({
+      title: `删除`,
+      content: `是否批量删除 ${checkedRowKeys.value.length} 个快照`,
+      negativeText: `取消`,
+      positiveText: `确认`,
+      onClose: rej,
+      onEsc: rej,
+      onMaskClick: rej,
+      onNegativeClick: rej,
+      onPositiveClick: res,
+    });
+  });
+  await Promise.all(
+    checkedRowKeys.value.map((s) => {
+      return storage.deleteSnapshot(s);
+    }),
+  );
+  await updateSnapshots();
+});
+const batchDownloadPng = useTask(async () => {
+  await batchPngDownloadZip(checkedSnapshots());
+});
+const batchDownloadZip = useTask(async () => {
+  await batchZipDownloadZip(checkedSnapshots());
+});
+const batchSharePngUrl = useTask(async () => {
+  const policiesAssets = await batchCreatePngUrl(checkedSnapshots());
+  dialog.success({
+    title: `批量分享链接`,
+    style: {
+      width: `800px`,
+    },
+    content() {
+      return (
+        <NInput
+          type="textarea"
+          autosize={{
+            minRows: 8,
+            maxRows: 16,
+          }}
+          inputProps={{
+            style: `white-space: nowrap;`,
+          }}
+          value={policiesAssets.map((s) => s.href).join(`\n`) + `\n`}
+        />
+      );
+    },
+  });
+});
+const batchShareZipUrl = useTask(async () => {
+  const policiesAssets = await batchCreateZipUrl(checkedSnapshots());
+});
 </script>
 <template>
   <NModal
@@ -218,13 +322,55 @@ const checkedRowKeys = shallowRef<number[]>([]);
     <div flex>
       <NSpace>
         <NInputGroup>
-          <NInput placeholder="请输入关键字搜索"></NInput>
-          <NButton> 搜索 </NButton>
+          <NInput
+            placeholder="请输入关键字搜索"
+            clearable
+            v-model:value="filterOption.query"
+            @keyup.enter="filterOption.updateQuery"
+            @change="filterOption.updateQuery"
+          ></NInput>
+          <NButton @click="filterOption.updateQuery"> 搜索 </NButton>
         </NInputGroup>
         <template v-if="checkedRowKeys.length">
-          <NButton> 批量导出 </NButton>
-          <NButton> 批量分享 </NButton>
-          <NButton> 批量删除 </NButton>
+          <NPopover>
+            <template #trigger>
+              <NButton> 批量下载 </NButton>
+            </template>
+            <NSpace vertical>
+              <NButton
+                @click="batchDownloadPng.invoke"
+                :loading="batchDownloadPng.loading"
+              >
+                批量下载-png
+              </NButton>
+              <NButton
+                @click="batchDownloadZip.invoke"
+                :loading="batchDownloadZip.loading"
+              >
+                批量下载-zip
+              </NButton>
+            </NSpace>
+          </NPopover>
+          <NPopover>
+            <template #trigger>
+              <NButton> 批量分享 </NButton>
+            </template>
+            <NSpace vertical>
+              <NButton
+                @click="batchSharePngUrl.invoke"
+                :loading="batchSharePngUrl.loading"
+              >
+                批量生成链接-png
+              </NButton>
+              <NButton
+                @click="batchShareZipUrl.invoke"
+                :loading="batchShareZipUrl.loading"
+              >
+                批量生成链接-zip
+              </NButton>
+            </NSpace>
+          </NPopover>
+          <NButton @click="batchDelete.invoke"> 批量删除 </NButton>
           <div h-full flex flex-items-center>
             {{ `已选中 ${checkedRowKeys.length} 个快照` }}
           </div>
@@ -237,8 +383,12 @@ const checkedRowKeys = shallowRef<number[]>([]);
             <NButton> 导入 </NButton>
           </template>
           <NSpace vertical>
-            <NButton @click="importLoacl.invoke"> 导入本地文件 </NButton>
-            <NButton @click="showModal = true"> 导入网络文件 </NButton>
+            <NButton @click="importLoacl.invoke" :loading="importLoacl.loading">
+              导入本地文件
+            </NButton>
+            <NButton @click="showModal = true" :loading="importNetwork.loading">
+              导入网络文件
+            </NButton>
           </NSpace>
         </NPopover>
         <RouterLink to="/device">
@@ -248,9 +398,10 @@ const checkedRowKeys = shallowRef<number[]>([]);
     </div>
     <NDataTable
       striped
-      :data="snapshots"
+      :data="filterSnapshots"
       :columns="columns"
       :scroll-x="1200"
+      :pagination="pagination"
       v-model:checked-row-keys="checkedRowKeys"
       :row-key="(r:Snapshot)=>r.id"
       @update:sorter="handleSorterChange"

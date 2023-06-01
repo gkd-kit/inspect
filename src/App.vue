@@ -18,8 +18,8 @@ import { NConfigProvider, zhCN, dateZhCN } from 'naive-ui';
   flex-direction: column;
   width: 100vw;
   height: 100vh;
-  .code-text {
-    font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace;
-  }
+}
+.gkd_code {
+  font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace;
 }
 </style>

@@ -41,6 +41,11 @@ export type RawAttr = {
   bottom: number;
   _id?: number;
   _pid?: number;
+
+  /**
+   * @deprecated use name
+   */
+  className: string;
 };
 
 export type Snapshot = {

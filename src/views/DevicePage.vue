@@ -18,6 +18,7 @@ import {
 } from 'naive-ui';
 import { reactive, shallowRef, toRaw, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
+import pLimit from 'p-limit';
 
 const router = useRouter();
 const title = useTitle(`新设备`);
@@ -69,19 +70,22 @@ const downloadAllSnapshot = useTask(async () => {
     return;
   }
   let r = 0;
-  await Promise.any(
-    unimportSnapshotIds.map(async (snapshotId) => {
-      const [newSnapshot, newScreenshot] = await Promise.all([
-        api.snapshot({ id: snapshotId }),
-        api.screenshot({ id: snapshotId }),
-      ] as const);
-      if (!newSnapshot.nodes) return;
-      await Promise.all([
-        storage.setSnapshot(newSnapshot),
-        storage.setScreenshot(snapshotId, newScreenshot),
-      ]);
-      r++;
-    }),
+  const limit = pLimit(3);
+  await Promise.all(
+    unimportSnapshotIds.map((snapshotId) =>
+      limit(async () => {
+        const [newSnapshot, newScreenshot] = await Promise.all([
+          api.snapshot({ id: snapshotId }),
+          api.screenshot({ id: snapshotId }),
+        ] as const);
+        if (!newSnapshot.nodes) return;
+        await Promise.all([
+          storage.setSnapshot(newSnapshot),
+          storage.setScreenshot(snapshotId, newScreenshot),
+        ]);
+        r++;
+      }),
+    ),
   );
   message.success(`导入${r}条新记录`);
   // updateSnapshots();
@@ -142,8 +146,8 @@ const columns: DataTableColumns<Snapshot> = [
           >
             查看
           </NButton>
-          <NButton>导出-zip</NButton>
-          <NButton>导出-png</NButton>
+          <NButton>下载-zip</NButton>
+          <NButton>下载-png</NButton>
           <NButton>删除</NButton>
         </NSpace>
       );
@@ -219,6 +223,7 @@ watchEffect(() => {
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
+      size="small"
       @update:page="handlePageChange"
     />
   </div>

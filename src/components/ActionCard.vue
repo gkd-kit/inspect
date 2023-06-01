@@ -94,14 +94,14 @@ const deleteSnapshot = async () => {
 
     <NPopover v-if="showExport">
       <template #trigger>
-        <NButton size="small"> 导出 </NButton>
+        <NButton size="small"> 下载 </NButton>
       </template>
       <NSpace vertical>
         <NButton @click="exportPng.invoke" :loading="exportPng.loading">
-          导出-png
+          下载-png
         </NButton>
         <NButton @click="exportZip.invoke" :loading="exportZip.loading">
-          导出-zip
+          下载-zip
         </NButton>
       </NSpace>
     </NPopover>

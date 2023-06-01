@@ -1,13 +1,13 @@
-import { reactive, ref } from 'vue';
+import { shallowReactive, shallowRef } from 'vue';
 import { delay } from '.';
 import type { PrimitiveType } from './types';
 
 export const useTask = <T extends (...args: any[]) => Promise<void>>(
   fn: T,
   miniInterval = 0,
-  handler?: (error: any) => void,
+  handler: (error: any) => void = () => {},
 ) => {
-  const loadingRef = ref(false);
+  const loadingRef = shallowRef(false);
   return {
     get loading() {
       return loadingRef.value;
@@ -37,7 +37,7 @@ export const useBatchTask = <T extends (...args: any[]) => Promise<void>>(
   miniInterval = 0,
   handler?: (error: any) => void,
 ) => {
-  const loading = reactive<Record<string, boolean>>({});
+  const loading = shallowReactive<Record<string, boolean>>({});
   const invoke = async (...args: Parameters<T>) => {
     const loadingKey = String(keyGetter(...args));
     if (loading[loadingKey]) {

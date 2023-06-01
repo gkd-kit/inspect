@@ -80,7 +80,7 @@ const renderSuffix = (node: NaiveNode) => {
         </NTr>
       </NThead>
       <NTbody>
-        <NTr class="code-text">
+        <NTr>
           <NTd>
             {{
               `${windowX.device.manufacturer} ${windowX.device.model} Android${windowX.device.release}`

@@ -18,8 +18,8 @@ const attrs = computed(() => {
 </script>
 
 <template>
-  <DraggableCard :initial-value="{ top: 90, right: 30 }" v-slot="{ onRef }">
-    <NTable size="small" striped :single-line="false">
+  <DraggableCard :initial-value="{ top: 90, right: 10 }" v-slot="{ onRef }">
+    <NTable size="small" striped :single-line="false" class="gkd_code">
       <thead cursor-move :ref="onRef">
         <NTr>
           <NTh> Name </NTh>
@@ -27,10 +27,10 @@ const attrs = computed(() => {
         </NTr>
       </thead>
       <NTbody>
-        <NTr v-for="(attrx, index) in attrs" :key="index" class="code-text">
+        <NTr v-for="(attrx, index) in attrs" :key="index">
           <NTd>{{ attrx.name }}</NTd>
           <NTd>
-            <NEllipsis style="width: 220px">
+            <NEllipsis style="width: 250px">
               {{ toSelectorLiteral(attrx.value) }}
             </NEllipsis>
           </NTd>
