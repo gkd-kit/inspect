@@ -3,8 +3,8 @@ import { delay } from '@/utils';
 import { toValidURL } from '@/utils/check';
 import { loadingBar, message } from '@/utils/discrete';
 import { importFromNetwork } from '@/utils/import';
-import { storage } from '@/utils/storage';
-import { onMounted, shallowRef } from 'vue';
+import { importStore, storage } from '@/utils/storage';
+import { onMounted, shallowRef, toRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -24,7 +24,8 @@ onMounted(async () => {
     });
     return;
   }
-  const snapshotId = await storage.getImportId(importUrl);
+  await delay(1000);
+  const snapshotId = importStore[importUrl];
   if (snapshotId) {
     const snapshot = await storage.getSnapshot(snapshotId);
     if (snapshot) {
@@ -34,7 +35,7 @@ onMounted(async () => {
       });
       return;
     } else {
-      await storage.deleteImportId(importUrl);
+      delete importStore[importUrl];
     }
   }
   loadingBar.start();
@@ -45,7 +46,7 @@ onMounted(async () => {
       loadingBar.finish();
       const snapshot = result.value;
       if (snapshot) {
-        await storage.setImportId(importUrl, snapshot.id);
+        importStore[importUrl] = snapshot.id;
         loading.value = false;
         await delay(500);
         router.replace({

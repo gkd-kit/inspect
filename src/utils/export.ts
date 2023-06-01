@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { uploadPoliciesAssets } from './github';
-import { storage } from './storage';
+import { exportPngStore, storage, exportZipStore } from './storage';
 import type { Snapshot } from './types';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
@@ -33,13 +33,25 @@ export const exportSnapshotAsPng = async (snapshot: Snapshot) => {
 };
 
 export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
-  return uploadPoliciesAssets(
-    await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
+  return (
+    exportPngStore[snapshot.id] ??
+    uploadPoliciesAssets(
+      await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
+    ).then((r) => {
+      exportPngStore[snapshot.id] = { ...r };
+      return r;
+    })
   );
 };
 
 export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
-  return uploadPoliciesAssets(
-    await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
+  return (
+    exportZipStore[snapshot.id] ??
+    uploadPoliciesAssets(
+      await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
+    ).catch((r) => {
+      exportZipStore[snapshot.id] = { ...r };
+      return r;
+    })
   );
 };

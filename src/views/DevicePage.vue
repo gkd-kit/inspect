@@ -195,7 +195,7 @@ watchEffect(() => {
         </NButton>
       </NInputGroup>
       <template v-if="device">
-        <div class="h-100%" flex flex-items-center>
+        <div class="h-full" flex flex-items-center>
           {{ `已连接 ${device.manufacturer} Android ${device.release}` }}
         </div>
         <NButton

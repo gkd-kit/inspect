@@ -1,5 +1,7 @@
 import type { Snapshot } from '@/utils/types';
 import localforage from 'localforage';
+import { reactive, toRaw, watch } from 'vue';
+import type { GithubPoliciesAsset } from './github';
 
 const snapshotStore = localforage.createInstance({
   version: 1,
@@ -10,12 +12,6 @@ const screenshotStore = localforage.createInstance({
   version: 1,
   driver: localforage.INDEXEDDB,
   name: `screenshot`,
-});
-
-const importStore = localforage.createInstance({
-  version: 1,
-  driver: localforage.INDEXEDDB,
-  name: `import`,
 });
 
 export const storage = {
@@ -51,13 +47,35 @@ export const storage = {
   getScreenshot: async (snapshotId: number | string) => {
     return screenshotStore.getItem<ArrayBuffer>(snapshotId.toString());
   },
-  getImportId: async (url: string) => {
-    return importStore.getItem<number>(url);
-  },
-  setImportId: async (url: string, p: number) => {
-    return importStore.setItem<number>(url, p);
-  },
-  deleteImportId: async (url: string) => {
-    return importStore.removeItem(url);
-  },
 };
+
+const useAsyncStore = <T extends object>(
+  key: string,
+  initialValue: (() => T) | T,
+) => {
+  const store = reactive<T>(
+    typeof initialValue == 'function' ? initialValue() : initialValue,
+  );
+  let storeInited = false;
+  watch(store, async () => {
+    if (!storeInited) return;
+    await localforage.setItem(key, toRaw(store));
+  });
+  localforage.getItem(key).then((r) => {
+    r && Object.assign(store, r);
+    storeInited = true;
+  });
+  return store;
+};
+
+export const importStore = useAsyncStore<Record<string, number>>(
+  `importStore`,
+  {},
+);
+
+export const exportPngStore = useAsyncStore<
+  Record<number, GithubPoliciesAsset>
+>(`exportPngStore`, {});
+export const exportZipStore = useAsyncStore<
+  Record<number, GithubPoliciesAsset>
+>(`exportZipStore`, {});

@@ -90,7 +90,7 @@ const onDelete = async () => {
         :show-preview="false"
       />
     </WindowCard>
-    <AttrCard v-if="focusNode" :focus-node="focusNode" class="fixed" />
+    <AttrCard v-if="focusNode" :focus-node="focusNode" />
     <SearchCard
       v-if="root"
       :root="root"

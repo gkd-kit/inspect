@@ -30,7 +30,7 @@ type S3Form = {
   'Cache-Control': string;
   'x-amz-meta-Surrogate-Control': string;
 };
-export type PoliciesAsset = {
+export type GithubPoliciesAsset = {
   id: number;
   name: string;
   size: number;
@@ -42,7 +42,7 @@ export type PoliciesAsset = {
 type UploadPoliciesAssetsRsonpse = {
   upload_url: string;
   header: {};
-  asset: PoliciesAsset;
+  asset: GithubPoliciesAsset;
   form: S3Form;
   same_origin: boolean;
   asset_upload_url: string;
@@ -121,6 +121,7 @@ export const uploadPoliciesAssets = async (
         if (!(200 <= response.status && response.status <= 299)) {
           console.log(response);
           rej(new Error(`upload s3 failed`));
+          return;
         }
         res();
       },

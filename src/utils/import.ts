@@ -2,7 +2,7 @@ import { fileOpen } from 'browser-fs-access';
 import { message } from './discrete';
 import { loadAsync } from 'jszip';
 import type { Snapshot } from './types';
-import { storage } from './storage';
+import { importStore, storage } from './storage';
 import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
 
@@ -80,7 +80,6 @@ export const importFromLocal = async () => {
         const snapshot = JSON.parse(
           await snapshotFile.async('string'),
         ) as Snapshot;
-        // snapshot.id = new Date().getTime();
         const screenshotBf = await screenshotFile.async('arraybuffer');
         await storage.setSnapshot(snapshot);
         await storage.setScreenshot(snapshot.id, screenshotBf);
@@ -120,10 +119,20 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   if (urls.length == 0) {
     return;
   }
+  urls = [...new Set(urls)];
   let importNum = 0;
   const result = await Promise.allSettled(
     urls.map(async (url) => {
+      const snapshotId = importStore[url];
+      if (snapshotId) {
+        const snapshot = await storage.getSnapshot(snapshotId);
+        if (snapshot) {
+          importNum++;
+          return snapshot;
+        }
+      }
       const resp = await enhanceFetch(url).catch((e) => {
+        message.error(`网络异常: ${new URL(url).host}/${e.message || ''}`);
         console.warn([`download failed`, url, e]);
         throw e;
       });
@@ -147,7 +156,6 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
       } else {
         throw new Error(`file must be png or zip`);
       }
-      // snapshot.id = new Date().getTime();
       await storage.setSnapshot(snapshot);
       await storage.setScreenshot(snapshot.id, screenshotBf);
       importNum++;

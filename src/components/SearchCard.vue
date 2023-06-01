@@ -97,9 +97,9 @@ const enableSearchBySelector = shallowRef(false);
 </script>
 <template>
   <DraggableCard
-    class="fixed"
     :initial-value="{ top: 90, right: 200 }"
     v-slot="{ onRef }"
+    class="z-1"
   >
     <div w-500px bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
       <div flex m-b-4px>

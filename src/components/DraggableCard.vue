@@ -39,7 +39,7 @@ const endMove = () => {
 };
 const target = shallowRef<HTMLElement>();
 
-// move 事件应该给 window 如果给目标元素,容易出现鼠标移速过快无法跟随的bug
+// move 事件应该给 window. 如果给目标元素,容易出现鼠标移速过快无法跟随的bug
 window.addEventListener('pointermove', move);
 onUnmounted(() => {
   window.removeEventListener('pointermove', move);
@@ -68,7 +68,13 @@ const updateTarget = (arg: unknown) => {
 };
 </script>
 <template>
-  <div fixed :style="currentStyle">
-    <slot :onRef="updateTarget"></slot>
-  </div>
+  <Teleport to="body">
+    <div
+      fixed
+      :style="[$attrs.style as string, currentStyle]"
+      :class="$attrs.class"
+    >
+      <slot :onRef="updateTarget"></slot>
+    </div>
+  </Teleport>
 </template>
