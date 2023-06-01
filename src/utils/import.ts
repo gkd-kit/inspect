@@ -121,7 +121,7 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
     return;
   }
   urls = [...new Set(urls)];
-  const limit = pLimit(3);
+  const limit = pLimit(2);
   let importNum = 0;
   const result = await Promise.allSettled(
     urls.map((url) => {
