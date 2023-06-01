@@ -5,6 +5,7 @@ import type { Snapshot } from './types';
 import { importStore, storage } from './storage';
 import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
+import pLimit from 'p-limit';
 
 function splitArrayBuffer(
   arrayBuffer: ArrayBuffer,
@@ -120,46 +121,49 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
     return;
   }
   urls = [...new Set(urls)];
+  const limit = pLimit(3);
   let importNum = 0;
   const result = await Promise.allSettled(
-    urls.map(async (url) => {
-      const snapshotId = importStore[url];
-      if (snapshotId) {
-        const snapshot = await storage.getSnapshot(snapshotId);
-        if (snapshot) {
-          importNum++;
-          return snapshot;
+    urls.map((url) => {
+      return limit(async () => {
+        const snapshotId = importStore[url];
+        if (snapshotId) {
+          const snapshot = await storage.getSnapshot(snapshotId);
+          if (snapshot) {
+            importNum++;
+            return snapshot;
+          }
         }
-      }
-      const resp = await enhanceFetch(url).catch((e) => {
-        message.error(`网络异常: ${new URL(url).host}/${e.message || ''}`);
-        console.warn([`download failed`, url, e]);
-        throw e;
+        const resp = await enhanceFetch(url).catch((e) => {
+          message.error(`网络异常: ${new URL(url).host}/${e.message || ''}`);
+          console.warn([`download failed`, url, e]);
+          throw e;
+        });
+        const bf = await resp.arrayBuffer();
+        let snapshot: Snapshot;
+        let screenshotBf: ArrayBuffer;
+        if (isPngBf(bf)) {
+          const [tempPngBf, jsonBf] = splitArrayBuffer(bf, pngEndBf, 2);
+          if (!jsonBf) return;
+          screenshotBf = await new Blob([tempPngBf, pngEndBf]).arrayBuffer();
+          snapshot = JSON.parse(decoder.decode(jsonBf)) as Snapshot;
+        } else if (isZipBf(bf)) {
+          const zip = await loadAsync(bf);
+          const snapshotFile = zip.file(`snapshot.json`);
+          const screenshotFile = zip.file(`screenshot.png`);
+          if (!snapshotFile || !screenshotFile) {
+            return;
+          }
+          screenshotBf = await screenshotFile.async('arraybuffer');
+          snapshot = JSON.parse(await snapshotFile.async('string')) as Snapshot;
+        } else {
+          throw new Error(`file must be png or zip`);
+        }
+        await storage.setSnapshot(snapshot);
+        await storage.setScreenshot(snapshot.id, screenshotBf);
+        importNum++;
+        return snapshot;
       });
-      const bf = await resp.arrayBuffer();
-      let snapshot: Snapshot;
-      let screenshotBf: ArrayBuffer;
-      if (isPngBf(bf)) {
-        const [tempPngBf, jsonBf] = splitArrayBuffer(bf, pngEndBf, 2);
-        if (!jsonBf) return;
-        screenshotBf = await new Blob([tempPngBf, pngEndBf]).arrayBuffer();
-        snapshot = JSON.parse(decoder.decode(jsonBf)) as Snapshot;
-      } else if (isZipBf(bf)) {
-        const zip = await loadAsync(bf);
-        const snapshotFile = zip.file(`snapshot.json`);
-        const screenshotFile = zip.file(`screenshot.png`);
-        if (!snapshotFile || !screenshotFile) {
-          return;
-        }
-        screenshotBf = await screenshotFile.async('arraybuffer');
-        snapshot = JSON.parse(await snapshotFile.async('string')) as Snapshot;
-      } else {
-        throw new Error(`file must be png or zip`);
-      }
-      await storage.setSnapshot(snapshot);
-      await storage.setScreenshot(snapshot.id, screenshotBf);
-      importNum++;
-      return snapshot;
     }),
   );
   if (importNum > 0) {
