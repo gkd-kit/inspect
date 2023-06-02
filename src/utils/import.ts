@@ -166,10 +166,12 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
       });
     }),
   );
-  if (importNum > 0) {
-    message.success(`导入${importNum}条记录`);
-  } else {
+  if (importNum == 0) {
     message.warning(`没有发现可导入记录`);
+  } else if (importNum == urls.length) {
+    message.success(`导入${importNum}条快照`);
+  } else if (importNum < urls.length) {
+    message.success(`导入${importNum}条快照，失败${urls.length - importNum}`);
   }
   return result;
 };

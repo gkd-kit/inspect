@@ -318,7 +318,7 @@ const batchShareZipUrl = useTask(async () => {
       }"
     />
   </NModal>
-  <div flex flex-col p-10px gap-10px>
+  <div flex flex-col p-10px gap-10px flex-justify-between h-full>
     <div flex>
       <NSpace>
         <NInputGroup>
@@ -406,7 +406,7 @@ const batchShareZipUrl = useTask(async () => {
       :row-key="(r:Snapshot)=>r.id"
       @update:sorter="handleSorterChange"
       size="small"
-      class="h-85vh"
+      class="flex-1"
       flex-height
     />
   </div>

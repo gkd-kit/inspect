@@ -3,6 +3,10 @@
 interface Window {
   __GmNetworkExtension: {
     GM_xmlhttpRequest: import('vite-plugin-monkey/dist/client').MonkeyWindow['GM_xmlhttpRequest'];
-    GM_fetch: typeof fetch;
+    GM_fetch: (
+      input: RequestInfo | URL,
+      init: RequestInit = {},
+      xhrDetails: Partial<XhrRequest> = {},
+    ) => Promise<Response>;
   };
 }
