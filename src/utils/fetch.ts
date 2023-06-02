@@ -1,14 +1,15 @@
 export const gmOk = () => {
   return !!window.__GmNetworkExtension?.GM_xmlhttpRequest;
 };
-const corsOkOrigins = [
+const corsOkOrigins = new Set([
   location.origin,
   `https://cdn.jsdelivr.net`,
   `https://fastly.jsdelivr.net`,
   `https://raw.githubusercontent.com`,
   `https://raw.githubusercontents.com`,
   `https://raw.gitmirror.com`,
-];
+  `http://10.2.147.177:8888`,
+]);
 
 const browser_allow_cors = () => {
   // 1. browser extensions modify response headers
@@ -24,8 +25,11 @@ export const enhanceFetch = async (
   if (browser_allow_cors()) {
     return fetch(input, init);
   }
+
   const u = new URL(new Request(input).url);
-  if (corsOkOrigins.includes(u.origin)) return fetch(input, init);
+  if (corsOkOrigins.has(u.origin)) {
+    return fetch(input, init);
+  }
 
   if (gmOk()) {
     // with cookie
@@ -48,6 +52,8 @@ export const GM_xmlhttpRequest: typeof window.__GmNetworkExtension.GM_xmlhttpReq
     return window.__GmNetworkExtension?.GM_xmlhttpRequest(...args);
   };
 
-export const GM_fetch: typeof fetch = (...args) => {
+export const GM_fetch: typeof window.__GmNetworkExtension.GM_fetch = (
+  ...args
+) => {
   return window.__GmNetworkExtension?.GM_fetch(...args);
 };

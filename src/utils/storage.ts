@@ -3,6 +3,8 @@ import localforage from 'localforage';
 import { reactive, toRaw, watch } from 'vue';
 import type { GithubPoliciesAsset } from './github';
 
+type LocalForage = typeof localforage;
+
 const snapshotStore = localforage.createInstance({
   version: 1,
   driver: localforage.INDEXEDDB,
@@ -79,3 +81,15 @@ export const exportPngStore = useAsyncStore<
 export const exportZipStore = useAsyncStore<
   Record<number, GithubPoliciesAsset>
 >(`exportZipStore`, {});
+
+export const cacheStorage = localforage.createInstance({
+  version: 1,
+  driver: localforage.INDEXEDDB,
+  name: `cache`,
+}) as LocalForage & {
+  hasItemKey: (key: string) => Promise<boolean>;
+};
+
+cacheStorage.hasItemKey = async (key) => {
+  return (await cacheStorage.keys()).includes(key);
+};

@@ -116,7 +116,7 @@ watchEffect(() => {
 const nameCol = shallowReactive<TableBaseColumn<Snapshot>>({
   key: `appName`,
   title: `name`,
-  width: `130px`,
+  width: `150px`,
   filterMultiple: true,
   filter(value, row) {
     return value.toString() == row.appName;
@@ -144,7 +144,7 @@ watchEffect(() => {
 const appIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
   key: `appId`,
   title: `appId`,
-  width: `260px`,
+  width: `280px`,
   render(row) {
     return row.appId;
   },
@@ -318,7 +318,7 @@ const batchShareZipUrl = useTask(async () => {
       }"
     />
   </NModal>
-  <div flex flex-col p-10px gap-10px flex-justify-between h-full>
+  <div flex flex-col p-10px gap-10px h-full>
     <div flex>
       <NSpace>
         <NInputGroup>

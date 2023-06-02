@@ -15,10 +15,21 @@ import {
   NInputGroup,
   NSpace,
   PaginationProps,
+  NEllipsis,
 } from 'naive-ui';
-import { reactive, shallowRef, toRaw, watchEffect } from 'vue';
+import {
+  onMounted,
+  reactive,
+  shallowReactive,
+  shallowRef,
+  toRaw,
+  watchEffect,
+} from 'vue';
 import { useRouter } from 'vue-router';
 import pLimit from 'p-limit';
+import { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
+import { delay } from '@/utils';
+import { toValidURL } from '@/utils/check';
 
 const router = useRouter();
 const title = useTitle(`新设备`);
@@ -35,12 +46,19 @@ watchEffect(async () => {
   snapshotIds.value = result;
 });
 const connect = useTask(async () => {
+  if (!link.value) return;
   origin.value = errorWrap(
     () => new URL(link.value.trim()),
     () => `非法设备地址`,
   ).origin;
   link.value = origin.value;
   device.value = await api.device();
+});
+onMounted(async () => {
+  await delay(500);
+  if (toValidURL(link.value)) {
+    connect.invoke();
+  }
 });
 const captureSnapshot = useTask(async () => {
   const snapshot = await api.snapshot();
@@ -90,44 +108,54 @@ const downloadAllSnapshot = useTask(async () => {
   message.success(`导入${r}条新记录`);
   // updateSnapshots();
 });
-
+const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
+  key: `id`,
+  title: `创建时间`,
+  fixed: 'left',
+  width: `130px`,
+  render(row) {
+    return dayjs(row.id).format('MM-DD HH:mm:ss');
+  },
+});
+const nameCol = shallowReactive<TableBaseColumn<Snapshot>>({
+  key: `appName`,
+  title: `name`,
+  width: `150px`,
+  render(row) {
+    return <NEllipsis> {row.appName} </NEllipsis>;
+  },
+});
+const appIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
+  key: `appId`,
+  title: `appId`,
+  width: `280px`,
+  render(row) {
+    return row.appId;
+  },
+});
+const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
+  key: `activityId`,
+  title: `activityId`,
+  className: `whitespace-nowrap`,
+  render(row) {
+    return row.activityId;
+  },
+});
 const columns: DataTableColumns<Snapshot> = [
-  {
-    key: `id`,
-    title: `创建时间`,
-    render(row) {
-      return dayjs(row.id).format('MM-DD HH:mm:ss');
-    },
-  },
-  {
-    key: `appName`,
-    title: `name`,
-    render(row) {
-      return row.appName;
-    },
-  },
-  {
-    key: `appId`,
-    title: `appId`,
-    render(row) {
-      return row.appId;
-    },
-  },
-  {
-    key: `activityId`,
-    title: `activityId`,
-    render(row) {
-      return row.activityId;
-    },
-  },
+  ctimeCol,
+  nameCol,
+  appIdCol,
+  activityIdCol,
   {
     key: `actions`,
-    minWidth: 250,
-    title: `操作`,
+    title: `Action`,
+    fixed: 'right',
+    width: `320px`,
     render(row, index) {
       return (
-        <NSpace>
+        <NSpace size="small">
           <NButton
+            size="small"
             onClick={async () => {
               if (!(await storage.hasSnapshot(row.id))) {
                 await storage.setSnapshot(toRaw(row));
@@ -146,9 +174,9 @@ const columns: DataTableColumns<Snapshot> = [
           >
             查看
           </NButton>
-          <NButton>下载-zip</NButton>
-          <NButton>下载-png</NButton>
-          <NButton>删除</NButton>
+          <NButton size="small">下载-zip</NButton>
+          <NButton size="small">下载-png</NButton>
+          <NButton size="small">删除</NButton>
         </NSpace>
       );
     },
@@ -160,7 +188,7 @@ const pagination = reactive<
 >({
   page: 1,
   pageCount: 0,
-  pageSize: 10,
+  pageSize: 50,
 });
 const handlePageChange = async (currentPage = 1) => {
   const result = await Promise.all(
@@ -182,7 +210,7 @@ watchEffect(() => {
 });
 </script>
 <template>
-  <div flex p-5px flex-col gap-5px>
+  <div flex flex-col p-10px gap-10px h-full>
     <NSpace>
       <RouterLink to="/">
         <NButton> 首页 </NButton>
@@ -219,11 +247,15 @@ watchEffect(() => {
       </template>
     </NSpace>
     <NDataTable
+      striped
+      flex-height
       remote
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
       size="small"
+      class="flex-1"
+      :scroll-x="1200"
       @update:page="handlePageChange"
     />
   </div>

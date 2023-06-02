@@ -6,7 +6,9 @@ interface Window {
     GM_fetch: (
       input: RequestInfo | URL,
       init: RequestInit = {},
-      xhrDetails: Partial<XhrRequest> = {},
+      xhrDetails: Partial<
+        import('vite-plugin-monkey/dist/client').XhrRequest
+      > = {},
     ) => Promise<Response>;
   };
 }

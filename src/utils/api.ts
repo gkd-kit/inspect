@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { message } from './discrete';
 import type { Device, RpcError, Snapshot } from './types';
 import { enhanceFetch } from './fetch';
+import { cacheStorage } from './storage';
 
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = ref(initOrigin);
@@ -45,10 +46,25 @@ export const useDeviceApi = (initOrigin?: string) => {
   const api = {
     device: async () => jsonRpc<Device>(`device`),
     snapshot: async (query?: { id?: string | number }) => {
-      return jsonRpc<Snapshot>(`snapshot`, query);
+      return (
+        (query?.id
+          ? await cacheStorage.getItem<Snapshot>(`snapshot-` + query.id)
+          : null) ??
+        jsonRpc<Snapshot>(`snapshot`, query).then((r) => {
+          cacheStorage.setItem(`snapshot-` + r.id, r);
+          return r;
+        })
+      );
     },
     screenshot: async (query: { id: string | number }) => {
-      return arrayBufferRpc(`screenshot`, query);
+      const cacheKey = `screenshot-` + query.id;
+      return (
+        (await cacheStorage.getItem<ArrayBuffer>(cacheKey)) ??
+        arrayBufferRpc(`screenshot`, query).then((r) => {
+          cacheStorage.setItem(cacheKey, r);
+          return r;
+        })
+      );
     },
     snapshotIds: async () => jsonRpc<number[]>(`snapshotIds`),
   };
