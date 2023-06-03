@@ -1,5 +1,6 @@
-import { enhanceFetch, GM_xmlhttpRequest } from './fetch';
+import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
+import { GM_xmlhttpRequest } from './gm';
 import { obj2form } from './others';
 
 const authenticityTokenPageUrl = `https://github.com/lisonge/lisonge/issues/new`;
@@ -82,7 +83,6 @@ export const uploadPoliciesAssets = async (
     },
   ).then((r) => {
     if (!r.ok) {
-      console.log(r);
       throw new Error(`failed upload policies assets`);
     }
     return r.json();
@@ -119,7 +119,6 @@ export const uploadPoliciesAssets = async (
         // const header = new Headers(h);
         // console.log(header.get(`Location`));
         if (!(200 <= response.status && response.status <= 299)) {
-          console.log(response);
           rej(new Error(`upload s3 failed`));
           return;
         }
@@ -146,7 +145,6 @@ export const uploadPoliciesAssets = async (
   );
 
   if (assetsResp.status != 200) {
-    console.log(assetsResp);
     throw new Error(`failed check authenticity upload`);
   }
 

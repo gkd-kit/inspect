@@ -1,5 +1,5 @@
 import { shallowReactive, shallowRef } from 'vue';
-import { delay } from '.';
+import { delay } from './others';
 import type { PrimitiveType } from './types';
 
 export const useTask = <T extends (...args: any[]) => Promise<void>>(

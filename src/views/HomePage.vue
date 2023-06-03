@@ -1,6 +1,7 @@
 <script lang="tsx" setup>
 import ActionCard from '@/components/ActionCard.vue';
 import { toValidURL } from '@/utils/check';
+import { showTextDLg } from '@/utils/dialog';
 import { dialog } from '@/utils/discrete';
 import {
   batchCreatePngUrl,
@@ -21,8 +22,8 @@ import {
   NModal,
   NPopover,
   NSpace,
-  type DataTableColumns,
   PaginationProps,
+  type DataTableColumns,
 } from 'naive-ui';
 import type {
   SortState,
@@ -265,32 +266,19 @@ const batchDownloadPng = useTask(async () => {
 const batchDownloadZip = useTask(async () => {
   await batchZipDownloadZip(checkedSnapshots());
 });
+
 const batchSharePngUrl = useTask(async () => {
   const policiesAssets = await batchCreatePngUrl(checkedSnapshots());
-  dialog.success({
-    title: `批量分享链接`,
-    style: {
-      width: `800px`,
-    },
-    content() {
-      return (
-        <NInput
-          type="textarea"
-          autosize={{
-            minRows: 8,
-            maxRows: 16,
-          }}
-          inputProps={{
-            style: `white-space: nowrap;`,
-          }}
-          value={policiesAssets.map((s) => s.href).join(`\n`) + `\n`}
-        />
-      );
-    },
+  showTextDLg({
+    content: policiesAssets.map((s) => s.href).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
   const policiesAssets = await batchCreateZipUrl(checkedSnapshots());
+  console.log(policiesAssets);
+  showTextDLg({
+    content: policiesAssets.map((s) => s.href).join(`\n`) + `\n`,
+  });
 });
 </script>
 <template>

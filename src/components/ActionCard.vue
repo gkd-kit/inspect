@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { delay } from '@/utils';
+import { delay } from '@/utils/others';
 import { dialog } from '@/utils/discrete';
 import {
   exportSnapshotAsPng,
@@ -13,6 +13,7 @@ import { Snapshot } from '@/utils/types';
 import { NButton, NPopover, NSpace } from 'naive-ui';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { showTextDLg } from '@/utils/dialog';
 
 const props = withDefaults(
   defineProps<{
@@ -43,41 +44,20 @@ const previewUrl = computed(() => {
   }).href;
 });
 
-const showShareDlg = (href: string) => {
-  dialog.success({
-    title: `成功生成链接`,
-    content: () => {
-      return (
-        <div>
-          <div>{href}</div>
-          <div class="h-20px"></div>
-          <div>
-            {
-              new URL(
-                router.resolve({
-                  name: `import`,
-                  query: {
-                    url: href,
-                  },
-                }).href,
-                location.origin,
-              ).href
-            }
-          </div>
-        </div>
-      );
-    },
-  });
-};
-
 const exportPngUrl = useTask(async () => {
   const githubAsset = await exportSnapshotAsPngUrl(props.snapshot);
-  showShareDlg(githubAsset.href);
+  showTextDLg({
+    title: `分享链接`,
+    content: githubAsset.href + '\n',
+  });
 });
 
 const exportZipUrl = useTask(async () => {
   const githubAsset = await exportSnapshotAsZipUrl(props.snapshot);
-  showShareDlg(githubAsset.href);
+  showTextDLg({
+    title: `分享链接`,
+    content: githubAsset.href + '\n',
+  });
 });
 
 const deleteSnapshot = async () => {

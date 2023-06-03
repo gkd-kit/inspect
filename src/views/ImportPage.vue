@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { delay } from '@/utils';
+import { delay } from '@/utils/others';
 import { toValidURL } from '@/utils/check';
 import { loadingBar, message } from '@/utils/discrete';
 import { importFromNetwork } from '@/utils/import';

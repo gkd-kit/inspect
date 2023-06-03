@@ -28,7 +28,7 @@ import {
 import { useRouter } from 'vue-router';
 import pLimit from 'p-limit';
 import { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
-import { delay } from '@/utils';
+import { delay } from '@/utils/others';
 import { toValidURL } from '@/utils/check';
 
 const router = useRouter();

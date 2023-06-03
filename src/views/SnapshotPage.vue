@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import ActionCard from '@/components/ActionCard.vue';
 import AttrCard from '@/components/AttrCard.vue';
-import DraggableCard from '@/components/DraggableCard.vue';
 import ScreenshotCard from '@/components/ScreenshotCard.vue';
 import SearchCard from '@/components/SearchCard.vue';
 import WindowCard from '@/components/WindowCard.vue';
-import { delay, toNodeTree } from '@/utils';
+import { toNodeTree } from '@/utils';
 import { message } from '@/utils/discrete';
+import { delay } from '@/utils/others';
 import { storage } from '@/utils/storage';
 import type { NaiveNode, SnapshotExt } from '@/utils/types';
 import { Snapshot } from '@/utils/types';

@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import { GithubPoliciesAsset, uploadPoliciesAssets } from './github';
 import { exportPngStore, storage, exportZipStore } from './storage';
 import type { Snapshot } from './types';
-import { delay } from '.';
+import { delay } from './others';
 import pLimit from 'p-limit';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
@@ -77,7 +77,7 @@ export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
     exportZipStore[snapshot.id] ??
     uploadPoliciesAssets(
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
-    ).catch((r) => {
+    ).then((r) => {
       exportZipStore[snapshot.id] = structuredClone(r);
       return r;
     })

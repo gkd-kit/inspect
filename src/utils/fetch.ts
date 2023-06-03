@@ -1,6 +1,5 @@
-export const gmOk = () => {
-  return !!window.__GmNetworkExtension?.GM_xmlhttpRequest;
-};
+import { GM_fetch, gmOk } from './gm';
+
 const corsOkOrigins = new Set([
   location.origin,
   `https://cdn.jsdelivr.net`,
@@ -8,7 +7,6 @@ const corsOkOrigins = new Set([
   `https://raw.githubusercontent.com`,
   `https://raw.githubusercontents.com`,
   `https://raw.gitmirror.com`,
-  `http://10.2.147.177:8888`,
 ]);
 
 const browser_allow_cors = () => {
@@ -45,15 +43,4 @@ export const enhanceFetch = async (
     headers: request.headers,
     body: request.body,
   });
-};
-
-export const GM_xmlhttpRequest: typeof window.__GmNetworkExtension.GM_xmlhttpRequest =
-  (...args) => {
-    return window.__GmNetworkExtension?.GM_xmlhttpRequest(...args);
-  };
-
-export const GM_fetch: typeof window.__GmNetworkExtension.GM_fetch = (
-  ...args
-) => {
-  return window.__GmNetworkExtension?.GM_fetch(...args);
 };

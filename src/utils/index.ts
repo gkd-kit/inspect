@@ -88,8 +88,3 @@ export const xyInNode = (nodeX: NaiveNode, ox: number, oy: number) => {
     attr.left <= ox && ox <= attr.right && attr.top <= oy && oy <= attr.bottom
   );
 };
-export const delay = async (n = 0) => {
-  return new Promise<void>((res) => {
-    setTimeout(res, n);
-  });
-};
