@@ -98,8 +98,13 @@ export const GM_fetch = async (
       binary,
       responseType: 'blob',
       async onload(e) {
+        let body: BodyInit | null | undefined = undefined;
+        if (!(e.response instanceof Blob && e.response.size == 0)) {
+          // Response': Response with null body status cannot have body
+          body = e.response ?? e.responseText;
+        }
         await delay();
-        const resp = new Response(e.response ?? e.responseText, {
+        const resp = new Response(body, {
           status: e.status,
           statusText: e.statusText,
           headers: parseHeaders(e.responseHeaders),

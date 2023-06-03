@@ -88,47 +88,18 @@ export const uploadPoliciesAssets = async (
     return r.json();
   });
 
-  // it is work, but console.error cors and can not get response
-  // try {
-  //   const s3Resp = await fetch(policiesResp.upload_url, {
-  //     method: `POST`,
-  //     body: obj2form(policiesResp.form, {
-  //       file: new File([bf], name, { type: content_type }),
-  //     }),
-  //     headers: {
-  //       Referer: authenticityTokenPageUrl,
-  //     },
-  //   });
-  // } catch {}
-
   // violentmonkey success
   // tampermonkey failed https://github.com/Tampermonkey/tampermonkey/issues/1783
-  await new Promise<void>((res, rej) => {
-    GM_xmlhttpRequest({
-      url: policiesResp.upload_url,
-      method: 'POST',
-      // s3 api must keep correct form field order
-      data: obj2form(policiesResp.form, {
-        file: new File([bf], name, { type: content_type }),
-      }),
-      onload(response) {
-        // const h = response.responseHeaders
-        //   .split(`\r\n`)
-        //   .map((s) => s.split(`: `, 2).map((s) => s) as [string, string])
-        //   .filter((s) => s.length == 2);
-        // const header = new Headers(h);
-        // console.log(header.get(`Location`));
-        if (!(200 <= response.status && response.status <= 299)) {
-          rej(new Error(`upload s3 failed`));
-          return;
-        }
-        res();
-      },
-      onerror(response) {
-        rej(response);
-      },
-    });
+  // use fetch is also work, but console.error cors and can not get response
+  const s3Resp = await enhanceFetch(policiesResp.upload_url, {
+    method: `POST`,
+    body: obj2form(policiesResp.form, {
+      file: new File([bf], name, { type: content_type }),
+    }),
   });
+  if (!s3Resp.ok) {
+    throw new Error(`upload s3 failed`);
+  }
 
   const assetsResp = await enhanceFetch(
     new URL(policiesResp.asset_upload_url, `https://github.com/`).href,
