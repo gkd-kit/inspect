@@ -42,7 +42,7 @@ export function* traverseNode(node: NaiveNode, skipKeys: number[] = []) {
 export const toNodeTree = (nodes: RawNode[]) => {
   const nodeXs = nodes.map<NaiveNode>((n) => {
     n.attr.name ??= n.attr.className;
-    let label = n.attr.name.split(`.`).at(-1) ?? ``;
+    let label = n.attr.name?.split(`.`)?.at(-1) ?? ``;
     if (n.attr.text) {
       label = `${label} : ${n.attr.text}`;
     } else if (n.attr.desc) {

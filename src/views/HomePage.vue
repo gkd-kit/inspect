@@ -295,6 +295,7 @@ const batchShareZipUrl = useTask(async () => {
   >
     <NInput
       v-model:value="text"
+      :disabled="importNetwork.loading"
       type="textarea"
       :placeholder="`请输入文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
       :autosize="{

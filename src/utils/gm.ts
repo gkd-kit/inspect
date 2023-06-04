@@ -97,6 +97,7 @@ export const GM_fetch = async (
       data,
       binary,
       responseType: 'blob',
+      timeout: 6_000,
       async onload(e) {
         let body: BodyInit | null | undefined = undefined;
         if (!(e.response instanceof Blob && e.response.size == 0)) {

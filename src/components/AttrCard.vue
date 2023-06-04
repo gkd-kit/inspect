@@ -2,19 +2,34 @@
 import { toSelectorLiteral } from '@/utils';
 import type { NaiveNode } from '@/utils/types';
 import { NEllipsis, NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import DraggableCard from './DraggableCard.vue';
+import { message } from '@/utils/discrete';
 
 const props = withDefaults(defineProps<{ focusNode: NaiveNode }>(), {});
 
 const attrs = computed(() => {
   return Object.entries(props.focusNode.value.attr).map(([name, value]) => {
+    value = toSelectorLiteral(value);
     return {
       name,
       value,
     };
   });
 });
+let lastText: string | undefined = undefined;
+watch(
+  () => props.focusNode,
+  () => {
+    lastText = undefined;
+  },
+);
+const copy = async (text = ``) => {
+  if (lastText === text) return;
+  lastText = text;
+  await navigator.clipboard.writeText(text);
+  message.success(`复制成功`);
+};
 </script>
 
 <template>
@@ -27,11 +42,15 @@ const attrs = computed(() => {
         </NTr>
       </thead>
       <NTbody>
-        <NTr v-for="(attrx, index) in attrs" :key="index">
-          <NTd>{{ attrx.name }}</NTd>
+        <NTr v-for="attrx in attrs" :key="attrx.name">
+          <NTd>
+            <span @click="copy(`[${attrx.name}=${attrx.value}]`)">
+              {{ attrx.name }}
+            </span>
+          </NTd>
           <NTd>
             <NEllipsis style="width: 250px">
-              {{ toSelectorLiteral(attrx.value) }}
+              {{ attrx.value }}
             </NEllipsis>
           </NTd>
         </NTr>
