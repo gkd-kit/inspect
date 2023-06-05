@@ -1,10 +1,13 @@
 import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
-import { GM_xmlhttpRequest } from './gm';
 import { obj2form } from './others';
 
 const authenticityTokenPageUrl = `https://github.com/lisonge/lisonge/issues/new`;
 const repository_id = `280305380`;
+const commonHeaders = {
+  origin: `https://github.com`,
+  referer: authenticityTokenPageUrl,
+};
 
 const getCsrfToken = async () => {
   const csrfSelector = `[data-upload-policy-url="/upload/policies/assets"] input.js-data-upload-policy-url-csrf`;
@@ -80,6 +83,7 @@ export const uploadPoliciesAssets = async (
         size: bf.byteLength,
         repository_id,
       }),
+      headers: commonHeaders,
     },
   ).then((r) => {
     if (!r.ok) {
@@ -96,6 +100,7 @@ export const uploadPoliciesAssets = async (
     body: obj2form(policiesResp.form, {
       file: new File([bf], name, { type: content_type }),
     }),
+    headers: commonHeaders,
   });
   if (!s3Resp.ok) {
     throw new Error(`upload s3 failed`);
@@ -109,6 +114,7 @@ export const uploadPoliciesAssets = async (
         authenticity_token: policiesResp.asset_upload_authenticity_token,
       }),
       headers: {
+        ...commonHeaders,
         // api must add `Accept` request headers
         Accept: `application/json`,
       },

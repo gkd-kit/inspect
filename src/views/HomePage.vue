@@ -10,7 +10,9 @@ import {
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
+import { useAutoWrapWidthColumn } from '@/utils/size';
 import { storage } from '@/utils/storage';
+import { renderDveice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
 import dayjs from 'dayjs';
@@ -34,6 +36,7 @@ import {
   reactive,
   shallowReactive,
   shallowRef,
+  watch,
   watchEffect,
 } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -69,35 +72,8 @@ const importLoacl = useTask(async () => {
   await updateSnapshots();
 });
 
-const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `id`,
-  title: `创建时间`,
-  fixed: 'left',
-  width: `130px`,
-  sortOrder: false,
-  sorter(rowA, rowB) {
-    return rowA.id - rowB.id;
-  },
-  render(row) {
-    return dayjs(row.id).format('MM-DD HH:mm:ss');
-  },
-});
-const renderDveice = (row: Snapshot) => {
-  if (!row.device) return ``;
-  return `${row.device.manufacturer} ${row.device.model} Android${row.device.release}`;
-};
-const deviceCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `versionRelease`,
-  width: `250px`,
-  title: `设备`,
-  filterMultiple: true,
-  filter(value, row) {
-    return renderDveice(row).includes(value.toString());
-  },
-  render(row) {
-    return renderDveice(row);
-  },
-});
+const { activityIdCol, appIdCol, appNameCol, ctimeCol, deviceCol } =
+  useSnapshotColumns();
 
 watchEffect(() => {
   const set = filterSnapshots.value.reduce(
@@ -114,54 +90,19 @@ watchEffect(() => {
   }));
 });
 
-const nameCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `appName`,
-  title: `name`,
-  width: `150px`,
-  filterMultiple: true,
-  filter(value, row) {
-    return value.toString() == row.appName;
-  },
-  render(row) {
-    return row.appName;
-  },
-});
-
 watchEffect(() => {
   const set = filterSnapshots.value.reduce(
     (p, c) => (p.add(c.appName), p),
     new Set<string>(),
   );
   if (set.size <= 1) {
-    nameCol.filterOptions = undefined;
+    appNameCol.filterOptions = undefined;
     return;
   }
-  nameCol.filterOptions = [...set.values()].map((s) => ({
+  appNameCol.filterOptions = [...set.values()].map((s) => ({
     value: s,
     label: s,
   }));
-});
-
-const appIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `appId`,
-  title: `appId`,
-  width: `280px`,
-  render(row) {
-    return row.appId;
-  },
-});
-
-const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `activityId`,
-  title: `activityId`,
-  className: `whitespace-nowrap`,
-  filterMultiple: true,
-  filter(value, row) {
-    return value.toString() == row.activityId;
-  },
-  render(row) {
-    return row.activityId;
-  },
 });
 
 watchEffect(() => {
@@ -185,15 +126,15 @@ const columns: DataTableColumns<Snapshot> = reactive([
   },
   ctimeCol,
   deviceCol,
-  nameCol,
+  appNameCol,
   appIdCol,
   activityIdCol,
   {
     key: `actions`,
     title: `Action`,
     fixed: 'right',
-    width: `290px`,
-    render(row, index) {
+    width: `255px`,
+    render(row) {
       return <ActionCard snapshot={row} onDelete={updateSnapshots} />;
     },
   },
@@ -211,6 +152,11 @@ const pagination = reactive<PaginationProps>({
     pagination.pageSize = pageSize;
     pagination.page = 1;
   },
+});
+watch(pagination, () => {
+  deviceCol.width = undefined;
+  appNameCol.width = undefined;
+  appIdCol.width = undefined;
 });
 
 const handleSorterChange = (sorter: SortState) => {
@@ -389,7 +335,7 @@ const batchShareZipUrl = useTask(async () => {
       striped
       :data="filterSnapshots"
       :columns="columns"
-      :scroll-x="1200"
+      :scroll-x="1700"
       :pagination="pagination"
       v-model:checked-row-keys="checkedRowKeys"
       :row-key="(r:Snapshot)=>r.id"

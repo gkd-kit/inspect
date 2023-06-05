@@ -6,6 +6,10 @@ export const GM_xmlhttpRequest: typeof window.__GmNetworkExtension.GM_xmlhttpReq
     return window.__GmNetworkExtension?.GM_xmlhttpRequest(...args);
   };
 
+const scriptHandler = () => {
+  return window.__GmNetworkExtension?.GM_info?.scriptHandler;
+};
+
 export const gmOk = () => {
   return !!window.__GmNetworkExtension?.GM_xmlhttpRequest;
 };
@@ -82,12 +86,25 @@ export const GM_fetch = async (
   if (init.body instanceof FormData) {
     data = init.body;
     sendHeaders.delete(`content-type`);
+    if (scriptHandler() == `Tampermonkey`) {
+      // https://github.com/Tampermonkey/tampermonkey/issues/1783
+      const reversedData = new FormData();
+      const reversedList: [string, FormDataEntryValue][] = [];
+      data.forEach((v, k) => {
+        reversedList.push([k, v]);
+      });
+      reversedList.reverse().forEach(([k, v]) => {
+        reversedData.append(k, v);
+      });
+      data = reversedData;
+    }
   } else if (typeof init.body == 'string') {
     data = init.body;
   } else {
     binary = true;
     data = await request.blob();
   }
+
   return new Promise<Response>((resolve, reject) => {
     const handle = GM_xmlhttpRequest({
       ...xhrDetails,

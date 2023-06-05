@@ -83,7 +83,7 @@ const renderSuffix = (node: NaiveNode) => {
         <NTr>
           <NTd>
             {{
-              `${windowX.device.manufacturer} ${windowX.device.model} Android${windowX.device.release}`
+              `${windowX.device.manufacturer} Android${windowX.device.release}`
             }}
           </NTd>
           <NTd>{{ windowX.appName }}</NTd>

@@ -1,12 +1,14 @@
 <script setup lang="tsx">
 import { useDeviceApi } from '@/utils/api';
+import { toValidURL } from '@/utils/check';
 import { message } from '@/utils/discrete';
 import { errorWrap } from '@/utils/error';
+import { delay } from '@/utils/others';
 import { storage } from '@/utils/storage';
+import { useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
 import { useStorage, useTitle } from '@vueuse/core';
-import dayjs from 'dayjs';
 import {
   DataTableColumns,
   NButton,
@@ -15,21 +17,17 @@ import {
   NInputGroup,
   NSpace,
   PaginationProps,
-  NEllipsis,
 } from 'naive-ui';
+import pLimit from 'p-limit';
 import {
   onMounted,
-  reactive,
   shallowReactive,
   shallowRef,
   toRaw,
+  watch,
   watchEffect,
 } from 'vue';
 import { useRouter } from 'vue-router';
-import pLimit from 'p-limit';
-import { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
-import { delay } from '@/utils/others';
-import { toValidURL } from '@/utils/check';
 
 const router = useRouter();
 const title = useTitle(`新设备`);
@@ -39,8 +37,7 @@ const device = shallowRef<Device>();
 const snapshotIds = shallowRef<number[]>([]);
 watchEffect(async () => {
   if (!device.value) return;
-  title.value =
-    `已连接 ` + device.value.manufacturer + `\x20` + device.value.release;
+  title.value = `已连接 ` + device.value.manufacturer;
   const result = await api.snapshotIds();
   result.sort((a, b) => b - a);
   snapshotIds.value = result;
@@ -106,44 +103,13 @@ const downloadAllSnapshot = useTask(async () => {
     ),
   );
   message.success(`导入${r}条新记录`);
-  // updateSnapshots();
 });
-const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `id`,
-  title: `创建时间`,
-  fixed: 'left',
-  width: `130px`,
-  render(row) {
-    return dayjs(row.id).format('MM-DD HH:mm:ss');
-  },
-});
-const nameCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `appName`,
-  title: `name`,
-  width: `150px`,
-  render(row) {
-    return <NEllipsis> {row.appName} </NEllipsis>;
-  },
-});
-const appIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `appId`,
-  title: `appId`,
-  width: `280px`,
-  render(row) {
-    return row.appId;
-  },
-});
-const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
-  key: `activityId`,
-  title: `activityId`,
-  className: `whitespace-nowrap`,
-  render(row) {
-    return row.activityId;
-  },
-});
+
+const { activityIdCol, appIdCol, appNameCol, ctimeCol } = useSnapshotColumns();
+
 const columns: DataTableColumns<Snapshot> = [
   ctimeCol,
-  nameCol,
+  appNameCol,
   appIdCol,
   activityIdCol,
   {
@@ -183,7 +149,7 @@ const columns: DataTableColumns<Snapshot> = [
   },
 ];
 const snapshots = shallowRef<Snapshot[]>([]);
-const pagination = reactive<
+const pagination = shallowReactive<
   PaginationProps & { page: number; pageCount: number; pageSize: number }
 >({
   page: 1,
@@ -207,6 +173,10 @@ watchEffect(() => {
     snapshotIds.value.length / pagination.pageSize,
   );
   handlePageChange();
+});
+watch(pagination, () => {
+  appNameCol.width = undefined;
+  appIdCol.width = undefined;
 });
 </script>
 <template>
