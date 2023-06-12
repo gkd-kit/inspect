@@ -7,7 +7,7 @@ import WindowCard from '@/components/WindowCard.vue';
 import { toNodeTree } from '@/utils';
 import { message } from '@/utils/discrete';
 import { delay } from '@/utils/others';
-import { storage } from '@/utils/storage';
+import { snapshotStorage, screenshotStorage } from '@/utils/storage';
 import type { NaiveNode, SnapshotExt } from '@/utils/types';
 import { Snapshot } from '@/utils/types';
 import { computed, shallowRef, watchEffect } from 'vue';
@@ -22,14 +22,14 @@ const screenshotUrl = shallowRef(``);
 const snapshot = shallowRef<Snapshot>();
 
 watchEffect(async () => {
-  const localSnapshot = await storage.getSnapshot(snapshotId.value);
+  const localSnapshot = await snapshotStorage.getItem(snapshotId.value);
   if (!localSnapshot) {
-    message.error(`数据缺失`);
+    message.error(`快照数据缺失`);
     return;
   }
-  const bf = await storage.getScreenshot(snapshotId.value);
+  const bf = await screenshotStorage.getItem(snapshotId.value);
   if (!bf) {
-    message.create(`数据缺失`);
+    message.create(`截屏数据缺失`);
     return;
   }
   screenshotUrl.value = URL.createObjectURL(new Blob([bf]));

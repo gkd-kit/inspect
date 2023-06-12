@@ -2,7 +2,12 @@ import { fileOpen } from 'browser-fs-access';
 import { message } from './discrete';
 import { loadAsync } from 'jszip';
 import type { Snapshot } from './types';
-import { importStore, storage } from './storage';
+import {
+  urlStorage,
+  snapshotStorage,
+  screenshotStorage,
+  setSnapshot,
+} from './storage';
 import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
 import pLimit from 'p-limit';
@@ -82,8 +87,7 @@ export const importFromLocal = async () => {
           await snapshotFile.async('string'),
         ) as Snapshot;
         const screenshotBf = await screenshotFile.async('arraybuffer');
-        await storage.setSnapshot(snapshot);
-        await storage.setScreenshot(snapshot.id, screenshotBf);
+        await setSnapshot(snapshot, screenshotBf);
         importNum++;
       }),
     );
@@ -99,9 +103,7 @@ export const importFromLocal = async () => {
           pngEndBf,
         ]).arrayBuffer();
         const snapshot = JSON.parse(decoder.decode(jsonBf)) as Snapshot;
-        // snapshot.id = new Date().getTime();
-        await storage.setSnapshot(snapshot);
-        await storage.setScreenshot(snapshot.id, screenshotBf);
+        await setSnapshot(snapshot, screenshotBf);
         importNum++;
       }),
     );
@@ -126,9 +128,9 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   const result = await Promise.allSettled(
     urls.map((url) => {
       return limit(async () => {
-        const snapshotId = importStore[url];
+        const snapshotId = urlStorage[url];
         if (snapshotId) {
-          const snapshot = await storage.getSnapshot(snapshotId);
+          const snapshot = await snapshotStorage.getItem(snapshotId);
           if (snapshot) {
             importNum++;
             return snapshot;
@@ -159,8 +161,7 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
         } else {
           throw new Error(`file must be png or zip`);
         }
-        await storage.setSnapshot(snapshot);
-        await storage.setScreenshot(snapshot.id, screenshotBf);
+        await setSnapshot(snapshot, screenshotBf);
         importNum++;
         return snapshot;
       });

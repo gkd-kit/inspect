@@ -5,6 +5,7 @@ import { NEllipsis, NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
 import { computed, watch } from 'vue';
 import DraggableCard from './DraggableCard.vue';
 import { message } from '@/utils/discrete';
+import { copy } from '@/utils/others';
 
 const props = withDefaults(defineProps<{ focusNode: NaiveNode }>(), {});
 
@@ -17,19 +18,6 @@ const attrs = computed(() => {
     };
   });
 });
-let lastText: string | undefined = undefined;
-watch(
-  () => props.focusNode,
-  () => {
-    lastText = undefined;
-  },
-);
-const copy = async (text = ``) => {
-  if (lastText === text) return;
-  lastText = text;
-  await navigator.clipboard.writeText(text);
-  message.success(`复制成功`);
-};
 </script>
 
 <template>

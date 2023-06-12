@@ -16,6 +16,10 @@ const browser_allow_cors = () => {
   return localStorage.getItem(`--browser_allow_cors`) == `1`;
 };
 
+const isPureIpHostname = (u: URL) => {
+  return u.hostname.split(`.`).every((n) => Number.isInteger(parseInt(n)));
+};
+
 export const enhanceFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -25,14 +29,14 @@ export const enhanceFetch = async (
   }
 
   const u = new URL(new Request(input).url);
-  if (corsOkOrigins.has(u.origin)) {
+  if (corsOkOrigins.has(u.origin) || isPureIpHostname(u)) {
     return fetch(input, init);
   }
 
   if (gmOk()) {
     // with cookie
-    // export need
-    return GM_fetch(input, init);
+    // export snapshot need
+    return GM_fetch(input, init, { timeout: 10_000 });
   }
 
   const proxyUrl = new URL(`https://proxy-workers.lisonge.workers.dev/`);

@@ -1,8 +1,8 @@
 import { ref } from 'vue';
 import { message } from './discrete';
-import type { Device, RpcError, Snapshot } from './types';
 import { enhanceFetch } from './fetch';
 import { cacheStorage } from './storage';
+import type { Device, RpcError, Snapshot } from './types';
 
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = ref(initOrigin);
@@ -46,27 +46,17 @@ export const useDeviceApi = (initOrigin?: string) => {
   const api = {
     device: async () => jsonRpc<Device>(`device`),
     snapshot: async (query?: { id?: string | number }) => {
-      return (
-        (query?.id
-          ? await cacheStorage.getItem<Snapshot>(`snapshot-` + query.id)
-          : null) ??
-        jsonRpc<Snapshot>(`snapshot`, query).then((r) => {
-          cacheStorage.setItem(`snapshot-` + r.id, r);
-          return r;
-        })
-      );
+      return jsonRpc<Snapshot>(`snapshot`, query);
     },
     screenshot: async (query: { id: string | number }) => {
-      const cacheKey = `screenshot-` + query.id;
-      return (
-        (await cacheStorage.getItem<ArrayBuffer>(cacheKey)) ??
-        arrayBufferRpc(`screenshot`, query).then((r) => {
-          cacheStorage.setItem(cacheKey, r);
-          return r;
-        })
-      );
+      return arrayBufferRpc(`screenshot`, query);
     },
-    snapshotIds: async () => jsonRpc<number[]>(`snapshotIds`),
+    captureSnapshot: async () => {
+      return jsonRpc<Snapshot>(`captureSnapshot`);
+    },
+    snapshots: async () => {
+      return jsonRpc<Snapshot[]>(`snapshots`);
+    },
   };
   return { origin, api };
 };

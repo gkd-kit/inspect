@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: '0.0.0.0',
-      port: 8123,
+      port: 8444,
     },
     build: {
       target: `chrome80`,

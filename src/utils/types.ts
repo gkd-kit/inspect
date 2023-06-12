@@ -1,6 +1,6 @@
 import type { VNode } from 'vue';
 
-export type PrimitiveType = string | number | null | undefined;
+export type PrimitiveType = boolean | string | number | null | undefined;
 
 export type RpcError = {
   message: string;
@@ -48,16 +48,20 @@ export type RawAttr = {
   className: string;
 };
 
-export type Snapshot = {
+export type Overview = {
   id: number;
-  device: Device;
   screenWidth: number;
   screenHeight: number;
   appId: string;
   appName: string;
   activityId: string;
-  nodes: RawNode[];
+  isLandscape: boolean;
 };
+
+export type Snapshot = Overview &
+  Device & {
+    nodes: RawNode[];
+  };
 
 export type SnapshotExt = Snapshot & {
   node: NaiveNode;

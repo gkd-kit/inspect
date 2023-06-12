@@ -10,12 +10,10 @@ import {
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
-import { useAutoWrapWidthColumn } from '@/utils/size';
-import { storage } from '@/utils/storage';
+import { shallowSnapshotStorage, snapshotStorage } from '@/utils/storage';
 import { renderDveice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
-import dayjs from 'dayjs';
 import {
   NButton,
   NDataTable,
@@ -27,10 +25,7 @@ import {
   PaginationProps,
   type DataTableColumns,
 } from 'naive-ui';
-import type {
-  SortState,
-  TableBaseColumn,
-} from 'naive-ui/es/data-table/src/interface';
+import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import {
   computed,
   reactive,
@@ -43,7 +38,7 @@ import { RouterLink } from 'vue-router';
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const updateSnapshots = async () => {
-  snapshots.value = (await storage.getAllSnapshots()).reverse();
+  snapshots.value = (await shallowSnapshotStorage.getAllItems()).reverse();
   checkedRowKeys.value = [];
 };
 updateSnapshots();
@@ -140,7 +135,7 @@ const columns: DataTableColumns<Snapshot> = reactive([
   },
 ]);
 
-const pagination = reactive<PaginationProps>({
+const pagination = shallowReactive<PaginationProps>({
   page: 1,
   pageSize: 50,
   showSizePicker: true,
@@ -199,10 +194,9 @@ const batchDelete = useTask(async () => {
       onPositiveClick: res,
     });
   });
+
   await Promise.all(
-    checkedRowKeys.value.map((s) => {
-      return storage.deleteSnapshot(s);
-    }),
+    checkedRowKeys.value.map((k) => snapshotStorage.removeItem(k)),
   );
   await updateSnapshots();
 });

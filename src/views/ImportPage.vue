@@ -1,10 +1,10 @@
 <script setup lang="tsx">
-import { delay } from '@/utils/others';
 import { toValidURL } from '@/utils/check';
 import { loadingBar, message } from '@/utils/discrete';
 import { importFromNetwork } from '@/utils/import';
-import { importStore, storage } from '@/utils/storage';
-import { onMounted, shallowRef, toRaw } from 'vue';
+import { delay } from '@/utils/others';
+import { urlStorage, snapshotStorage } from '@/utils/storage';
+import { onMounted, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -25,9 +25,9 @@ onMounted(async () => {
     return;
   }
   await delay(1000);
-  const snapshotId = importStore[importUrl];
+  const snapshotId = urlStorage[importUrl];
   if (snapshotId) {
-    const snapshot = await storage.getSnapshot(snapshotId);
+    const snapshot = await snapshotStorage.getItem(snapshotId);
     if (snapshot) {
       router.replace({
         name: 'snapshot',
@@ -35,7 +35,7 @@ onMounted(async () => {
       });
       return;
     } else {
-      delete importStore[importUrl];
+      delete urlStorage[importUrl];
     }
   }
   loadingBar.start();
@@ -46,7 +46,7 @@ onMounted(async () => {
       loadingBar.finish();
       const snapshot = result.value;
       if (snapshot) {
-        importStore[importUrl] = snapshot.id;
+        urlStorage[importUrl] = snapshot.id;
         loading.value = false;
         await delay(500);
         router.replace({

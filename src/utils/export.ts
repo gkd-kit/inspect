@@ -1,16 +1,20 @@
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
-import { GithubPoliciesAsset, uploadPoliciesAssets } from './github';
-import { exportPngStore, storage, exportZipStore } from './storage';
-import type { Snapshot } from './types';
-import { delay } from './others';
 import pLimit from 'p-limit';
+import { GithubPoliciesAsset, uploadPoliciesAssets } from './github';
+import { delay } from './others';
+import {
+  githubPngStorage,
+  githubZipStorage,
+  screenshotStorage,
+} from './storage';
+import type { Snapshot } from './types';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
   const zip = new JSZip();
   zip
     .file(`snapshot.json`, JSON.stringify(snapshot))
-    .file(`screenshot.png`, (await storage.getScreenshot(snapshot.id))!);
+    .file(`screenshot.png`, (await screenshotStorage.getItem(snapshot.id))!);
   const content = await zip.generateAsync({
     type: 'blob',
     compression: `STORE`,
@@ -24,7 +28,7 @@ export const exportSnapshotAsZip = async (snapshot: Snapshot) => {
 };
 
 export const snapshotAsPng = async (snapshot: Snapshot) => {
-  const imgBf = (await storage.getScreenshot(snapshot.id))!;
+  const imgBf = (await screenshotStorage.getItem(snapshot.id))!;
   const content = new Blob([imgBf, JSON.stringify(snapshot)]);
   return content;
 };
@@ -62,11 +66,11 @@ export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
 
 export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
   return (
-    exportPngStore[snapshot.id] ??
+    githubPngStorage[snapshot.id] ??
     uploadPoliciesAssets(
       await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
     ).then((r) => {
-      exportPngStore[snapshot.id] = structuredClone(r);
+      githubPngStorage[snapshot.id] = structuredClone(r);
       return r;
     })
   );
@@ -74,11 +78,11 @@ export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
 
 export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
   return (
-    exportZipStore[snapshot.id] ??
+    githubZipStorage[snapshot.id] ??
     uploadPoliciesAssets(
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
     ).then((r) => {
-      exportZipStore[snapshot.id] = structuredClone(r);
+      githubZipStorage[snapshot.id] = structuredClone(r);
       return r;
     })
   );

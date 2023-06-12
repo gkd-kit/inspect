@@ -1,4 +1,5 @@
 <script setup lang="tsx">
+import { copy } from '@/utils/others';
 import type { NaiveNode, SnapshotExt } from '@/utils/types';
 import {
   NTable,
@@ -82,13 +83,11 @@ const renderSuffix = (node: NaiveNode) => {
       <NTbody>
         <NTr>
           <NTd>
-            {{
-              `${windowX.device.manufacturer} Android${windowX.device.release}`
-            }}
+            {{ `${windowX.manufacturer} Android ${windowX.release || `13`}` }}
           </NTd>
           <NTd>{{ windowX.appName }}</NTd>
-          <NTd>{{ windowX.appId }}</NTd>
-          <NTd>
+          <NTd @click="copy(windowX.appId)">{{ windowX.appId }}</NTd>
+          <NTd @click="copy(windowX.activityId)">
             {{ windowX.activityId }}
           </NTd>
           <NTd>

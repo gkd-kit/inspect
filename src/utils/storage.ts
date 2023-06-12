@@ -1,57 +1,45 @@
-import type { Snapshot } from '@/utils/types';
 import localforage from 'localforage';
 import { reactive, toRaw, watch } from 'vue';
 import type { GithubPoliciesAsset } from './github';
+import { Snapshot } from './types';
 
-type LocalForage = typeof localforage;
-
-const snapshotStore = localforage.createInstance({
-  version: 1,
-  driver: localforage.INDEXEDDB,
-  name: `snapshot`,
-});
-const screenshotStore = localforage.createInstance({
-  version: 1,
-  driver: localforage.INDEXEDDB,
-  name: `screenshot`,
-});
-
-export const storage = {
-  setSnapshot: async (p: Snapshot) => {
-    return snapshotStore.setItem(p.id.toString(), p);
-  },
-  deleteSnapshot: async (snapshotId: number | string) => {
-    await Promise.all([
-      snapshotStore.removeItem(snapshotId.toString()),
-      screenshotStore.removeItem(snapshotId.toString()),
-    ]);
-  },
-  getSnapshot: async (snapshotId: number | string) => {
-    return snapshotStore.getItem<Snapshot>(snapshotId.toString());
-  },
-  hasSnapshot: async (snapshotId: number | string) => {
-    return (await snapshotStore.keys()).includes(snapshotId.toString());
-  },
-  getAllSnapshots: async () => {
+const useStorage = <T>(options: LocalForageOptions = {}) => {
+  options.driver ??= localforage.INDEXEDDB;
+  const storage = localforage.createInstance(options);
+  const setItem = async (key: string | number, value: T) => {
+    return storage.setItem(key.toString(), value);
+  };
+  const getItem = async (key: string | number) => {
+    return storage.getItem<T>(key.toString());
+  };
+  const getAllItems = async (): Promise<T[]> => {
     return Promise.all(
-      (await snapshotStore.keys()).map(
-        (k) => snapshotStore.getItem(k) as Promise<Snapshot>,
-      ),
+      (await storage.keys()).map((k) => storage.getItem(k) as Promise<T>),
     );
-  },
+  };
+  const removeItem = async (key: string | number) => {
+    return storage.removeItem(key.toString());
+  };
 
-  hasScreenshot: async (snapshotId: number | string) => {
-    return (await screenshotStore.keys()).includes(snapshotId.toString());
-  },
-  setScreenshot: async (snapshotId: number | string, p: ArrayBuffer) => {
-    return screenshotStore.setItem(snapshotId.toString(), p);
-  },
-  getScreenshot: async (snapshotId: number | string) => {
-    return screenshotStore.getItem<ArrayBuffer>(snapshotId.toString());
-  },
+  const hasItem = async (key: string | number) => {
+    const keyStr = key.toString();
+    return storage.keys().then((r) => r.includes(keyStr));
+  };
+  const keys = async () => {
+    return storage.keys();
+  };
+
+  return {
+    keys,
+    hasItem,
+    getItem,
+    setItem,
+    removeItem,
+    getAllItems,
+  };
 };
 
-const useAsyncStore = <T extends object>(
+const useReactiveStorage = <T extends object>(
   key: string,
   initialValue: (() => T) | T,
 ) => {
@@ -70,26 +58,53 @@ const useAsyncStore = <T extends object>(
   return store;
 };
 
-export const importStore = useAsyncStore<Record<string, number>>(
-  `importStore`,
-  {},
-);
-
-export const exportPngStore = useAsyncStore<
-  Record<number, GithubPoliciesAsset>
->(`exportPngStore`, {});
-export const exportZipStore = useAsyncStore<
-  Record<number, GithubPoliciesAsset>
->(`exportZipStore`, {});
-
-export const cacheStorage = localforage.createInstance({
+export const snapshotStorage = useStorage<Snapshot>({
+  name: `snapshot`,
   version: 1,
-  driver: localforage.INDEXEDDB,
-  name: `cache`,
-}) as LocalForage & {
-  hasItemKey: (key: string) => Promise<boolean>;
+});
+
+const snapshotSetItem = snapshotStorage.setItem;
+snapshotStorage.setItem = async (key, value) => {
+  const shallowValue = { ...value, nodes: [] };
+  await shallowSnapshotStorage.setItem(key, shallowValue);
+  return snapshotSetItem(key, value);
 };
 
-cacheStorage.hasItemKey = async (key) => {
-  return (await cacheStorage.keys()).includes(key);
+const snapshotRemoveItem = snapshotStorage.removeItem;
+snapshotStorage.removeItem = async (key) => {
+  await Promise.all([
+    snapshotRemoveItem(key),
+    shallowSnapshotStorage.removeItem(key),
+    screenshotStorage.removeItem(key),
+  ]);
 };
+
+export const shallowSnapshotStorage = useStorage<Snapshot>({
+  name: `shallowSnapshot`,
+  version: 1,
+});
+
+export const screenshotStorage = useStorage<ArrayBuffer>({
+  name: `screenshot`,
+  version: 1,
+});
+
+export const setSnapshot = async (snapshot: Snapshot, bf: ArrayBuffer) => {
+  await snapshotStorage.setItem(snapshot.id, snapshot);
+  await screenshotStorage.setItem(snapshot.id, bf);
+};
+
+export const cacheStorage = useStorage({
+  name: `cache`,
+  version: 1,
+});
+
+export const urlStorage = useReactiveStorage<Record<string, number>>(`url`, {});
+
+export const githubPngStorage = useReactiveStorage<
+  Record<number, GithubPoliciesAsset>
+>(`githubPng`, {});
+
+export const githubZipStorage = useReactiveStorage<
+  Record<number, GithubPoliciesAsset>
+>(`githubZip`, {});

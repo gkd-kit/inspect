@@ -41,8 +41,9 @@ export const parseHeaders = (rawHeaders = '') => {
   return headers;
 };
 
-// https://github.com/github/fetch/blob/master/fetch.js
-
+/**
+ * https://github.com/github/fetch/blob/9a6d748b394a2c16b250262fcaf46afd5364b415/fetch.js#L555
+ */
 const fixUrl = (url = '') => {
   try {
     return url === '' && location.href ? location.href : url;
@@ -50,6 +51,29 @@ const fixUrl = (url = '') => {
     return url;
   }
 };
+
+const reverseForm = (formData: FormData): FormData => {
+  const reversedForm = new FormData();
+  const reversedList: [string, FormDataEntryValue][] = [];
+  formData.forEach((v, k) => {
+    reversedList.push([k, v]);
+  });
+  reversedList.reverse().forEach(([k, v]) => {
+    reversedForm.append(k, v);
+  });
+  return reversedForm;
+};
+
+const compatForm = (formData: FormData, headers: Headers) => {
+  if (scriptHandler() == `Tampermonkey`) {
+    // https://github.com/Tampermonkey/tampermonkey/issues/1783
+    headers.delete(`content-type`);
+    return reverseForm(formData);
+  }
+  return formData;
+};
+
+type XhrRequest = import('vite-plugin-monkey/dist/client').XhrRequest;
 
 /**
  * simulate window.fetch with GM_xmlhttpRequest
@@ -71,50 +95,57 @@ const fixUrl = (url = '') => {
 export const GM_fetch = async (
   input: RequestInfo | URL,
   init: RequestInit = {},
-  xhrDetails: Partial<import('vite-plugin-monkey/dist/client').XhrRequest> = {},
+  xhrDetails: Partial<XhrRequest> | ((arg: XhrRequest) => XhrRequest) = {},
 ): Promise<Response> => {
   const request = new Request(input, init);
   if (request.signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
-  let binary = false;
+
+  const method = request.method.toUpperCase();
+  const url = fixUrl(request.url);
+
+  // headers
   const sendHeaders = new Headers(request.headers);
   new Headers(init.headers).forEach((value, key) => {
     sendHeaders.set(key, value);
   });
+
+  let binary = false;
   let data: FormData | Blob | string | undefined = undefined;
-  if (init.body instanceof FormData) {
-    data = init.body;
-    sendHeaders.delete(`content-type`);
-    if (scriptHandler() == `Tampermonkey`) {
-      // https://github.com/Tampermonkey/tampermonkey/issues/1783
-      const reversedData = new FormData();
-      const reversedList: [string, FormDataEntryValue][] = [];
-      data.forEach((v, k) => {
-        reversedList.push([k, v]);
-      });
-      reversedList.reverse().forEach(([k, v]) => {
-        reversedData.append(k, v);
-      });
-      data = reversedData;
+
+  if (method != 'GET') {
+    if (init.body) {
+      if (init.body instanceof FormData) {
+        data = compatForm(init.body, sendHeaders);
+      } else if (
+        typeof init.body == 'string' ||
+        init.body instanceof URLSearchParams
+      ) {
+        data = init.body;
+      } else {
+        binary = true;
+        data = await request.blob();
+      }
+    } else {
+      const formData = await request
+        .clone()
+        .formData()
+        .catch(() => {});
+      if (formData) {
+        data = compatForm(formData, sendHeaders);
+      }
     }
-  } else if (typeof init.body == 'string') {
-    data = init.body;
-  } else {
-    binary = true;
-    data = await request.blob();
   }
 
   return new Promise<Response>((resolve, reject) => {
-    const handle = GM_xmlhttpRequest({
-      ...xhrDetails,
-      method: request.method.toUpperCase(),
-      url: fixUrl(request.url),
+    let initXhrDetails: XhrRequest = {
+      method,
+      url,
       headers: headers2obj(sendHeaders),
       data,
       binary,
       responseType: 'blob',
-      timeout: 6_000,
       async onload(e) {
         let body: BodyInit | null | undefined = undefined;
         if (!(e.response instanceof Blob && e.response.size == 0)) {
@@ -132,11 +163,11 @@ export const GM_fetch = async (
       },
       async onerror() {
         await delay();
-        reject(new TypeError('Network request failed'));
+        reject(new TypeError('Network request onerror failed'));
       },
       async ontimeout() {
         await delay();
-        reject(new TypeError('Network request failed'));
+        reject(new TypeError('Network request ontimeout failed'));
       },
       async onabort() {
         await delay();
@@ -147,7 +178,13 @@ export const GM_fetch = async (
           request.signal?.removeEventListener('abort', abortXhr);
         }
       },
-    });
+    };
+    if (typeof xhrDetails == 'function') {
+      initXhrDetails = xhrDetails(initXhrDetails);
+    } else {
+      initXhrDetails = { ...initXhrDetails, ...xhrDetails };
+    }
+    const handle = GM_xmlhttpRequest(initXhrDetails);
     function abortXhr() {
       handle.abort();
     }

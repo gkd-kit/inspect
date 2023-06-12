@@ -4,9 +4,9 @@ import { toValidURL } from '@/utils/check';
 import { message } from '@/utils/discrete';
 import { errorWrap } from '@/utils/error';
 import { delay } from '@/utils/others';
-import { storage } from '@/utils/storage';
+import { snapshotStorage, screenshotStorage } from '@/utils/storage';
 import { useSnapshotColumns } from '@/utils/table';
-import { useTask } from '@/utils/task';
+import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
 import { useStorage, useTitle } from '@vueuse/core';
 import {
@@ -18,6 +18,7 @@ import {
   NSpace,
   PaginationProps,
 } from 'naive-ui';
+import { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
 import {
   onMounted,
@@ -34,14 +35,6 @@ const title = useTitle(`新设备`);
 const { api, origin } = useDeviceApi();
 const link = useStorage(`device_link`, ``);
 const device = shallowRef<Device>();
-const snapshotIds = shallowRef<number[]>([]);
-watchEffect(async () => {
-  if (!device.value) return;
-  title.value = `已连接 ` + device.value.manufacturer;
-  const result = await api.snapshotIds();
-  result.sort((a, b) => b - a);
-  snapshotIds.value = result;
-});
 const connect = useTask(async () => {
   if (!link.value) return;
   origin.value = errorWrap(
@@ -57,29 +50,35 @@ onMounted(async () => {
     connect.invoke();
   }
 });
+
+const snapshots = shallowRef<Snapshot[]>([]);
+watchEffect(async () => {
+  if (!device.value) return;
+  title.value = `已连接 ` + device.value.manufacturer;
+  const result = await api.snapshots();
+  result.sort((a, b) => b.id - a.id);
+  snapshots.value = result;
+});
+
 const captureSnapshot = useTask(async () => {
   const snapshot = await api.snapshot();
+  const screenshot = await api.screenshot({ id: snapshot.id });
   message.success(`抓取快照成功`);
-  await Promise.all([
-    storage.setSnapshot(snapshot),
-    api.screenshot({ id: snapshot.id }).then((screenshot) => {
-      return storage.setScreenshot(snapshot.id, screenshot);
-    }),
-  ]);
+  await snapshotStorage.setItem(snapshot.id, snapshot);
+  await screenshotStorage.setItem(snapshot.id, screenshot);
   message.success(`保存快照成功`);
-  const result = await api.snapshotIds();
-  result.sort((a, b) => b - a);
-  snapshotIds.value = result;
+  const result = await api.snapshots();
+  result.sort((a, b) => b.id - a.id);
+  snapshots.value = result;
 });
 const downloadAllSnapshot = useTask(async () => {
-  const snapshotIds = await api.snapshotIds();
-  const unimportSnapshotIds: number[] = [];
-  for (const snapshotId of snapshotIds) {
-    const sn = await storage.getSnapshot(snapshotId);
-    if (!sn) {
-      unimportSnapshotIds.push(snapshotId);
-    }
-  }
+  const snapshotIds = (await api.snapshots()).map((s) => s.id);
+  const existSnapshotIds = new Set(
+    (await screenshotStorage.keys()).map((s) => parseInt(s)),
+  );
+  const unimportSnapshotIds = snapshotIds.filter(
+    (k) => !existSnapshotIds.has(k),
+  );
   if (unimportSnapshotIds.length == 0) {
     message.success(`没有新记录可导入`);
     return;
@@ -95,8 +94,8 @@ const downloadAllSnapshot = useTask(async () => {
         ] as const);
         if (!newSnapshot.nodes) return;
         await Promise.all([
-          storage.setSnapshot(newSnapshot),
-          storage.setScreenshot(snapshotId, newScreenshot),
+          snapshotStorage.setItem(snapshotId, newSnapshot),
+          screenshotStorage.setItem(snapshotId, newScreenshot),
         ]);
         r++;
       }),
@@ -106,6 +105,29 @@ const downloadAllSnapshot = useTask(async () => {
 });
 
 const { activityIdCol, appIdCol, appNameCol, ctimeCol } = useSnapshotColumns();
+const handleSorterChange = (sorter: SortState) => {
+  if (sorter.columnKey == ctimeCol.key) {
+    ctimeCol.sortOrder = sorter.order;
+  }
+};
+const previewSnapshot = useBatchTask(
+  async (row: Snapshot) => {
+    if (!(await snapshotStorage.hasItem(row.id))) {
+      await snapshotStorage.setItem(row.id, await api.snapshot({ id: row.id }));
+    }
+    if (!(await screenshotStorage.hasItem(row.id))) {
+      const bf = await api.screenshot({ id: row.id });
+      await screenshotStorage.setItem(row.id, bf);
+    }
+    window.open(
+      router.resolve({
+        name: 'snapshot',
+        params: { snapshotId: row.id },
+      }).href,
+    );
+  },
+  (r) => r.id,
+);
 
 const columns: DataTableColumns<Snapshot> = [
   ctimeCol,
@@ -116,68 +138,40 @@ const columns: DataTableColumns<Snapshot> = [
     key: `actions`,
     title: `Action`,
     fixed: 'right',
-    width: `320px`,
-    render(row, index) {
+    width: `120px`,
+    render(row) {
       return (
         <NSpace size="small">
           <NButton
             size="small"
-            onClick={async () => {
-              if (!(await storage.hasSnapshot(row.id))) {
-                await storage.setSnapshot(toRaw(row));
-              }
-              if (!(await storage.hasScreenshot(row.id))) {
-                const bf = await api.screenshot({ id: row.id });
-                await storage.setScreenshot(row.id, bf);
-              }
-              window.open(
-                router.resolve({
-                  name: 'snapshot',
-                  params: { snapshotId: row.id },
-                }).href,
-              );
-            }}
+            loading={previewSnapshot.loading[row.id]}
+            onClick={() => previewSnapshot.invoke(row)}
           >
             查看
           </NButton>
-          <NButton size="small">下载-zip</NButton>
-          <NButton size="small">下载-png</NButton>
-          <NButton size="small">删除</NButton>
         </NSpace>
       );
     },
   },
 ];
-const snapshots = shallowRef<Snapshot[]>([]);
-const pagination = shallowReactive<
-  PaginationProps & { page: number; pageCount: number; pageSize: number }
->({
+
+const pagination = shallowReactive<PaginationProps>({
   page: 1,
-  pageCount: 0,
   pageSize: 50,
+  showSizePicker: true,
+  pageSizes: [50, 100],
+  onChange: (page: number) => {
+    pagination.page = page;
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize;
+    pagination.page = 1;
+  },
 });
-const handlePageChange = async (currentPage = 1) => {
-  const result = await Promise.all(
-    snapshotIds.value
-      .slice(
-        (currentPage - 1) * pagination.pageSize,
-        currentPage * pagination.pageSize,
-      )
-      .map(async (snapshotId) => api.snapshot({ id: snapshotId })),
-  );
-  pagination.page = currentPage;
-  snapshots.value = result;
-};
-watchEffect(() => {
-  pagination.pageCount = Math.ceil(
-    snapshotIds.value.length / pagination.pageSize,
-  );
-  handlePageChange();
-});
-watch(pagination, () => {
-  appNameCol.width = undefined;
-  appIdCol.width = undefined;
-});
+// watch(pagination, () => {
+//   appNameCol.width = undefined;
+//   appIdCol.width = undefined;
+// });
 </script>
 <template>
   <div flex flex-col p-10px gap-10px h-full>
@@ -219,14 +213,13 @@ watch(pagination, () => {
     <NDataTable
       striped
       flex-height
-      remote
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
+      @update:sorter="handleSorterChange"
       size="small"
       class="flex-1"
       :scroll-x="1200"
-      @update:page="handlePageChange"
     />
   </div>
 </template>

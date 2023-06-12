@@ -1,15 +1,14 @@
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { shallowReactive } from 'vue';
-import type { Snapshot } from './types';
+import type { Overview, Snapshot } from './types';
 import dayjs from 'dayjs';
 import { useAutoWrapWidthColumn } from './size';
 
 export const renderDveice = (row: Snapshot) => {
-  if (!row.device) return ``;
-  return `${row.device.manufacturer} Android${row.device.release}`;
+  return `${row.manufacturer} Android${row.release || `13`}`;
 };
 export const useSnapshotColumns = () => {
-  const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
+  const ctimeCol = shallowReactive<TableBaseColumn<Overview | Snapshot>>({
     key: `id`,
     title: `创建时间`,
     fixed: 'left',

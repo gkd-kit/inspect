@@ -1,3 +1,5 @@
+import { message } from './discrete';
+
 export const obj2form = (...objs: Record<string, unknown>[]) => {
   const fd = new FormData();
   objs.forEach((obj) => {
@@ -39,3 +41,16 @@ export const delay = async (n = 0) => {
     setTimeout(res, n);
   });
 };
+
+export const copy = (() => {
+  let lastText: string | void = void 0;
+  return async (text = ``) => {
+    if (lastText === text) return;
+    lastText = text;
+    delay(10_000).then(() => {
+      lastText = void 0;
+    });
+    await navigator.clipboard.writeText(text);
+    message.success(`复制成功`);
+  };
+})();

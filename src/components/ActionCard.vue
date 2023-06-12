@@ -1,19 +1,18 @@
 <script setup lang="tsx">
-import { delay } from '@/utils/others';
-import { dialog } from '@/utils/discrete';
+import { showTextDLg } from '@/utils/dialog';
 import {
   exportSnapshotAsPng,
   exportSnapshotAsPngUrl,
   exportSnapshotAsZip,
   exportSnapshotAsZipUrl,
 } from '@/utils/export';
-import { storage } from '@/utils/storage';
+import { delay } from '@/utils/others';
+import { snapshotStorage } from '@/utils/storage';
 import { useTask } from '@/utils/task';
 import { Snapshot } from '@/utils/types';
 import { NButton, NPopover, NSpace } from 'naive-ui';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { showTextDLg } from '@/utils/dialog';
 
 const props = withDefaults(
   defineProps<{
@@ -61,7 +60,7 @@ const exportZipUrl = useTask(async () => {
 });
 
 const deleteSnapshot = async () => {
-  await storage.deleteSnapshot(props.snapshot.id);
+  await snapshotStorage.removeItem(props.snapshot.id);
   await delay(500);
   props.onDelete?.();
 };
