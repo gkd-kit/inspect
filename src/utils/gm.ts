@@ -65,9 +65,9 @@ const reverseForm = (formData: FormData): FormData => {
 };
 
 const compatForm = (formData: FormData, headers: Headers) => {
+  headers.delete(`content-type`);
   if (scriptHandler() == `Tampermonkey`) {
     // https://github.com/Tampermonkey/tampermonkey/issues/1783
-    headers.delete(`content-type`);
     return reverseForm(formData);
   }
   return formData;
@@ -137,7 +137,6 @@ export const GM_fetch = async (
       }
     }
   }
-
   return new Promise<Response>((resolve, reject) => {
     let initXhrDetails: XhrRequest = {
       method,

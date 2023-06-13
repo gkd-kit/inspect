@@ -27,3 +27,5 @@ coverage
 *.sln
 *.sw?
 .env
+
+vite.config.{js,ts}.timestamp-*.mjs
