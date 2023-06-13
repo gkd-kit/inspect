@@ -78,8 +78,8 @@ export const importFromLocal = async () => {
     await Promise.any(
       zipfiles.map(async (file) => {
         const zip = await loadAsync(file);
-        const snapshotFile = zip.file(`snapshot.json`);
-        const screenshotFile = zip.file(`screenshot.png`);
+        const snapshotFile = zip.filter((s) => s.endsWith(`.json`))[0];
+        const screenshotFile = zip.filter((s) => s.endsWith(`.png`))[0];
         if (!snapshotFile || !screenshotFile) {
           return;
         }
