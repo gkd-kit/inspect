@@ -36,7 +36,7 @@ export const enhanceFetch = async (
   if (gmOk()) {
     // with cookie
     // export snapshot need
-    return GM_fetch(input, init, { timeout: 10_000 });
+    return GM_fetch(input, init);
   }
 
   const proxyUrl = new URL(`https://proxy-workers.lisonge.workers.dev/`);
