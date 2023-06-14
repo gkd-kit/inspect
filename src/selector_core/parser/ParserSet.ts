@@ -214,20 +214,21 @@ const attrOperatorParser = new Parser(
   },
 );
 
-const stringParser = new Parser('`', (source, offset, prefix) => {
+const stringParser = new Parser('`"\'', (source, offset, prefix) => {
   let i = offset;
   ExtSyntaxError.assert(source, i, prefix);
+  const startChar = source[i];
   i++;
   let data = '';
-  while (source[i] != '`') {
+  while (source[i] != startChar) {
     if (i == source.length - 1) {
-      ExtSyntaxError.assert(source, i, '`');
+      ExtSyntaxError.assert(source, i, startChar);
       break;
     }
     if (source[i] == '\\') {
       i++;
       ExtSyntaxError.assert(source, i);
-      if (source[i] == '`') {
+      if (source[i] == startChar) {
         data += source[i];
         ExtSyntaxError.assert(source, i + 1);
       } else {
@@ -260,45 +261,48 @@ const propertyParser = new Parser(
   },
 );
 
-const valueParser = new Parser('tfn`1234567890', (source, offset, prefix) => {
-  let i = offset;
-  ExtSyntaxError.assert(source, i, prefix);
-  const value = (() => {
-    if (source[i] == 't') {
-      i++;
-      [...'rue'].forEach((c) => {
-        ExtSyntaxError.assert(source, i, c.toString());
+const valueParser = new Parser(
+  'tfn' + stringParser.prefix + integerParser.prefix,
+  (source, offset, prefix) => {
+    let i = offset;
+    ExtSyntaxError.assert(source, i, prefix);
+    const value = (() => {
+      if (source[i] == 't') {
         i++;
-      });
-      return true;
-    } else if (source[i] == 'f') {
-      i++;
-      [...'alse'].forEach((c) => {
-        ExtSyntaxError.assert(source, i, c.toString());
+        [...'rue'].forEach((c) => {
+          ExtSyntaxError.assert(source, i, c.toString());
+          i++;
+        });
+        return true;
+      } else if (source[i] == 'f') {
         i++;
-      });
-      return false;
-    } else if (source[i] == 'n') {
-      i++;
-      [...'ull'].forEach((c) => {
-        ExtSyntaxError.assert(source, i, c.toString());
+        [...'alse'].forEach((c) => {
+          ExtSyntaxError.assert(source, i, c.toString());
+          i++;
+        });
+        return false;
+      } else if (source[i] == 'n') {
         i++;
-      });
-      return null;
-    } else if (source[i] == '`') {
-      const s = stringParser.invoke(source, i);
-      i += s.length;
-      return s.data;
-    } else if ('1234567890'.includes(source[i])) {
-      const n = integerParser.invoke(source, i);
-      i += n.length;
-      return n.data;
-    } else {
-      ExtSyntaxError.throwError(source, i, prefix);
-    }
-  })();
-  return new ParserResult(value, i - offset);
-});
+        [...'ull'].forEach((c) => {
+          ExtSyntaxError.assert(source, i, c.toString());
+          i++;
+        });
+        return null;
+      } else if (stringParser.prefix.includes(source[i])) {
+        const s = stringParser.invoke(source, i);
+        i += s.length;
+        return s.data;
+      } else if (integerParser.prefix.includes(source[i])) {
+        const n = integerParser.invoke(source, i);
+        i += n.length;
+        return n.data;
+      } else {
+        ExtSyntaxError.throwError(source, i, prefix);
+      }
+    })();
+    return new ParserResult(value, i - offset);
+  },
+);
 
 const attrParser = new Parser('[', (source, offset, prefix) => {
   let i = offset;

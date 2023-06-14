@@ -6,8 +6,8 @@ export const toSelectorLiteral = (
 ): string => {
   if (typeof s == 'string') {
     const s2 = JSON.stringify(s);
-    const s3 = s2.substring(1, s2.length - 1).replaceAll('`', '\\`');
-    return '`' + s3 + '`';
+    const s3 = s2.substring(1, s2.length - 1).replaceAll(`'`, `\\'`);
+    return `'` + s3 + `'`;
   }
   return String(s);
 };

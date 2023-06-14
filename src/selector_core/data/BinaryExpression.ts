@@ -13,7 +13,7 @@ export default class BinaryExpression {
   toString() {
     const literalValue =
       typeof this.value == 'string'
-        ? `\`${this.value.replaceAll('`', '\\`')}\``
+        ? `'${this.value.replaceAll(`'`, `\\'`)}'`
         : this.value;
     return `[${this.name}${this.operator.toString()}${literalValue}]`;
   }
