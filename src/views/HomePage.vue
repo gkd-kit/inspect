@@ -176,8 +176,10 @@ const importNetwork = useTask(async () => {
 
 const checkedRowKeys = shallowRef<number[]>([]);
 const checkedSnapshots = () => {
-  return filterSnapshots.value.filter((s) =>
-    checkedRowKeys.value.includes(s.id),
+  return Promise.all(
+    checkedRowKeys.value.map(
+      (id) => snapshotStorage.getItem(id) as Promise<Snapshot>,
+    ),
   );
 };
 const batchDelete = useTask(async () => {
@@ -201,21 +203,20 @@ const batchDelete = useTask(async () => {
   await updateSnapshots();
 });
 const batchDownloadPng = useTask(async () => {
-  await batchPngDownloadZip(checkedSnapshots());
+  await batchPngDownloadZip(await checkedSnapshots());
 });
 const batchDownloadZip = useTask(async () => {
-  await batchZipDownloadZip(checkedSnapshots());
+  await batchZipDownloadZip(await checkedSnapshots());
 });
 
 const batchSharePngUrl = useTask(async () => {
-  const policiesAssets = await batchCreatePngUrl(checkedSnapshots());
+  const policiesAssets = await batchCreatePngUrl(await checkedSnapshots());
   showTextDLg({
     content: policiesAssets.map((s) => s.href).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
-  const policiesAssets = await batchCreateZipUrl(checkedSnapshots());
-  console.log(policiesAssets);
+  const policiesAssets = await batchCreateZipUrl(await checkedSnapshots());
   showTextDLg({
     content: policiesAssets.map((s) => s.href).join(`\n`) + `\n`,
   });
@@ -234,8 +235,12 @@ const batchShareZipUrl = useTask(async () => {
     :loading="importNetwork.loading"
   >
     <NInput
-      v-model:value="text"
-      :disabled="importNetwork.loading"
+      :value="text"
+      @update:value="
+        if (!importNetwork.loading) {
+          text = $event;
+        }
+      "
       type="textarea"
       :placeholder="`请输入文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
       :autosize="{

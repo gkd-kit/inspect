@@ -33,8 +33,12 @@ const props = withDefaults(
 
 const router = useRouter();
 
-const exportPng = useTask(async () => exportSnapshotAsPng(props.snapshot));
-const exportZip = useTask(async () => exportSnapshotAsZip(props.snapshot));
+const exportPng = useTask(async () =>
+  exportSnapshotAsPng((await snapshotStorage.getItem(props.snapshot.id))!),
+);
+const exportZip = useTask(async () =>
+  exportSnapshotAsZip((await snapshotStorage.getItem(props.snapshot.id))!),
+);
 
 const previewUrl = computed(() => {
   return router.resolve({
@@ -44,7 +48,9 @@ const previewUrl = computed(() => {
 });
 
 const exportPngUrl = useTask(async () => {
-  const githubAsset = await exportSnapshotAsPngUrl(props.snapshot);
+  const githubAsset = await exportSnapshotAsPngUrl(
+    (await snapshotStorage.getItem(props.snapshot.id))!,
+  );
   showTextDLg({
     title: `分享链接`,
     content: githubAsset.href + '\n',
@@ -52,7 +58,9 @@ const exportPngUrl = useTask(async () => {
 });
 
 const exportZipUrl = useTask(async () => {
-  const githubAsset = await exportSnapshotAsZipUrl(props.snapshot);
+  const githubAsset = await exportSnapshotAsZipUrl(
+    (await snapshotStorage.getItem(props.snapshot.id))!,
+  );
   showTextDLg({
     title: `分享链接`,
     content: githubAsset.href + '\n',
