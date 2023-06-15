@@ -112,7 +112,7 @@ export const GM_fetch = async (
   });
 
   let binary = false;
-  let data: FormData | Blob | string | undefined = undefined;
+  let data: URLSearchParams | FormData | Blob | string | undefined = undefined;
 
   if (method != 'GET') {
     if (init.body) {
