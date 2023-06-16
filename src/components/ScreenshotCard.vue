@@ -63,14 +63,8 @@ const positionStyle = computed(() => {
 </script>
 
 <template>
-  <div flex flex-col relative class="flex-0-0-1/1">
-    <img
-      :src="url"
-      @click="evRef = $event"
-      h-full
-      cursor-crosshair
-      class="max-h-[calc(100vh-10px)]"
-    />
+  <div flex flex-col relative h-full>
+    <img :src="url" @click="evRef = $event" h-full cursor-crosshair />
     <div
       :style="positionStyle"
       absolute
@@ -82,6 +76,3 @@ const positionStyle = computed(() => {
     ></div>
   </div>
 </template>
-<!--
-  max-h-[calc(100vh-10px)] compat firefox
- -->

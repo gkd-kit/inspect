@@ -53,7 +53,7 @@ watchEffect(async () => {
 const root = shallowRef<NaiveNode>();
 const windowX = shallowRef<SnapshotExt>();
 const focusNode = shallowRef<NaiveNode>();
-// 节点存在层叠渲染的情况
+// 节点存在层叠渲染的情况,而且 Android 无障碍无法获取 z-index
 const skipKeys = shallowRef<number[]>([]);
 
 const onDelete = async () => {
@@ -65,7 +65,7 @@ const onDelete = async () => {
 };
 </script>
 <template>
-  <div class="h-[calc(100%-10px)]" flex gap-5px p-5px>
+  <div h-full flex gap-5px p-5px box-border>
     <ScreenshotCard
       v-if="screenshotUrl"
       :skip-keys="skipKeys"
