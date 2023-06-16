@@ -18,7 +18,7 @@ jobs:
       - name: download volta node
         uses: nick-fields/retry@v2
         with:
-          timeout_seconds: 114514
+          timeout_seconds: 60
           max_attempts: 3
           command: node -v
 
