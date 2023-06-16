@@ -9,6 +9,7 @@ import {
   NThead,
   NTr,
   NTree,
+  NEllipsis,
   type TreeInst,
   type TreeOption,
 } from 'naive-ui';
@@ -69,26 +70,36 @@ const renderSuffix = (node: NaiveNode) => {
 </script>
 
 <template>
-  <div class="WindowCard" flex flex-col>
-    <NTable size="small" striped :single-line="false">
+  <div flex flex-col>
+    <NTable size="small" striped :single-line="false" class="table-fixed">
       <NThead>
         <NTr>
-          <NTh> Device </NTh>
-          <NTh> Name </NTh>
-          <NTh> AppId </NTh>
+          <NTh class="w-150px"> Device </NTh>
+          <NTh class="w-120px"> Name </NTh>
+          <NTh class="w-150px"> AppId </NTh>
           <NTh> ActivityId </NTh>
-          <NTh> 操作 </NTh>
+          <NTh class="w-175px"> 操作 </NTh>
         </NTr>
       </NThead>
       <NTbody>
         <NTr>
-          <NTd>
+          <NTd class="whitespace-nowrap">
             {{ `${windowX.manufacturer} Android ${windowX.release || `13`}` }}
           </NTd>
-          <NTd>{{ windowX.appName }}</NTd>
-          <NTd @click="copy(windowX.appId)">{{ windowX.appId }}</NTd>
-          <NTd @click="copy(windowX.activityId)">
-            {{ windowX.activityId }}
+          <NTd class="whitespace-nowrap">
+            <NEllipsis>
+              {{ windowX.appName }}
+            </NEllipsis>
+          </NTd>
+          <NTd class="whitespace-nowrap" @click="copy(windowX.appId)">
+            <NEllipsis>
+              {{ windowX.appId }}
+            </NEllipsis>
+          </NTd>
+          <NTd @click="copy(windowX.activityId)" class="break-words">
+            <NEllipsis>
+              {{ windowX.activityId }}
+            </NEllipsis>
           </NTd>
           <NTd>
             <slot></slot>

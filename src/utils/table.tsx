@@ -74,13 +74,12 @@ export const useSnapshotColumns = () => {
   const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `activityId`,
     title: `activityId`,
-    className: `whitespace-nowrap`,
     filterMultiple: true,
     filter(value, row) {
       return value.toString() == row.activityId;
     },
     render(row) {
-      return <span class="whitespace-nowrap">{row.activityId}</span>;
+      return row.activityId;
     },
   });
 

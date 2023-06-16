@@ -5,7 +5,7 @@
 - <https://gkd-viewer.netlify.app/>
 - <https://gkd-viewer.gitee.io/> 大陆访问
 
-[snapshot-example](https://gkd-viewer.songe.li/import?url=https://github.com/lisonge/lisonge/files/11767532/file.zip)
+[snapshot-example](https://gkd-viewer.songe.li/import?url=https://github.com/lisonge/lisonge/files/11767531/file.zip)
 
 <details>
   <summary> snapshot set </summary>

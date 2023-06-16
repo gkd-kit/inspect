@@ -340,7 +340,7 @@ const batchShareZipUrl = useTask(async () => {
       striped
       :data="filterSnapshots"
       :columns="columns"
-      :scroll-x="1700"
+      :scroll-x="1800"
       :pagination="pagination"
       v-model:checked-row-keys="checkedRowKeys"
       :row-key="(r:Snapshot)=>r.id"
