@@ -54,6 +54,8 @@ export type Overview = {
   screenHeight: number;
   appId: string;
   appName: string;
+  appVersionName: string;
+  appVersionCode: number;
   activityId: string;
   isLandscape: boolean;
 };

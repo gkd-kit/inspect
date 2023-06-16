@@ -104,7 +104,15 @@ const downloadAllSnapshot = useTask(async () => {
   message.success(`导入${r}条新记录`);
 });
 
-const { activityIdCol, appIdCol, appNameCol, ctimeCol } = useSnapshotColumns();
+const {
+  activityIdCol,
+  appIdCol,
+  appNameCol,
+  ctimeCol,
+  appVersionCodeCol,
+  appVersionNameCol,
+  reseColWidth,
+} = useSnapshotColumns();
 const handleSorterChange = (sorter: SortState) => {
   if (sorter.columnKey == ctimeCol.key) {
     ctimeCol.sortOrder = sorter.order;
@@ -133,6 +141,8 @@ const columns: DataTableColumns<Snapshot> = [
   ctimeCol,
   appNameCol,
   appIdCol,
+  appVersionCodeCol,
+  appVersionNameCol,
   activityIdCol,
   {
     key: `actions`,
@@ -168,10 +178,7 @@ const pagination = shallowReactive<PaginationProps>({
     pagination.page = 1;
   },
 });
-// watch(pagination, () => {
-//   appNameCol.width = undefined;
-//   appIdCol.width = undefined;
-// });
+watch(pagination, reseColWidth);
 </script>
 <template>
   <div flex flex-col p-10px gap-10px h-full>

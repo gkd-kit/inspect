@@ -17,6 +17,7 @@ export const useAutoWrapWidthColumn = <T,>(data: TableBaseColumn<T>) => {
               currentCol.width = Math.max(
                 Math.ceil(size.width + 16), // 16 是 n-data-table-td 的 左右内边距
                 (currentCol.width as number) || 0,
+                Number(currentCol.minWidth || 0),
               );
             },
           ],

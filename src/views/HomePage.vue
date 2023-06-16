@@ -67,8 +67,16 @@ const importLoacl = useTask(async () => {
   await updateSnapshots();
 });
 
-const { activityIdCol, appIdCol, appNameCol, ctimeCol, deviceCol } =
-  useSnapshotColumns();
+const {
+  activityIdCol,
+  appIdCol,
+  appNameCol,
+  ctimeCol,
+  deviceCol,
+  appVersionCodeCol,
+  appVersionNameCol,
+  reseColWidth,
+} = useSnapshotColumns();
 
 watchEffect(() => {
   const set = filterSnapshots.value.reduce(
@@ -123,6 +131,8 @@ const columns: DataTableColumns<Snapshot> = reactive([
   deviceCol,
   appNameCol,
   appIdCol,
+  appVersionCodeCol,
+  appVersionNameCol,
   activityIdCol,
   {
     key: `actions`,
@@ -148,11 +158,7 @@ const pagination = shallowReactive<PaginationProps>({
     pagination.page = 1;
   },
 });
-watch(pagination, () => {
-  deviceCol.width = undefined;
-  appNameCol.width = undefined;
-  appIdCol.width = undefined;
-});
+watch(pagination, reseColWidth);
 
 const handleSorterChange = (sorter: SortState) => {
   if (sorter.columnKey == ctimeCol.key) {

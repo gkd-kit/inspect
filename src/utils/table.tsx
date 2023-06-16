@@ -1,14 +1,14 @@
+import dayjs from 'dayjs';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { shallowReactive } from 'vue';
-import type { Overview, Snapshot } from './types';
-import dayjs from 'dayjs';
 import { useAutoWrapWidthColumn } from './size';
+import type { Snapshot } from './types';
 
 export const renderDveice = (row: Snapshot) => {
   return `${row.manufacturer} Android${row.release || `13`}`;
 };
 export const useSnapshotColumns = () => {
-  const ctimeCol = shallowReactive<TableBaseColumn<Overview | Snapshot>>({
+  const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `id`,
     title: `创建时间`,
     fixed: 'left',
@@ -54,6 +54,23 @@ export const useSnapshotColumns = () => {
       return row.appId;
     },
   });
+  const appVersionCodeCol = useAutoWrapWidthColumn<Snapshot>({
+    key: `appVersionCode`,
+    title: `versionCode`,
+    minWidth: 150,
+    render(row) {
+      return row.appVersionCode;
+    },
+  });
+  const appVersionNameCol = useAutoWrapWidthColumn<Snapshot>({
+    key: `appVersionName`,
+    title: `versionName`,
+    minWidth: 150,
+    render(row) {
+      return row.appVersionName;
+    },
+  });
+
   const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `activityId`,
     title: `activityId`,
@@ -66,11 +83,22 @@ export const useSnapshotColumns = () => {
       return <span class="whitespace-nowrap">{row.activityId}</span>;
     },
   });
+
+  const reseColWidth = () => {
+    deviceCol.width = void 0;
+    appNameCol.width = void 0;
+    appIdCol.width = void 0;
+    appVersionCodeCol.width = void 0;
+    appVersionNameCol.width = void 0;
+  };
   return {
     ctimeCol,
     deviceCol,
     appNameCol,
     appIdCol,
+    appVersionCodeCol,
+    appVersionNameCol,
     activityIdCol,
+    reseColWidth,
   };
 };

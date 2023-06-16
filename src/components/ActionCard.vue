@@ -1,4 +1,5 @@
 <script setup lang="tsx">
+import { xyInNode } from '@/utils';
 import { showTextDLg } from '@/utils/dialog';
 import {
   exportSnapshotAsPng,
@@ -12,6 +13,7 @@ import { useTask } from '@/utils/task';
 import { Snapshot } from '@/utils/types';
 import { NButton, NPopover, NSpace } from 'naive-ui';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 const props = withDefaults(
@@ -76,7 +78,7 @@ const deleteSnapshot = async () => {
 <template>
   <NSpace>
     <a v-if="showPreview" target="_blank" :href="previewUrl">
-      <NButton size="small">查看</NButton>
+      <NButton size="small"> {{ $t(`preview`) }} </NButton>
     </a>
 
     <NPopover v-if="showExport">

@@ -151,8 +151,8 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
           snapshot = JSON.parse(decoder.decode(jsonBf)) as Snapshot;
         } else if (isZipBf(bf)) {
           const zip = await loadAsync(bf);
-          const snapshotFile = zip.file(`snapshot.json`);
-          const screenshotFile = zip.file(`screenshot.png`);
+          const [snapshotFile] = zip.filter((p) => p.endsWith(`.json`));
+          const [screenshotFile] = zip.filter((p) => p.endsWith(`.png`));
           if (!snapshotFile || !screenshotFile) {
             return;
           }
