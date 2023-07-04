@@ -2,7 +2,7 @@ name: gh-pages
 
 on:
   push:
-    branches: [main]
+    branches: []
 
 permissions:
   contents: write
@@ -28,8 +28,8 @@ jobs:
       - run: pnpm install
       - run: pnpm run build
 
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          cname: gkd-viewer.songe.li
+      # - uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./dist
+      #     cname: gkd-viewer.songe.li
