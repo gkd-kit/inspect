@@ -1,5 +1,5 @@
 {
-  "name": "gkd-ui-viewer",
+  "name": "gkd-viewer",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -25,6 +25,7 @@
     "dayjs": "^1.11.8",
     "file-saver": "^2.0.5",
     "fs-extra": "11.1.1",
+    "jest": "29.5.0",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "naive-ui": "^2.34.4",

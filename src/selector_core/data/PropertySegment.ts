@@ -21,8 +21,10 @@ export default class PropertySegment {
     return (node) => {
       const str = node.name;
       return (
-        str === name ||
-        (str.endsWith(name) && str[str.length - name.length - 1] == '.')
+        str !== void 0 &&
+        str !== null &&
+        (str === name ||
+          (str.endsWith(name) && str[str.length - name.length - 1] == '.'))
       );
     };
   });

@@ -5,7 +5,7 @@ import Selector from './Selector';
 export default abstract class NodeExt {
   abstract parent?: NodeExt;
   abstract children: Sequence<void | NodeExt>;
-  abstract name: string;
+  abstract name?: string;
   abstract attr(name: string): unknown;
 
   getChild(offset: number): void | NodeExt {

@@ -1,5 +1,5 @@
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
-import { shallowReactive, withDirectives } from 'vue';
+import { shallowReactive, withDirectives, defineCustomElement } from 'vue';
 import { rect } from './directives';
 
 export const useAutoWrapWidthColumn = <T,>(data: TableBaseColumn<T>) => {
