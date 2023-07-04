@@ -1,5 +1,5 @@
 {
-  "name": "gkd-viewer",
+  "name": "@gkd-kit/snapshot-inspect",
   "version": "0.0.0",
   "private": true,
   "type": "module",
