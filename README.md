@@ -1,11 +1,8 @@
-# gkd-viewer
+# snapshot-inspect
 
-- <https://gkd-viewer.songe.li/> github pages
-- <https://gkd-viewer.vercel.app/>
-- <https://gkd-viewer.netlify.app/>
-- <https://gkd-viewer.gitee.io/> 大陆访问
+- <https://gkd-kit.gitee.io> 大陆访问
 
-[snapshot-example](https://gkd-viewer.songe.li/import?url=https://github.com/lisonge/lisonge/files/11767531/file.zip)
+[snapshot-example](https://gkd-kit.gitee.io/import?url=https://github.com/lisonge/lisonge/files/11767531/file.zip)
 
 <details>
   <summary> snapshot set </summary>
