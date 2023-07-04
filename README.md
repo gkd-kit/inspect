@@ -1,5 +1,7 @@
 # snapshot-inspect
 
+- <https://gkd-kit.songe.li> github pages
+
 - <https://gkd-kit.gitee.io> 大陆访问
 
 [snapshot-example](https://gkd-kit.gitee.io/import?url=https://github.com/lisonge/lisonge/files/11767531/file.zip)
