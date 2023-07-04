@@ -21,7 +21,7 @@ jobs:
           dst_key: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
           dst_token: ${{ secrets.GITEE_TOKEN }}
           static_list: 'snapshot-inspect'
-          mappings: 'snapshot-inspect>gkd-kit'
+          mappings: 'snapshot-inspect=>gkd-kit'
 
       - name: Build Gitee Pages
         uses: yanglbme/gitee-pages-action@main
