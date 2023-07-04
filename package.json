@@ -1,5 +1,5 @@
 {
-  "name": "@gkd-kit/snapshot-inspect",
+  "name": "@gkd-kit/inspect",
   "version": "0.0.0",
   "private": true,
   "type": "module",
