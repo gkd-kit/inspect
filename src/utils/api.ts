@@ -1,11 +1,11 @@
-import { ref } from 'vue';
+import { shallowRef } from 'vue';
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
 import { cacheStorage } from './storage';
 import type { Device, RpcError, Snapshot } from './types';
 
 export const useDeviceApi = (initOrigin?: string) => {
-  const origin = ref(initOrigin);
+  const origin = shallowRef(initOrigin);
   const rpc = async (rpcName: string, query: Record<string, unknown> = {}) => {
     if (!origin.value) {
       throw new Error(`origin must exist`);

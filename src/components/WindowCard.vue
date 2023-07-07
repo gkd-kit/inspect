@@ -14,7 +14,7 @@ import {
   type TreeInst,
   type TreeOption,
 } from 'naive-ui';
-import { HTMLAttributes, nextTick, ref, watchEffect } from 'vue';
+import { HTMLAttributes, nextTick, shallowRef, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -28,7 +28,7 @@ const emit = defineEmits<{
   (e: 'update:focusNode', data: RawNode): void;
 }>();
 
-const defaultExpandedKeys = ref<number[]>([]);
+const defaultExpandedKeys = shallowRef<number[]>([]);
 watchEffect(async () => {
   if (!props.focusNode) return;
   const key = props.focusNode.id;
@@ -49,7 +49,7 @@ watchEffect(async () => {
   treeRef.value?.scrollTo({ key });
 });
 
-const treeRef = ref<TreeInst>();
+const treeRef = shallowRef<TreeInst>();
 
 const updateCheckedKeys = (
   keys: Array<string | number>,

@@ -6,7 +6,7 @@ import {
   xyInNode,
 } from '@/utils/node';
 import type { RawNode, SizeExt, Snapshot } from '@/utils/types';
-import { computed, ref, watchEffect } from 'vue';
+import { computed, shallowRef, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -22,12 +22,12 @@ const emit = defineEmits<{
   (e: 'update:focusNode', data: RawNode): void;
 }>();
 
-const sizeRef = ref<SizeExt>();
+const sizeRef = shallowRef<SizeExt>();
 watchEffect(async () => {
   sizeRef.value = await getImageSize(props.url);
 });
 
-const evRef = ref<MouseEvent>();
+const evRef = shallowRef<MouseEvent>();
 watchEffect(() => {
   if (!props.rootNode) return;
   const ev = evRef.value;
