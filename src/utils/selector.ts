@@ -1,28 +1,37 @@
-import { NodeExt } from '@/selector_core';
-import Sequence, { asSequence } from 'sequency';
-import type { NaiveNode } from './types';
+import KitSelector from '@gkd-kit/selector';
+import { RawNode } from './types';
+import { traverseNode } from './node';
+const { CommonSelector, CommonTransform } = KitSelector.li.songe.selector;
 
-export class NodeOption extends NodeExt {
-  _children: NodeOption[];
+const transform = new CommonTransform<RawNode>(
+  (node, name) => {
+    return Reflect.get(node.attr, name);
+  },
+  (node) => node.attr.name,
+  (node) => node.children,
+  (node) => node.parent,
+);
 
-  constructor(
-    public readonly value: NaiveNode,
-    public readonly parent?: NodeOption,
-  ) {
-    super();
-    this._children = value.children.map((c) => new NodeOption(c, this));
-  }
+export type Selector = {
+  toString: () => string;
+  match: (node: RawNode) => RawNode | undefined;
+  querySelectorAll: (node: RawNode) => RawNode[];
+  querySelector: (node: RawNode) => RawNode | undefined;
+};
 
-  get children(): Sequence<NodeOption> {
-    return asSequence(this._children);
-  }
-
-  get name(): string {
-    return this.value.value.attr.name;
-  }
-
-  attr(name: string): unknown {
-    // @ts-ignore
-    return this.value.value.attr[name];
-  }
-}
+export const parseSelector = (source: string): Selector => {
+  const cs = CommonSelector.Companion.parse(source);
+  const selector: Selector = {
+    toString: () => cs.toString(),
+    match: (node: RawNode): RawNode | undefined => {
+      return cs.match(node, transform) ?? void 0;
+    },
+    querySelectorAll: (node: RawNode): RawNode[] => {
+      return transform.querySelectorAll(node, cs);
+    },
+    querySelector: (node: RawNode): RawNode | undefined => {
+      return transform.querySelector(node, cs) as RawNode | undefined;
+    },
+  };
+  return selector;
+};

@@ -1,6 +1,7 @@
 <script setup lang="tsx">
+import { getNodeLabel } from '@/utils/node';
 import { copy } from '@/utils/others';
-import type { NaiveNode, SnapshotExt } from '@/utils/types';
+import type { RawNode, Snapshot } from '@/utils/types';
 import {
   NTable,
   NTbody,
@@ -13,38 +14,37 @@ import {
   type TreeInst,
   type TreeOption,
 } from 'naive-ui';
-import { nextTick, ref, watchEffect } from 'vue';
+import { HTMLAttributes, nextTick, ref, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{
-    windowX: SnapshotExt;
-    focusNode?: NaiveNode;
-    skipKeys?: number[];
+    snapshot: Snapshot;
+    rootNode: RawNode;
+    focusNode?: RawNode;
   }>(),
-  { skipKeys: () => [] },
+  {},
 );
 const emit = defineEmits<{
-  (e: 'update:focusNode', data: NaiveNode): void;
-  (e: 'update:skipKeys', data: number[]): void;
+  (e: 'update:focusNode', data: RawNode): void;
 }>();
 
-const defaultExpandedKeysRef = ref<number[]>([]);
+const defaultExpandedKeys = ref<number[]>([]);
 watchEffect(async () => {
   if (!props.focusNode) return;
-  const key = props.focusNode.key;
+  const key = props.focusNode.id;
   let n = props.focusNode.parent;
   if (!n) {
     return;
   }
-  const s = new Set(defaultExpandedKeysRef.value);
+  const s = new Set(defaultExpandedKeys.value);
   while (n) {
-    s.add(n.key);
+    s.add(n.id);
     n = n.parent;
   }
-  if (s.size == defaultExpandedKeysRef.value.length) {
+  if (s.size == defaultExpandedKeys.value.length) {
     return;
   }
-  defaultExpandedKeysRef.value = [...s];
+  defaultExpandedKeys.value = [...s];
   await nextTick();
   treeRef.value?.scrollTo({ key });
 });
@@ -58,14 +58,52 @@ const updateCheckedKeys = (
     node: TreeOption | null;
     action: 'check' | 'uncheck';
   },
-) => {
-  emit('update:skipKeys', keys as number[]);
+) => {};
+
+const renderSuffix = ({
+  option,
+  checked,
+  selected,
+}: {
+  option: RawNode;
+  checked: boolean;
+  selected: boolean;
+}) => {
+  // if (props.skipKeys.includes(option.id)) {
+  //   return <div style={{ marginLeft: `10px`, color: `#ccc` }}>已隐藏</div>;
+  // }
 };
 
-const renderSuffix = (node: NaiveNode) => {
-  if (props.skipKeys.includes(node.key)) {
-    return <div style={{ marginLeft: `10px`, color: `#ccc` }}>已隐藏</div>;
-  }
+const treeFilter = (pattern: string, node: RawNode) => {
+  return node.id === props.focusNode?.id;
+};
+const treeNodeProps = (info: {
+  option: RawNode;
+}): HTMLAttributes & Record<string, unknown> => {
+  return {
+    onClick: () => {
+      emit('update:focusNode', info.option);
+    },
+    style: {
+      color: info.option.id == props.focusNode?.id ? `#00F` : void 0,
+    },
+  };
+};
+
+const renderPrefix = (info: {
+  option: RawNode;
+  checked: boolean;
+  selected: boolean;
+}) => {
+  return info.option.attr.childCount || ``;
+};
+
+const renderLabel = (info: {
+  option: RawNode;
+  checked: boolean;
+  selected: boolean;
+}) => {
+  return getNodeLabel(info.option);
 };
 </script>
 
@@ -84,21 +122,21 @@ const renderSuffix = (node: NaiveNode) => {
       <NTbody>
         <NTr>
           <NTd class="whitespace-nowrap">
-            {{ `${windowX.manufacturer} Android ${windowX.release || `13`}` }}
+            {{ `${snapshot.manufacturer} Android ${snapshot.release || `13`}` }}
           </NTd>
           <NTd class="whitespace-nowrap">
             <NEllipsis>
-              {{ windowX.appName }}
+              {{ snapshot.appName }}
             </NEllipsis>
           </NTd>
-          <NTd class="whitespace-nowrap" @click="copy(windowX.appId)">
+          <NTd class="whitespace-nowrap" @click="copy(snapshot.appId)">
             <NEllipsis>
-              {{ windowX.appId }}
+              {{ snapshot.appId }}
             </NEllipsis>
           </NTd>
-          <NTd @click="copy(windowX.activityId)" class="break-words">
+          <NTd @click="copy(snapshot.activityId)" class="break-words">
             <NEllipsis>
-              {{ windowX.activityId }}
+              {{ snapshot.activityId }}
             </NEllipsis>
           </NTd>
           <NTd>
@@ -109,29 +147,16 @@ const renderSuffix = (node: NaiveNode) => {
     </NTable>
     <NTree
       ref="treeRef"
-      checkable
       virtual-scroll
       @update:checked-keys="updateCheckedKeys"
-      :filter="
-        (_, node) => {
-          return node.key == focusNode?.key;
-        }
-      "
-      :data="[windowX.node]"
-      :default-expanded-keys="defaultExpandedKeysRef"
-      :default-checked-keys="skipKeys"
-      :render-suffix="n => renderSuffix(n.option as NaiveNode)"
-      :node-props="({ option }) => {
-          return {
-            onClick: () => {
-              emit('update:focusNode', option as NaiveNode)
-            },
-            style: {
-              color: option.key == focusNode?.key ? `#00F` : undefined,
-            }
-          }
-        }
-        "
+      key-field="id"
+      :default-expanded-keys="defaultExpandedKeys"
+      :data="[rootNode as any]"
+      :filter="(treeFilter as any)"
+      :node-props="(treeNodeProps as any)"
+      :render-suffix="(renderSuffix as any)"
+      :render-prefix="(renderPrefix as any)"
+      :render-label="(renderLabel as any)"
     />
   </div>
 </template>
@@ -141,6 +166,7 @@ const renderSuffix = (node: NaiveNode) => {
   .n-tree {
     overflow: scroll;
   }
+
   :deep(.n-tree-node-content__text) {
     overflow: hidden;
     text-overflow: ellipsis;

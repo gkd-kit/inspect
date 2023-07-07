@@ -21,6 +21,10 @@ export type RawNode = {
   id: number;
   pid: number;
   attr: RawAttr;
+
+  // list to tree
+  parent?: RawNode;
+  children: RawNode[];
 };
 
 export type RawAttr = {
@@ -41,11 +45,6 @@ export type RawAttr = {
   bottom: number;
   _id?: number;
   _pid?: number;
-
-  /**
-   * @deprecated use name
-   */
-  className: string;
 };
 
 export type Overview = {
@@ -65,19 +64,19 @@ export type Snapshot = Overview &
     nodes: RawNode[];
   };
 
-export type SnapshotExt = Snapshot & {
-  node: NaiveNode;
-};
+// export type SnapshotExt = Snapshot & {
+//   node: NaiveNode;
+// };
 
-export type NaiveNode = {
-  value: RawNode;
-  children: NaiveNode[];
-  parent?: NaiveNode;
-  key: number;
-  label: string;
-  isLeaf?: boolean;
-  prefix?: () => VNode;
-};
+// export type NaiveNode = {
+//   value: RawNode;
+//   children: NaiveNode[];
+//   parent?: NaiveNode;
+//   key: number;
+//   label: string;
+//   isLeaf?: boolean;
+//   prefix?: () => VNode;
+// };
 
 export type RectX = {
   bottom: number;

@@ -22,6 +22,11 @@ const router = createRouter({
       name: 'device',
       component: () => import('@/views/DevicePage.vue'),
     },
+    {
+      path: '/test',
+      name: 'test',
+      component: () => import('@/views/TestPage.vue'),
+    },
   ],
 });
 

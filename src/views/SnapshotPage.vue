@@ -4,12 +4,11 @@ import AttrCard from '@/components/AttrCard.vue';
 import ScreenshotCard from '@/components/ScreenshotCard.vue';
 import SearchCard from '@/components/SearchCard.vue';
 import WindowCard from '@/components/WindowCard.vue';
-import { toNodeTree } from '@/utils';
+import { listToTree } from '@/utils/node';
 import { message } from '@/utils/discrete';
 import { delay } from '@/utils/others';
 import { snapshotStorage, screenshotStorage } from '@/utils/storage';
-import type { NaiveNode, SnapshotExt } from '@/utils/types';
-import { Snapshot } from '@/utils/types';
+import type { RawNode, Snapshot } from '@/utils/types';
 import { computed, shallowRef, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -34,27 +33,13 @@ watchEffect(async () => {
   }
   screenshotUrl.value = URL.createObjectURL(new Blob([bf]));
   snapshot.value = localSnapshot;
-  root.value = toNodeTree(
-    localSnapshot.nodes.map((n) => ({
-      ...n,
-      attr: {
-        ...n.attr,
-        index: 0,
-        depth: 0,
-      },
-    })),
-  );
-  windowX.value = {
-    ...localSnapshot,
-    node: root.value,
-  };
+  rootNode.value = listToTree(localSnapshot.nodes);
 });
 
-const root = shallowRef<NaiveNode>();
-const windowX = shallowRef<SnapshotExt>();
-const focusNode = shallowRef<NaiveNode>();
+const rootNode = shallowRef<RawNode>();
+const focusNode = shallowRef<RawNode>();
 // 节点存在层叠渲染的情况,而且 Android 无障碍无法获取 z-index
-const skipKeys = shallowRef<number[]>([]);
+// const skipKeys = shallowRef<number[]>([]);
 
 const onDelete = async () => {
   message.success(`删除成功,即将回到首页`);
@@ -67,20 +52,19 @@ const onDelete = async () => {
 <template>
   <div h-full flex gap-5px p-5px box-border>
     <ScreenshotCard
-      v-if="screenshotUrl"
-      :skip-keys="skipKeys"
+      v-if="screenshotUrl && snapshot"
       :url="screenshotUrl"
-      :node="root"
+      :snapshot="snapshot"
+      :root-node="rootNode"
       :focus-node="focusNode"
       @update:focus-node="focusNode = $event"
     />
     <WindowCard
-      v-if="windowX"
-      :window-x="windowX"
+      v-if="snapshot && rootNode"
+      :root-node="rootNode"
+      :snapshot="snapshot"
       :focus-node="focusNode"
       @update:focus-node="focusNode = $event"
-      :skip-keys="skipKeys"
-      @update:skip-keys="skipKeys = $event"
       class="flex-1"
     >
       <ActionCard
@@ -92,8 +76,8 @@ const onDelete = async () => {
     </WindowCard>
     <AttrCard v-if="focusNode" :focus-node="focusNode" />
     <SearchCard
-      v-if="root"
-      :root="root"
+      v-if="rootNode"
+      :root-node="rootNode"
       @update:focus-node="focusNode = $event"
     />
   </div>

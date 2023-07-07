@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { getImageSize, traverseNode, xyInNode } from '@/utils';
-import type { NaiveNode, SizeExt } from '@/utils/types';
+import {
+  findNodeByXy,
+  getImageSize,
+  traverseNode,
+  xyInNode,
+} from '@/utils/node';
+import type { RawNode, SizeExt, Snapshot } from '@/utils/types';
 import { computed, ref, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{
     url: string;
-    node?: NaiveNode;
-    focusNode?: NaiveNode;
-    skipKeys?: number[];
+    snapshot: Snapshot;
+    rootNode?: RawNode;
+    focusNode?: RawNode;
   }>(),
-  { skipKeys: () => [] },
+  {},
 );
 
 const emit = defineEmits<{
-  (e: 'update:focusNode', data: NaiveNode): void;
+  (e: 'update:focusNode', data: RawNode): void;
 }>();
 
 const sizeRef = ref<SizeExt>();
@@ -24,7 +29,7 @@ watchEffect(async () => {
 
 const evRef = ref<MouseEvent>();
 watchEffect(() => {
-  if (!props.node) return;
+  if (!props.rootNode) return;
   const ev = evRef.value;
   const img = ev?.target;
   if (!ev || !img || !(img instanceof HTMLImageElement)) {
@@ -35,15 +40,10 @@ watchEffect(() => {
   const ox = ((ev.clientX - imgRect.left) / img.offsetWidth) * img.naturalWidth;
   const oy =
     ((ev.clientY - imgRect.top) / img.offsetHeight) * img.naturalHeight;
-  for (const childNode of traverseNode(props.node, props.skipKeys)) {
-    if (
-      xyInNode(childNode, ox, oy) &&
-      (childNode.children.length == 0 ||
-        childNode.children.every((n) => !xyInNode(n, ox, oy)))
-    ) {
-      emit('update:focusNode', childNode);
-      return;
-    }
+
+  const childNode = findNodeByXy(props.snapshot.nodes, ox, oy);
+  if (childNode) {
+    emit('update:focusNode', childNode);
   }
 });
 
@@ -52,7 +52,7 @@ const positionStyle = computed(() => {
   if (!size || !props.focusNode) {
     return ``;
   }
-  const attr = props.focusNode.value.attr;
+  const attr = props.focusNode.attr;
   return {
     left: `calc(${(100 * attr.left) / size.width + '%'} - 1px)`,
     top: `calc(${(100 * attr.top) / size.height + '%'} - 1px)`,

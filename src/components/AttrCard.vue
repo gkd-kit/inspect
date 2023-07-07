@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { toSelectorLiteral } from '@/utils';
-import type { NaiveNode } from '@/utils/types';
-import { NEllipsis, NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
-import { computed, watch } from 'vue';
-import DraggableCard from './DraggableCard.vue';
-import { message } from '@/utils/discrete';
 import { copy } from '@/utils/others';
+import type { RawNode } from '@/utils/types';
+import { NEllipsis, NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
+import { computed } from 'vue';
+import DraggableCard from './DraggableCard.vue';
 
-const props = withDefaults(defineProps<{ focusNode: NaiveNode }>(), {});
+const props = withDefaults(defineProps<{ focusNode: RawNode }>(), {});
 
 const attrs = computed(() => {
-  return Object.entries(props.focusNode.value.attr).map(([name, value]) => {
-    value = toSelectorLiteral(value);
+  return Object.entries(props.focusNode.attr).map(([name, value]) => {
+    value = JSON.stringify(value);
     return {
       name,
       value,

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Selector } from '@/selector_core';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
-import { NodeOption } from '@/utils/selector';
-import type { NaiveNode } from '@/utils/types';
+import { Selector, parseSelector } from '@/utils/selector';
+import type { RawNode } from '@/utils/types';
 import {
   NButton,
   NCollapse,
@@ -14,33 +13,30 @@ import {
   NRadioGroup,
   NSpace,
 } from 'naive-ui';
-import { computed, shallowReactive, shallowRef } from 'vue';
+import { shallowReactive, shallowRef } from 'vue';
 import DraggableCard from './DraggableCard.vue';
+import { getNodeLabel } from '@/utils/node';
 
 const props = withDefaults(
   defineProps<{
-    root: NaiveNode;
+    rootNode: RawNode;
   }>(),
   {},
 );
 const emit = defineEmits<{
-  (e: 'update:focusNode', data: NaiveNode): void;
+  (e: 'update:focusNode', data: RawNode): void;
 }>();
 
-const nodeOption = computed(() => {
-  if (!props.root) return;
-  return new NodeOption(props.root);
-});
 const selectorText = shallowRef(``);
 const selectorResults = shallowReactive<
   {
     selector: string | Selector;
 
-    results: NaiveNode[];
+    results: RawNode[];
   }[]
 >([]);
 const searchBySelector = errorTry(() => {
-  if (!nodeOption.value || !props.root) {
+  if (!props.rootNode) {
     message.error(`根节点不存在`);
     return;
   }
@@ -56,11 +52,9 @@ const searchBySelector = errorTry(() => {
       message.warning(`不可重复选择`);
       return;
     }
-    const selector = errorWrap(() => Selector.parse(text), `选择器非法`);
-    const results = nodeOption.value
-      .querySelectorAll(selector)
-      .map((s) => s.value)
-      .toList();
+
+    const selector = errorWrap(() => parseSelector(text), `选择器非法`);
+    const results = selector.querySelectorAll(props.rootNode);
     if (results.length == 0) {
       message.success(`没有选择到节点`);
       return;
@@ -76,11 +70,11 @@ const searchBySelector = errorTry(() => {
       message.warning(`不可重复选择`);
       return;
     }
-    const results: NaiveNode[] = [];
-    const stack: NaiveNode[] = [props.root];
+    const results: RawNode[] = [];
+    const stack: RawNode[] = [props.rootNode];
     while (stack.length > 0) {
       const n = stack.pop()!;
-      if (n.label.includes(text)) {
+      if (getNodeLabel(n).includes(text)) {
         results.push(n);
       }
       stack.push(...[...n.children].reverse());
@@ -146,11 +140,11 @@ const enableSearchBySelector = shallowRef(false);
           >
             <NButton
               v-for="resultNode in selectorResult.results"
-              :key="resultNode.key"
+              :key="resultNode.id"
               @click="emit(`update:focusNode`, resultNode)"
               size="small"
             >
-              {{ resultNode.label }}
+              {{ getNodeLabel(resultNode) }}
             </NButton>
           </NSpace>
         </NCollapseItem>
