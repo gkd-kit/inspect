@@ -16,7 +16,7 @@ jobs:
       - name: Sync Mirror
         uses: Yikun/hub-mirror-action@master
         with:
-          debug: true
+          force_update: true
           src: github/gkd-kit
           src_account_type: org
           dst: gitee/gkd-kit
