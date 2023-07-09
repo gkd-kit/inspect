@@ -55,30 +55,30 @@ const onDelete = async () => {
       v-if="screenshotUrl && snapshot"
       :url="screenshotUrl"
       :snapshot="snapshot"
-      :root-node="rootNode"
-      :focus-node="focusNode"
-      @update:focus-node="focusNode = $event"
+      :rootNode="rootNode"
+      :focusNode="focusNode"
+      @update:focusNode="focusNode = $event"
     />
     <WindowCard
       v-if="snapshot && rootNode"
-      :root-node="rootNode"
+      :rootNode="rootNode"
       :snapshot="snapshot"
-      :focus-node="focusNode"
-      @update:focus-node="focusNode = $event"
+      :focusNode="focusNode"
+      @update:focusNode="focusNode = $event"
       class="flex-1"
     >
       <ActionCard
         v-if="snapshot"
         :snapshot="snapshot"
         @delete="onDelete"
-        :show-preview="false"
+        :showPreview="false"
       />
     </WindowCard>
     <AttrCard v-if="focusNode" :focus-node="focusNode" />
     <SearchCard
       v-if="rootNode"
-      :root-node="rootNode"
-      @update:focus-node="focusNode = $event"
+      :rootNode="rootNode"
+      @update:focusNode="focusNode = $event"
     />
   </div>
 </template>

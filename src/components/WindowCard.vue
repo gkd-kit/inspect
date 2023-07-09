@@ -109,7 +109,7 @@ const renderLabel = (info: {
 
 <template>
   <div flex flex-col>
-    <NTable size="small" striped :single-line="false" class="table-fixed">
+    <NTable size="small" striped :singleLine="false" class="table-fixed">
       <NThead>
         <NTr>
           <NTh class="w-150px"> Device </NTh>
@@ -147,16 +147,16 @@ const renderLabel = (info: {
     </NTable>
     <NTree
       ref="treeRef"
-      virtual-scroll
+      virtualScroll
       @update:checked-keys="updateCheckedKeys"
-      key-field="id"
-      :default-expanded-keys="defaultExpandedKeys"
+      keyField="id"
+      :defaultExpandedKeys="defaultExpandedKeys"
       :data="[rootNode as any]"
       :filter="(treeFilter as any)"
-      :node-props="(treeNodeProps as any)"
-      :render-suffix="(renderSuffix as any)"
-      :render-prefix="(renderPrefix as any)"
-      :render-label="(renderLabel as any)"
+      :nodeProps="(treeNodeProps as any)"
+      :renderSuffix="(renderSuffix as any)"
+      :renderPrefix="(renderPrefix as any)"
+      :renderLabel="(renderLabel as any)"
     />
   </div>
 </template>

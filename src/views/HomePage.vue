@@ -233,11 +233,11 @@ const batchShareZipUrl = useTask(async () => {
     v-model:show="showModal"
     preset="dialog"
     title="导入网络文件"
-    :show-icon="false"
-    positive-text="确认"
-    negative-text="取消"
+    :showIcon="false"
+    positiveText="确认"
+    negativeText="取消"
     style="width: 800px"
-    @positive-click="importNetwork.invoke"
+    @positiveClick="importNetwork.invoke"
     :loading="importNetwork.loading"
   >
     <NInput
@@ -253,7 +253,7 @@ const batchShareZipUrl = useTask(async () => {
         minRows: 8,
         maxRows: 16,
       }"
-      :input-props="{
+      :inputProps="{
         style: `white-space: nowrap;`,
       }"
     />
@@ -340,14 +340,14 @@ const batchShareZipUrl = useTask(async () => {
       striped
       :data="filterSnapshots"
       :columns="columns"
-      :scroll-x="1800"
+      :scrollX="1800"
       :pagination="pagination"
-      v-model:checked-row-keys="checkedRowKeys"
-      :row-key="(r:Snapshot)=>r.id"
+      v-model:checkedRowKeys="checkedRowKeys"
+      :rowKey="(r:Snapshot)=>r.id"
       @update:sorter="handleSorterChange"
       size="small"
       class="flex-1"
-      flex-height
+      flexHeight
     />
   </div>
 </template>

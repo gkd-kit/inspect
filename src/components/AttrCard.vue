@@ -19,8 +19,8 @@ const attrs = computed(() => {
 </script>
 
 <template>
-  <DraggableCard :initial-value="{ top: 90, right: 10 }" v-slot="{ onRef }">
-    <NTable size="small" striped :single-line="false" class="gkd_code">
+  <DraggableCard :initialValue="{ top: 90, right: 10 }" v-slot="{ onRef }">
+    <NTable size="small" striped :singleLine="false" class="gkd_code">
       <thead cursor-move :ref="onRef">
         <NTr>
           <NTh> Name </NTh>

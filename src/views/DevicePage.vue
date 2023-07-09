@@ -219,14 +219,14 @@ watch(pagination, reseColWidth);
     </NSpace>
     <NDataTable
       striped
-      flex-height
+      flexHeight
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
       @update:sorter="handleSorterChange"
       size="small"
       class="flex-1"
-      :scroll-x="1200"
+      :scrollX="1200"
     />
   </div>
 </template>
