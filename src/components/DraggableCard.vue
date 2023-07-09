@@ -63,7 +63,7 @@ const updateTarget = (arg: unknown) => {
   if (arg instanceof HTMLElement) {
     target.value = arg;
   } else {
-    target.value = undefined;
+    target.value = void 0;
   }
 };
 </script>
