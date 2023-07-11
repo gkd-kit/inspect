@@ -4,7 +4,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 import { fileURLToPath, URL } from 'node:url';
 import unocss from 'unocss/vite';
 import { defineConfig } from 'vite';
-import { _404Page } from './plugins';
+import { _404Page, commit } from './plugins';
 
 export default defineConfig(({ mode }) => {
   return {
@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
       vueJsx(),
       unocss(),
       legacy({ renderLegacyChunks: false, modernPolyfills: true }),
+      commit(),
       _404Page(),
     ],
     resolve: {
