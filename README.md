@@ -4,6 +4,10 @@
 
 - <https://gkd-kit.gitee.io> 大陆访问
 
+- <https://gkd-kit.netlify.app> netlify
+
+- <https://gkd-kit.vercel.app> vercel
+
 [snapshot-example](https://gkd-kit.gitee.io/import?url=https://github.com/lisonge/lisonge/files/11767531/file.zip)
 
 <details>
