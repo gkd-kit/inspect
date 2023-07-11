@@ -11,9 +11,11 @@ import { snapshotStorage, screenshotStorage } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
 import { computed, shallowRef, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTitle } from '@vueuse/core';
 
 const route = useRoute();
 const router = useRouter();
+const title = useTitle();
 
 const snapshotId = computed(() => String(route.params.snapshotId || ``));
 
@@ -34,6 +36,7 @@ watchEffect(async () => {
   screenshotUrl.value = URL.createObjectURL(new Blob([bf]));
   snapshot.value = localSnapshot;
   rootNode.value = listToTree(localSnapshot.nodes);
+  title.value = '快照-' + localSnapshot.appName || localSnapshot.appId;
 });
 
 const rootNode = shallowRef<RawNode>();
