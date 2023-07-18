@@ -136,7 +136,7 @@ const columns: DataTableColumns<Snapshot> = reactive([
   activityIdCol,
   {
     key: `actions`,
-    title: `Action`,
+    title: `操作`,
     fixed: 'right',
     width: `255px`,
     render(row) {

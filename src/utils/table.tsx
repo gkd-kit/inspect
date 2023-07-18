@@ -37,7 +37,7 @@ export const useSnapshotColumns = () => {
   const appNameCol = useAutoWrapWidthColumn<Snapshot>({
     key: `appName`,
     minWidth: 100,
-    title: `Name`,
+    title: `APP名称`,
     filterMultiple: true,
     filter(value, row) {
       return value.toString() == row.appName;
@@ -48,7 +48,7 @@ export const useSnapshotColumns = () => {
   });
   const appIdCol = useAutoWrapWidthColumn<Snapshot>({
     key: `appId`,
-    title: `appId`,
+    title: `ID`,
     minWidth: 100,
     render(row) {
       return row.appId;
@@ -56,7 +56,7 @@ export const useSnapshotColumns = () => {
   });
   const appVersionCodeCol = useAutoWrapWidthColumn<Snapshot>({
     key: `appVersionCode`,
-    title: `versionCode`,
+    title: `版本代码`,
     minWidth: 150,
     render(row) {
       return row.appVersionCode;
@@ -64,7 +64,7 @@ export const useSnapshotColumns = () => {
   });
   const appVersionNameCol = useAutoWrapWidthColumn<Snapshot>({
     key: `appVersionName`,
-    title: `versionName`,
+    title: `版本号`,
     minWidth: 150,
     render(row) {
       return row.appVersionName;
@@ -73,7 +73,7 @@ export const useSnapshotColumns = () => {
 
   const activityIdCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `activityId`,
-    title: `activityId`,
+    title: `界面ID`,
     filterMultiple: true,
     filter(value, row) {
       return value.toString() == row.activityId;

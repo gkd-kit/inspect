@@ -60,14 +60,14 @@ const onDelete = async () => {
       :snapshot="snapshot"
       :rootNode="rootNode"
       :focusNode="focusNode"
-      @update:focusNode="focusNode = $event"
+      @updateFocusNode="focusNode = $event"
     />
     <WindowCard
       v-if="snapshot && rootNode"
       :rootNode="rootNode"
       :snapshot="snapshot"
       :focusNode="focusNode"
-      @update:focusNode="focusNode = $event"
+      @updateFocusNode="focusNode = $event"
       class="flex-1"
     >
       <ActionCard
@@ -77,11 +77,11 @@ const onDelete = async () => {
         :showPreview="false"
       />
     </WindowCard>
-    <AttrCard v-if="focusNode" :focus-node="focusNode" />
+    <AttrCard v-if="focusNode" :focusNode="focusNode" />
     <SearchCard
       v-if="rootNode"
       :rootNode="rootNode"
-      @update:focusNode="focusNode = $event"
+      @updateFocusNode="focusNode = $event"
     />
   </div>
 </template>

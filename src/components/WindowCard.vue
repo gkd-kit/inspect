@@ -21,12 +21,12 @@ const props = withDefaults(
     snapshot: Snapshot;
     rootNode: RawNode;
     focusNode?: RawNode;
+    onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
-  {},
+  {
+    onUpdateFocusNode: () => () => {},
+  },
 );
-const emit = defineEmits<{
-  (e: 'update:focusNode', data: RawNode): void;
-}>();
 
 const defaultExpandedKeys = shallowRef<number[]>([]);
 watchEffect(async () => {
@@ -82,7 +82,7 @@ const treeNodeProps = (info: {
 }): HTMLAttributes & Record<string, unknown> => {
   return {
     onClick: () => {
-      emit('update:focusNode', info.option);
+      props.onUpdateFocusNode(info.option);
     },
     style: {
       color: info.option.id == props.focusNode?.id ? `#00F` : void 0,

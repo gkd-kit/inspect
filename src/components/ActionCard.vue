@@ -28,6 +28,7 @@ const props = withDefaults(
     showExport: true,
     showDelete: true,
     showShare: true,
+    onDelete: () => () => {},
   },
 );
 
@@ -70,7 +71,7 @@ const exportZipUrl = useTask(async () => {
 const deleteSnapshot = async () => {
   await snapshotStorage.removeItem(props.snapshot.id);
   await delay(500);
-  props.onDelete?.();
+  props.onDelete();
 };
 </script>
 <template>

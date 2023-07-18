@@ -1,6 +1,6 @@
 import { fileOpen } from 'browser-fs-access';
 import { message } from './discrete';
-import { loadAsync } from 'jszip';
+import JSZip, { loadAsync } from 'jszip';
 import type { Snapshot } from './types';
 import {
   urlStorage,
@@ -62,6 +62,18 @@ const pngEndBf = new Uint8Array([
 ]).buffer;
 const decoder = new TextDecoder();
 
+const parseZip = async (zip: JSZip) => {
+  const snapshotFile = zip.filter((s) => s.endsWith(`.json`))[0];
+  const screenshotFile = zip.filter((s) => s.endsWith(`.png`))[0];
+  if (!snapshotFile || !screenshotFile) {
+    return false;
+  }
+  const snapshot = JSON.parse(await snapshotFile.async('string')) as Snapshot;
+  const screenshotBf = await screenshotFile.async('arraybuffer');
+  await setSnapshot(snapshot, screenshotBf);
+  return true;
+};
+
 export const importFromLocal = async () => {
   const files = await fileOpen({
     multiple: true,
@@ -78,17 +90,18 @@ export const importFromLocal = async () => {
     await Promise.any(
       zipfiles.map(async (file) => {
         const zip = await loadAsync(file);
-        const snapshotFile = zip.filter((s) => s.endsWith(`.json`))[0];
-        const screenshotFile = zip.filter((s) => s.endsWith(`.png`))[0];
-        if (!snapshotFile || !screenshotFile) {
-          return;
+        if (await parseZip(zip)) {
+          importNum++;
         }
-        const snapshot = JSON.parse(
-          await snapshotFile.async('string'),
-        ) as Snapshot;
-        const screenshotBf = await screenshotFile.async('arraybuffer');
-        await setSnapshot(snapshot, screenshotBf);
-        importNum++;
+        const subZips = zip.filter((s) => s.endsWith('.zip'));
+        await Promise.any(
+          subZips.map(async (subZip) => {
+            const subFile = await loadAsync(subZip.async('blob'));
+            if (await parseZip(subFile)) {
+              importNum++;
+            }
+          }),
+        );
       }),
     );
   }

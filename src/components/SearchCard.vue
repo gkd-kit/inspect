@@ -20,12 +20,12 @@ import { getNodeLabel } from '@/utils/node';
 const props = withDefaults(
   defineProps<{
     rootNode: RawNode;
+    onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
-  {},
+  {
+    onUpdateFocusNode: () => () => {},
+  },
 );
-const emit = defineEmits<{
-  (e: 'update:focusNode', data: RawNode): void;
-}>();
 
 const selectorText = shallowRef(``);
 const selectorResults = shallowReactive<
@@ -141,7 +141,7 @@ const enableSearchBySelector = shallowRef(false);
             <NButton
               v-for="resultNode in selectorResult.results"
               :key="resultNode.id"
-              @click="emit(`update:focusNode`, resultNode)"
+              @click="onUpdateFocusNode(resultNode)"
               size="small"
             >
               {{ getNodeLabel(resultNode) }}

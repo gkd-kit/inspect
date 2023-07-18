@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  findNodeByXy,
-  getImageSize,
-  traverseNode,
-  xyInNode,
-} from '@/utils/node';
+import { findNodeByXy, getImageSize } from '@/utils/node';
 import type { RawNode, SizeExt, Snapshot } from '@/utils/types';
 import { computed, shallowRef, watchEffect } from 'vue';
 
@@ -14,13 +9,12 @@ const props = withDefaults(
     snapshot: Snapshot;
     rootNode?: RawNode;
     focusNode?: RawNode;
+    onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
-  {},
+  {
+    onUpdateFocusNode: () => () => {},
+  },
 );
-
-const emit = defineEmits<{
-  (e: 'update:focusNode', data: RawNode): void;
-}>();
 
 const sizeRef = shallowRef<SizeExt>();
 watchEffect(async () => {
@@ -43,7 +37,7 @@ watchEffect(() => {
 
   const childNode = findNodeByXy(props.snapshot.nodes, ox, oy);
   if (childNode) {
-    emit('update:focusNode', childNode);
+    props.onUpdateFocusNode(childNode);
   }
 });
 

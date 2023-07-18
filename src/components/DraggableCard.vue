@@ -13,8 +13,8 @@ const props = withDefaults(
   { initialValue: () => ({}) },
 );
 
-const isLeft = props.initialValue.left !== undefined;
-const isTop = props.initialValue.top !== undefined;
+const isLeft = props.initialValue.left !== void 0;
+const isTop = props.initialValue.top !== void 0;
 
 const offset = shallowReactive({
   x: (isLeft ? props.initialValue.left : props.initialValue.right) ?? 0,
