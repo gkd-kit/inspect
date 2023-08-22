@@ -108,7 +108,7 @@ const enableSearchBySelector = shallowRef(false);
       <NInputGroup>
         <NInput
           v-model:value="selectorText"
-          placeholder="请输入选择器"
+          :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
           @keyup.enter="searchBySelector"
         ></NInput>
         <NButton @click="searchBySelector">

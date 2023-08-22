@@ -23,11 +23,12 @@ export const useDeviceApi = (initOrigin?: string) => {
       message.error(`接口错误:/` + rpcName + `:` + response.status);
       throw response;
     }
-    const X_Rpc_Result = response.headers.get(`X_Rpc_Result`);
-    if (X_Rpc_Result != `ok`) {
-      const error = (await response.json()) as RpcError;
-      message.error(error.message);
-      throw response;
+    if (response.headers.get(`Content-Type`)?.includes(`application/json`)) {
+      const error = (await response.clone().json()) as RpcError;
+      if (error.__error) {
+        message.error(error.message);
+        throw response;
+      }
     }
     return response;
   };

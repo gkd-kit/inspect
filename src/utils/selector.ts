@@ -1,7 +1,6 @@
-import KitSelector from '@gkd-kit/selector';
-import { RawNode } from './types';
-import { traverseNode } from './node';
-const { CommonSelector, CommonTransform } = KitSelector.li.songe.selector;
+import SelectorKit from '@gkd-kit/selector';
+import type { RawNode } from './types';
+const { CommonSelector, CommonTransform } = SelectorKit;
 
 const transform = new CommonTransform<RawNode>(
   (node, name) => {

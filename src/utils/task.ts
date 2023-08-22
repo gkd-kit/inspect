@@ -1,4 +1,4 @@
-import { shallowReactive, shallowRef } from 'vue';
+import { customRef, shallowReactive, toRaw } from 'vue';
 import { delay } from './others';
 import type { PrimitiveType } from './types';
 
@@ -7,13 +7,25 @@ export const useTask = <T extends (...args: any[]) => Promise<void>>(
   miniInterval = 0,
   handler: (error: any) => void = () => {},
 ) => {
-  const loadingRef = shallowRef(false);
+  let loading = false;
+  const loadingRef = customRef((track, trigger) => {
+    return {
+      get() {
+        track();
+        return loading;
+      },
+      set(value) {
+        loading = value;
+        trigger();
+      },
+    };
+  });
   return {
     get loading() {
       return loadingRef.value;
     },
     invoke: async (...args: Parameters<T>) => {
-      if (loadingRef.value) {
+      if (loading) {
         return;
       }
       loadingRef.value = true;
@@ -38,9 +50,10 @@ export const useBatchTask = <T extends (...args: any[]) => Promise<void>>(
   handler?: (error: any) => void,
 ) => {
   const loading = shallowReactive<Record<string, boolean>>({});
+  const rawLoading = toRaw(loading);
   const invoke = async (...args: Parameters<T>) => {
     const loadingKey = String(keyGetter(...args));
-    if (loading[loadingKey]) {
+    if (rawLoading[loadingKey]) {
       return;
     }
     loading[loadingKey] = true;
