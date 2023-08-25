@@ -59,7 +59,7 @@ export const showShareError = () => {
             </a>
           </div>
           <div>
-            2. 安装任意脚本管理器, 如{` `}
+            2. 安装脚本管理器, 如{` `}
             <a
               href="https://www.tampermonkey.net/"
               target="_blank"
@@ -77,7 +77,7 @@ export const showShareError = () => {
             </a>
           </div>
           <div>
-            3. 安装油猴脚本
+            3. 安装油猴脚本{` `}
             <a
               href="https://github.com/gkd-kit/network-extension"
               target="_blank"
