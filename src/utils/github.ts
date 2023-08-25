@@ -1,6 +1,7 @@
 import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
 import { obj2form } from './others';
+import store from './store';
 
 const authenticityTokenPageUrl = `https://github.com/gkd-kit/inspect/issues/new`;
 const repository_id = `661952005`;
@@ -11,9 +12,7 @@ const commonHeaders = {
 
 const getCsrfToken = async () => {
   const csrfSelector = `[data-upload-policy-url="/upload/policies/assets"] input.js-data-upload-policy-url-csrf`;
-  const resp = await enhanceFetch(authenticityTokenPageUrl, undefined, {
-    gm: true,
-  });
+  const resp = await enhanceFetch(authenticityTokenPageUrl);
   const responseDoc = new DOMParser().parseFromString(
     await resp.text(),
     'text/html',
@@ -71,6 +70,7 @@ export const uploadPoliciesAssets = async (
 
   const authenticity_token = await getCsrfToken();
   if (!authenticity_token) {
+    store.githubErrorDlgVisible = true;
     throw new Error(`failed get csrfToken`);
   }
 

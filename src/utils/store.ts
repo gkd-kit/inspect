@@ -1,7 +1,8 @@
 import { reactive } from 'vue';
 
 const store = reactive({
-  shareErrorDlgVisible: false,
+  networkErrorDlgVisible: false,
+  githubErrorDlgVisible: false,
 });
 
 export default store;

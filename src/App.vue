@@ -8,20 +8,32 @@ import {
   DialogReactive,
 } from 'naive-ui';
 import { onUnmounted, watchEffect } from 'vue';
-import { showShareError } from '@/utils/dialog';
+import { showNetworkError, showGithubError } from '@/utils/dialog';
 import store from './utils/store';
 
-let shareErrorDlg: DialogReactive | undefined = undefined;
+let networkErrorDlg: DialogReactive | undefined = undefined;
 watchEffect(() => {
-  shareErrorDlg?.destroy();
-  if (store.shareErrorDlgVisible) {
-    shareErrorDlg = showShareError();
+  networkErrorDlg?.destroy();
+  if (store.networkErrorDlgVisible) {
+    networkErrorDlg = showNetworkError();
   } else {
-    shareErrorDlg = undefined;
+    networkErrorDlg = undefined;
   }
 });
 onUnmounted(() => {
-  shareErrorDlg?.destroy();
+  networkErrorDlg?.destroy();
+});
+let githubErrorDlg: DialogReactive | undefined = undefined;
+watchEffect(() => {
+  githubErrorDlg?.destroy();
+  if (store.githubErrorDlgVisible) {
+    githubErrorDlg = showGithubError();
+  } else {
+    githubErrorDlg = undefined;
+  }
+});
+onUnmounted(() => {
+  githubErrorDlg?.destroy();
 });
 </script>
 
