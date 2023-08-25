@@ -1,6 +1,28 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import { NConfigProvider, zhCN, dateZhCN } from 'naive-ui';
+import {
+  NConfigProvider,
+  zhCN,
+  dateZhCN,
+  NDialog,
+  DialogReactive,
+} from 'naive-ui';
+import { onUnmounted, watchEffect } from 'vue';
+import { showShareError } from '@/utils/dialog';
+import store from './utils/store';
+
+let shareErrorDlg: DialogReactive | undefined = undefined;
+watchEffect(() => {
+  shareErrorDlg?.destroy();
+  if (store.shareErrorDlgVisible) {
+    shareErrorDlg = showShareError();
+  } else {
+    shareErrorDlg = undefined;
+  }
+});
+onUnmounted(() => {
+  shareErrorDlg?.destroy();
+});
 </script>
 
 <template>

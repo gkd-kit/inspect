@@ -1,50 +1,34 @@
 import { GM_fetch, gmOk } from './gm';
-
-const corsOkOrigins = new Set([
-  location.origin,
-  `https://cdn.jsdelivr.net`,
-  `https://fastly.jsdelivr.net`,
-  `https://raw.githubusercontent.com`,
-  `https://raw.githubusercontents.com`,
-  `https://raw.gitmirror.com`,
-]);
-
-const browser_allow_cors = () => {
-  // 1. browser extensions modify response headers
-  // 2. browser startup parameter, chrome --disable-web-security
-  // 3. electronjs
-  return localStorage.getItem(`--browser_allow_cors`) == `1`;
-};
-
-const isPureIpHostname = (u: URL) => {
-  return u.hostname.split(`.`).every((n) => Number.isInteger(parseInt(n)));
-};
+import store from './store';
 
 export const enhanceFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
+  options?: {
+    direct?: boolean;
+    proxy?: boolean;
+    gm?: boolean;
+  },
 ) => {
-  if (browser_allow_cors()) {
-    return fetch(input, init);
+  if (options?.gm) {
+    if (gmOk()) {
+      // with cookie
+      // export snapshot need
+      return GM_fetch(input, init);
+    }
+    store.shareErrorDlgVisible = true;
+    throw new Error(`gm is not supported`);
   }
-
-  const u = new URL(new Request(input).url);
-  if (corsOkOrigins.has(u.origin) || isPureIpHostname(u)) {
-    return fetch(input, init);
+  if (options?.proxy) {
+    const u = new URL(new Request(input).url);
+    const proxyUrl = new URL(`https://proxy-workers.lisonge.workers.dev/`);
+    proxyUrl.searchParams.set(`proxyUrl`, u.href);
+    const request = new Request(input, init);
+    return fetch(proxyUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+    });
   }
-
-  if (gmOk()) {
-    // with cookie
-    // export snapshot need
-    return GM_fetch(input, init);
-  }
-
-  const proxyUrl = new URL(`https://proxy-workers.lisonge.workers.dev/`);
-  proxyUrl.searchParams.set(`proxyUrl`, u.href);
-  const request = new Request(input, init);
-  return fetch(proxyUrl, {
-    method: request.method,
-    headers: request.headers,
-    body: request.body,
-  });
+  return fetch(input, init);
 };

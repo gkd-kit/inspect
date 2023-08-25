@@ -1,17 +1,20 @@
 import { delay } from './others';
 import { headers2obj } from './others';
 
-export const GM_xmlhttpRequest: typeof window.__GmNetworkExtension.GM_xmlhttpRequest =
-  (...args) => {
-    return window.__GmNetworkExtension?.GM_xmlhttpRequest(...args);
-  };
-
-const scriptHandler = () => {
-  return window.__GmNetworkExtension?.GM_info?.scriptHandler;
+type GmXhrRequest = import('vite-plugin-monkey/dist/client').GmXhrRequest<
+  unknown,
+  'blob'
+>;
+const proxyFc = <T extends (...args: any[]) => any>(getFc: () => T) => {
+  return ((...args: any[]) => getFc()(...args)) as T;
 };
 
+export const GM_xmlhttpRequest = proxyFc(
+  () => window.__NetworkExtension__?.GM_xmlhttpRequest,
+);
+
 export const gmOk = () => {
-  return !!window.__GmNetworkExtension?.GM_xmlhttpRequest;
+  return !!window.__NetworkExtension__?.GM_xmlhttpRequest;
 };
 
 /**
@@ -52,29 +55,6 @@ const fixUrl = (url = '') => {
   }
 };
 
-const reverseForm = (formData: FormData): FormData => {
-  const reversedForm = new FormData();
-  const reversedList: [string, FormDataEntryValue][] = [];
-  formData.forEach((v, k) => {
-    reversedList.push([k, v]);
-  });
-  reversedList.reverse().forEach(([k, v]) => {
-    reversedForm.append(k, v);
-  });
-  return reversedForm;
-};
-
-const compatForm = (formData: FormData, headers: Headers) => {
-  headers.delete(`content-type`);
-  if (scriptHandler() == `Tampermonkey`) {
-    // https://github.com/Tampermonkey/tampermonkey/issues/1783
-    return reverseForm(formData);
-  }
-  return formData;
-};
-
-type XhrRequest = import('vite-plugin-monkey/dist/client').XhrRequest;
-
 /**
  * simulate window.fetch with GM_xmlhttpRequest
  *
@@ -95,9 +75,11 @@ type XhrRequest = import('vite-plugin-monkey/dist/client').XhrRequest;
 export const GM_fetch = async (
   input: RequestInfo | URL,
   init: RequestInit = {},
-  xhrDetails: Partial<XhrRequest> | ((arg: XhrRequest) => XhrRequest) = {},
+  xhrDetails:
+    | Partial<GmXhrRequest>
+    | ((arg: GmXhrRequest) => GmXhrRequest) = {},
 ): Promise<Response> => {
-  const request = new Request(input, init);
+  const request = new Request(input, init).clone();
   if (request.signal?.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
@@ -116,29 +98,22 @@ export const GM_fetch = async (
 
   if (method != 'GET') {
     if (init.body) {
-      if (init.body instanceof FormData) {
-        data = compatForm(init.body, sendHeaders);
-      } else if (
+      if (
         typeof init.body == 'string' ||
         init.body instanceof URLSearchParams
       ) {
         data = init.body;
+      } else if (init.body instanceof FormData) {
+        data = init.body;
+        sendHeaders.delete(`content-type`);
       } else {
         binary = true;
         data = await request.blob();
       }
-    } else {
-      const formData = await request
-        .clone()
-        .formData()
-        .catch(() => {});
-      if (formData) {
-        data = compatForm(formData, sendHeaders);
-      }
     }
   }
   return new Promise<Response>((resolve, reject) => {
-    let initXhrDetails: XhrRequest = {
+    let initXhrDetails: GmXhrRequest = {
       method,
       url,
       headers: headers2obj(sendHeaders),

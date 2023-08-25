@@ -2,8 +2,8 @@ import { enhanceFetch } from './fetch';
 import { isPngBf, isZipBf } from './file_type';
 import { obj2form } from './others';
 
-const authenticityTokenPageUrl = `https://github.com/lisonge/lisonge/issues/new`;
-const repository_id = `280305380`;
+const authenticityTokenPageUrl = `https://github.com/gkd-kit/inspect/issues/new`;
+const repository_id = `661952005`;
 const commonHeaders = {
   origin: `https://github.com`,
   referer: authenticityTokenPageUrl,
@@ -11,7 +11,9 @@ const commonHeaders = {
 
 const getCsrfToken = async () => {
   const csrfSelector = `[data-upload-policy-url="/upload/policies/assets"] input.js-data-upload-policy-url-csrf`;
-  const resp = await enhanceFetch(authenticityTokenPageUrl);
+  const resp = await enhanceFetch(authenticityTokenPageUrl, undefined, {
+    gm: true,
+  });
   const responseDoc = new DOMParser().parseFromString(
     await resp.text(),
     'text/html',
@@ -64,7 +66,7 @@ export const uploadPoliciesAssets = async (
     } else if (isZipBf(bf)) {
       return [fileName || `file.zip`, `application/x-zip-compressed`];
     }
-    throw new Error(`invalid bf, it must be png or zip`);
+    throw new Error(`invalid buffer, it must be png or zip`);
   })();
 
   const authenticity_token = await getCsrfToken();

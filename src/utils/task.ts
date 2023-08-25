@@ -5,7 +5,7 @@ import type { PrimitiveType } from './types';
 export const useTask = <T extends (...args: any[]) => Promise<void>>(
   fn: T,
   miniInterval = 0,
-  handler: (error: any) => void = () => {},
+  handler?: (error: any) => void,
 ) => {
   let loading = false;
   const loadingRef = customRef((track, trigger) => {
