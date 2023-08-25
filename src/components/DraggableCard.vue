@@ -15,10 +15,13 @@ const props = withDefaults(
 
 const isLeft = props.initialValue.left !== void 0;
 const isTop = props.initialValue.top !== void 0;
+const initX =
+  (isLeft ? props.initialValue.left : props.initialValue.right) ?? 0;
+const initY = (isTop ? props.initialValue.top : props.initialValue.bottom) ?? 0;
 
 const offset = shallowReactive({
-  x: (isLeft ? props.initialValue.left : props.initialValue.right) ?? 0,
-  y: (isTop ? props.initialValue.top : props.initialValue.bottom) ?? 0,
+  x: initX,
+  y: initY,
 });
 const currentStyle = computed(() => {
   const xStyle = isLeft ? `left:${offset.x}px;` : `right:${offset.x}px;`;
@@ -29,8 +32,10 @@ let moving = false;
 const startMove = () => {
   moving = true;
 };
+
 const move = (ev: PointerEvent) => {
-  if (!moving) return;
+  if (!moving || !target.value) return;
+
   offset.x += isLeft ? ev.movementX : -ev.movementX;
   offset.y += isTop ? ev.movementY : -ev.movementY;
 };
@@ -38,12 +43,38 @@ const endMove = () => {
   moving = false;
 };
 const target = shallowRef<HTMLElement>();
+const preventSelection = (ev: Event) => {
+  if (moving) {
+    ev.preventDefault();
+  }
+};
+
+const windowEndMove = (ev: PointerEvent) => {
+  endMove();
+  if (!target.value) return;
+  const { top, bottom, left, right } = target.value.getBoundingClientRect();
+  if (
+    right < 0 ||
+    left > window.innerWidth ||
+    bottom < 0 ||
+    top > window.innerHeight
+  ) {
+    // isOutsideViewport
+    offset.x = initX;
+    offset.y = initY;
+  }
+};
 
 // move 事件应该给 window. 如果给目标元素,容易出现鼠标移速过快无法跟随的bug
 window.addEventListener('pointermove', move);
+window.addEventListener('pointerup', windowEndMove);
+document.addEventListener('selectstart', preventSelection);
 onUnmounted(() => {
   window.removeEventListener('pointermove', move);
+  window.removeEventListener('pointerup', windowEndMove);
+  document.removeEventListener('selectstart', preventSelection);
 });
+
 watch(target, (newValue, oldvalue) => {
   if (newValue) {
     newValue.addEventListener('pointerdown', startMove);
