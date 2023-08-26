@@ -120,14 +120,18 @@ const enableSearchBySelector = shallowRef(false);
         <NCollapseItem
           v-for="(selectorResult, index) in selectorResults"
           :key="selectorResult.selector.toString()"
-          :title="
-            (typeof selectorResult.selector == 'string'
-              ? `字符搜索`
-              : `选择器查询`) +
-            `：` +
-            selectorResult.selector.toString()
-          "
         >
+          <template #header>
+            <span break-all>
+              {{
+                (typeof selectorResult.selector == 'string'
+                  ? `字符搜索`
+                  : `选择器查询`) +
+                `：` +
+                selectorResult.selector.toString()
+              }}
+            </span>
+          </template>
           <template #header-extra>
             {{ selectorResult.results.length + `个节点` }}
             <div p-l-8px></div>
