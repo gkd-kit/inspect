@@ -15,42 +15,47 @@ const props = withDefaults(
 
 const isLeft = props.initialValue.left !== void 0;
 const isTop = props.initialValue.top !== void 0;
-const initX =
-  (isLeft ? props.initialValue.left : props.initialValue.right) ?? 0;
-const initY = (isTop ? props.initialValue.top : props.initialValue.bottom) ?? 0;
+const prevOffset = {
+  x: (isLeft ? props.initialValue.left : props.initialValue.right) ?? 0,
+  y: (isTop ? props.initialValue.top : props.initialValue.bottom) ?? 0,
+};
 
-const offset = shallowReactive({
-  x: initX,
-  y: initY,
-});
+const offset = shallowReactive({ ...prevOffset });
 const currentStyle = computed(() => {
   const xStyle = isLeft ? `left:${offset.x}px;` : `right:${offset.x}px;`;
   const yStyle = isTop ? `top:${offset.y}px;` : `bottom:${offset.y}px;`;
   return xStyle + yStyle;
 });
-let moving = false;
-const startMove = () => {
-  moving = true;
+/**
+ * it will be PointerEvent when moving
+ */
+let prevEv: PointerEvent | undefined = undefined;
+const startMove = (ev: PointerEvent) => {
+  prevEv = ev;
+  prevOffset.x = offset.x;
+  prevOffset.y = offset.y;
 };
-
 const move = (ev: PointerEvent) => {
-  if (!moving || !target.value) return;
+  if (!target.value || !prevEv) return;
 
-  offset.x += isLeft ? ev.movementX : -ev.movementX;
-  offset.y += isTop ? ev.movementY : -ev.movementY;
+  const dx = ev.clientX - prevEv.clientX; // ev.movementX;
+  const dy = ev.clientY - prevEv.clientY; //ev.movementY;
+
+  offset.x = prevOffset.x + (isLeft ? dx : -dx);
+  offset.y = prevOffset.y + (isTop ? dy : -dy);
 };
 const endMove = () => {
-  moving = false;
+  prevEv = undefined;
 };
+const box = shallowRef<HTMLElement>();
 const target = shallowRef<HTMLElement>();
 const preventSelection = (ev: Event) => {
-  if (moving) {
+  if (prevEv) {
     ev.preventDefault();
   }
 };
-
-const windowEndMove = (ev: PointerEvent) => {
-  endMove();
+const transitions = [`transition-top,bottom,left,right-500`];
+const windowEndMove = () => {
   if (!target.value) return;
   const { top, bottom, left, right } = target.value.getBoundingClientRect();
   if (
@@ -60,8 +65,17 @@ const windowEndMove = (ev: PointerEvent) => {
     top > window.innerHeight
   ) {
     // isOutsideViewport
-    offset.x = initX;
-    offset.y = initY;
+    offset.x = prevOffset.x;
+    offset.y = prevOffset.y;
+    endMove();
+
+    const boxDiv = box.value;
+    if (boxDiv) {
+      boxDiv.classList.add(...transitions);
+      setTimeout(() => {
+        boxDiv.classList.remove(...transitions);
+      }, 550);
+    }
   }
 };
 
@@ -73,6 +87,7 @@ onUnmounted(() => {
   window.removeEventListener('pointermove', move);
   window.removeEventListener('pointerup', windowEndMove);
   document.removeEventListener('selectstart', preventSelection);
+  endMove();
 });
 
 watch(target, (newValue, oldvalue) => {
@@ -102,6 +117,7 @@ const updateTarget = (arg: unknown) => {
   <Teleport to="body">
     <div
       fixed
+      ref="box"
       :style="[$attrs.style as string, currentStyle]"
       :class="$attrs.class"
     >
@@ -109,3 +125,12 @@ const updateTarget = (arg: unknown) => {
     </div>
   </Teleport>
 </template>
+<style>
+.smooth-1s {
+  transition:
+    bottom 1s,
+    top 1s,
+    right 1s,
+    left 1s;
+}
+</style>
