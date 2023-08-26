@@ -114,7 +114,7 @@ const renderLabel = (info: {
         <NTr>
           <NTh class="w-150px"> Device </NTh>
           <NTh class="w-120px"> Name </NTh>
-          <NTh class="w-150px"> AppId </NTh>
+          <NTh class="w-250px"> AppId </NTh>
           <NTh> ActivityId </NTh>
           <NTh class="w-175px"> 操作 </NTh>
         </NTr>
