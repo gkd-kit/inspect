@@ -22,6 +22,14 @@ const router = createRouter({
       name: 'device',
       component: () => import('@/views/DevicePage.vue'),
     },
+    {
+      path: '/404',
+      component: () => import('@/views/_404Page.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404',
+    },
   ],
 });
 
