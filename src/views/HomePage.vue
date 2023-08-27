@@ -14,6 +14,7 @@ import { shallowSnapshotStorage, snapshotStorage } from '@/utils/storage';
 import { renderDveice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
+import { githubUrlToSelfUrl } from '@/utils/url';
 import {
   NButton,
   NDataTable,
@@ -218,13 +219,15 @@ const batchDownloadZip = useTask(async () => {
 const batchSharePngUrl = useTask(async () => {
   const policiesAssets = await batchCreatePngUrl(await checkedSnapshots());
   showTextDLg({
-    content: policiesAssets.map((s) => s.href).join(`\n`) + `\n`,
+    content:
+      policiesAssets.map((s) => githubUrlToSelfUrl(s.href)).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
   const policiesAssets = await batchCreateZipUrl(await checkedSnapshots());
   showTextDLg({
-    content: policiesAssets.map((s) => s.href).join(`\n`) + `\n`,
+    content:
+      policiesAssets.map((s) => githubUrlToSelfUrl(s.href)).join(`\n`) + `\n`,
   });
 });
 </script>

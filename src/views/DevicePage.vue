@@ -194,7 +194,7 @@ watch(pagination, reseColWidth);
           @keyup.enter="connect.invoke"
         ></NInput>
         <NButton ghost @click="connect.invoke" :loading="connect.loading">
-          连接
+          刷新连接
         </NButton>
       </NInputGroup>
       <template v-if="device">
