@@ -61,7 +61,7 @@ watchEffect(async () => {
 });
 
 const captureSnapshot = useTask(async () => {
-  const snapshot = await api.snapshot();
+  const snapshot = await api.captureSnapshot();
   const screenshot = await api.screenshot({ id: snapshot.id });
   message.success(`抓取快照成功`);
   await snapshotStorage.setItem(snapshot.id, snapshot);
