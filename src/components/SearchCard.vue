@@ -84,7 +84,7 @@ const searchBySelector = errorTry(() => {
       return;
     }
     message.success(`搜索到 ${results.length} 个节点`);
-    selectorResults.push({ selector: text, results });
+    selectorResults.unshift({ selector: text, results });
   }
 });
 const enableSearchBySelector = shallowRef(false);
