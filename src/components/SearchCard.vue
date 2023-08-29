@@ -60,7 +60,7 @@ const searchBySelector = errorTry(() => {
       return;
     }
     message.success(`选择到 ${results.length} 个节点`);
-    selectorResults.push({ selector, results });
+    selectorResults.unshift({ selector, results });
   } else {
     if (
       selectorResults.find(
