@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@gkd-kit/selector':
-    specifier: 0.0.10
-    version: 0.0.10
+    specifier: 0.0.11
+    version: 0.0.11
   '@types/file-saver':
     specifier: ^2.0.5
     version: 2.0.5
@@ -88,7 +88,7 @@ dependencies:
     version: 5.2.2
   unocss:
     specifier: ^0.53.5
-    version: 0.53.5(postcss@8.4.26)(vite@4.4.9)
+    version: 0.53.5(postcss@8.4.28)(vite@4.4.9)
   vite:
     specifier: ^4.4.9
     version: 4.4.9(@types/node@20.5.6)(sass@1.66.1)(terser@5.17.1)
@@ -1770,8 +1770,8 @@ packages:
     dev: false
     optional: true
 
-  /@gkd-kit/selector@0.0.10:
-    resolution: {integrity: sha512-k9kE8ZrqJ6CoNSXqjlxZ0EbdwSsNXwkQJ1TwZ33Yxh1ujITyOGJk0D+gwaNzOCj6qRfAomdTXPXXk44YVVWqCA==}
+  /@gkd-kit/selector@0.0.11:
+    resolution: {integrity: sha512-WqerYbOBOnVQkDgiqhjSFWfZZdJwPNiM1faFFVHrUCL0cwtpi0QZa0MEknd66i82kTs2bBwqmD8y21syNZaNDg==}
     dev: false
 
   /@iconify/types@2.0.0:
@@ -2031,7 +2031,7 @@ packages:
       sirv: 2.0.3
     dev: false
 
-  /@unocss/postcss@0.53.5(postcss@8.4.26):
+  /@unocss/postcss@0.53.5(postcss@8.4.28):
     resolution: {integrity: sha512-IfZl4GxrpegP/861bp3e0X3VcQJ9/M3VxC9UQ7zzxkOz/E8R09iMpbnznVLrTiLp2r96p5k/ggXLoadFm1FxGA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -2042,7 +2042,7 @@ packages:
       css-tree: 2.3.1
       fast-glob: 3.3.0
       magic-string: 0.30.1
-      postcss: 8.4.26
+      postcss: 8.4.28
     dev: false
 
   /@unocss/preset-attributify@0.53.5:
@@ -4032,15 +4032,6 @@ packages:
       source-map-js: 1.0.2
     dev: false
 
-  /postcss@8.4.26:
-    resolution: {integrity: sha512-jrXHFF8iTloAenySjM/ob3gSj7pCu0Ji49hnjqzsgSRa50hkWCKD0HQ+gMNJkW38jBI68MpAAg7ZWwHwX8NMMw==}
-    engines: {node: ^10 || ^12 || >=14}
-    dependencies:
-      nanoid: 3.3.6
-      picocolors: 1.0.0
-      source-map-js: 1.0.2
-    dev: false
-
   /postcss@8.4.28:
     resolution: {integrity: sha512-Z7V5j0cq8oEKyejIKfpD8b4eBy9cwW2JWPk0+fB1HOAMsfHbnAXLLS+PfVWlzMSLQaWttKDt607I0XHmpE67Vw==}
     engines: {node: ^10 || ^12 || >=14}
@@ -4508,7 +4499,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /unocss@0.53.5(postcss@8.4.26)(vite@4.4.9):
+  /unocss@0.53.5(postcss@8.4.28)(vite@4.4.9):
     resolution: {integrity: sha512-LXAdtzAaH8iEDWxW4t9i6TvJNw0OSrgdN+jw8rAZAWb73Nx51ZLoKPUB1rFvQMr2Li7LcsUj5hYpOrQbhhafYg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -4521,7 +4512,7 @@ packages:
       '@unocss/cli': 0.53.5
       '@unocss/core': 0.53.5
       '@unocss/extractor-arbitrary-variants': 0.53.5
-      '@unocss/postcss': 0.53.5(postcss@8.4.26)
+      '@unocss/postcss': 0.53.5(postcss@8.4.28)
       '@unocss/preset-attributify': 0.53.5
       '@unocss/preset-icons': 0.53.5
       '@unocss/preset-mini': 0.53.5
