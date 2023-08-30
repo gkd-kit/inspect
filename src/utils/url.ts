@@ -12,20 +12,27 @@ const corsOkOrigins = new Set([
 export const isAllowCorsUrl = (u: string | URL) => {
   return corsOkOrigins.has(new URL(u).origin);
 };
-const assetsBaseUrl = `https://github.com/gkd-kit/inspect/assets/`;
-const filesBaseUrl = `https://github.com/gkd-kit/inspect/files/`;
+
+// https://github.com/gkd-kit/inspect/files/12448138/file.zip -> /import/12448138
+export const githubZipUrlReg =
+  /^https:\/\/github\.com\/gkd-kit\/inspect\/files\/([0-9]+)\/file\.zip$/;
+
+// https://github.com/gkd-kit/inspect/assets/38517192/83fc7e58-8b8e-4114-a897-3e7bb7d8c45a -> /import/38517192/83fc7e58-8b8e-4114-a897-3e7bb7d8c45a
+export const githubPngUrlReg =
+  /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/([0-9]+)\/([0-9a-z\-]+)$/;
+
 export const githubUrlToSelfUrl = (u: string | URL): string => {
-  // https://github.com/gkd-kit/inspect/files/12448138/file.zip -> /import/12448138
-  // https://github.com/gkd-kit/inspect/assets/38517192/83fc7e58-8b8e-4114-a897-3e7bb7d8c45a -> /import/38517192/83fc7e58-8b8e-4114-a897-3e7bb7d8c45a
   u = u.toString();
   let href: string;
-  if (u.startsWith(assetsBaseUrl)) {
+  const { 1: zipAssetId } = u.match(githubZipUrlReg) || [];
+  const { 1: userId, 2: pngAssetId } = u.match(githubPngUrlReg) || [];
+  if (zipAssetId) {
     href = router.resolve({
-      path: `/import/` + u.substring(assetsBaseUrl.length),
+      path: `/import/${zipAssetId}`,
     }).href;
-  } else if (u.startsWith(filesBaseUrl)) {
+  } else if (userId && pngAssetId) {
     href = router.resolve({
-      path: `/import/` + u.substring(filesBaseUrl.length).split(`/`)[0],
+      path: `/import/${userId}/${pngAssetId}`,
     }).href;
   } else {
     throw new Error(

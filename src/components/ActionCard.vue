@@ -50,22 +50,22 @@ const previewUrl = computed(() => {
 });
 
 const exportPngUrl = useTask(async () => {
-  const githubAsset = await exportSnapshotAsPngUrl(
+  const pngUrl = await exportSnapshotAsPngUrl(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(githubAsset.href),
+    content: githubUrlToSelfUrl(pngUrl),
   });
 });
 
 const exportZipUrl = useTask(async () => {
-  const githubAsset = await exportSnapshotAsZipUrl(
+  const zipUrl = await exportSnapshotAsZipUrl(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(githubAsset.href),
+    content: githubUrlToSelfUrl(zipUrl),
   });
 });
 

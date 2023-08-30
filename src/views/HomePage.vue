@@ -217,17 +217,17 @@ const batchDownloadZip = useTask(async () => {
 });
 
 const batchSharePngUrl = useTask(async () => {
-  const policiesAssets = await batchCreatePngUrl(await checkedSnapshots());
+  const pngUrls = await batchCreatePngUrl(await checkedSnapshots());
   showTextDLg({
     content:
-      policiesAssets.map((s) => githubUrlToSelfUrl(s.href)).join(`\n`) + `\n`,
+      pngUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
-  const policiesAssets = await batchCreateZipUrl(await checkedSnapshots());
+  const zipUrls = await batchCreateZipUrl(await checkedSnapshots());
   showTextDLg({
     content:
-      policiesAssets.map((s) => githubUrlToSelfUrl(s.href)).join(`\n`) + `\n`,
+      zipUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
   });
 });
 </script>

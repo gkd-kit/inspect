@@ -40,8 +40,8 @@ export type GithubPoliciesAsset = {
   name: string;
   size: number;
   content_type: string;
-  href: string;
   original_name: string;
+  href: string;
 };
 
 type UploadPoliciesAssetsRsonpse = {

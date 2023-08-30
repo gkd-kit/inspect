@@ -3,7 +3,10 @@ import { toValidURL } from '@/utils/check';
 import { loadingBar, message } from '@/utils/discrete';
 import { importFromNetwork } from '@/utils/import';
 import { delay } from '@/utils/others';
+import { githubZipStorage } from '@/utils/storage';
+import { githubPngStorage } from '@/utils/storage';
 import { urlStorage, snapshotStorage } from '@/utils/storage';
+import { githubPngUrlReg, githubZipUrlReg } from '@/utils/url';
 import { onMounted, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -45,8 +48,13 @@ onMounted(async () => {
     if (result.status == 'fulfilled') {
       loadingBar.finish();
       const snapshot = result.value;
-      if (snapshot) {
+      if (snapshot?.id) {
         urlStorage[importUrl] = snapshot.id;
+        if (importUrl.match(githubZipUrlReg)) {
+          githubZipStorage[snapshot.id] = importUrl;
+        } else if (importUrl.match(githubPngUrlReg)) {
+          githubPngStorage[snapshot.id] = importUrl;
+        }
         loading.value = false;
         await delay(500);
         router.replace({

@@ -70,8 +70,8 @@ export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
     uploadPoliciesAssets(
       await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
     ).then((r) => {
-      githubPngStorage[snapshot.id] = structuredClone(r);
-      return r;
+      githubPngStorage[snapshot.id] = r.href;
+      return r.href;
     })
   );
 };
@@ -82,8 +82,8 @@ export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
     uploadPoliciesAssets(
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
     ).then((r) => {
-      githubZipStorage[snapshot.id] = structuredClone(r);
-      return r;
+      githubZipStorage[snapshot.id] = r.href;
+      return r.href;
     })
   );
 };
@@ -94,7 +94,7 @@ export const batchCreatePngUrl = async (snapshots: Snapshot[]) => {
     await Promise.allSettled(
       snapshots.map((s) => limit(() => exportSnapshotAsPngUrl(s))),
     )
-  ).reduce<GithubPoliciesAsset[]>((p, c) => {
+  ).reduce<string[]>((p, c) => {
     if (c.status == 'fulfilled') {
       p.push(c.value);
     }
@@ -107,7 +107,7 @@ export const batchCreateZipUrl = async (snapshots: Snapshot[]) => {
     await Promise.allSettled(
       snapshots.map((s) => limit(() => exportSnapshotAsZipUrl(s))),
     )
-  ).reduce<GithubPoliciesAsset[]>((p, c) => {
+  ).reduce<string[]>((p, c) => {
     if (c.status == 'fulfilled') {
       p.push(c.value);
     }
