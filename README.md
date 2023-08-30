@@ -1,4 +1,4 @@
-# snapshot-inspect
+# @gkd-kit/inspect
 
 - <https://gkd-kit.songe.li> github pages
 
