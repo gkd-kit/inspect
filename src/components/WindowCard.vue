@@ -113,8 +113,10 @@ const renderLabel = (info: {
       <NThead>
         <NTr>
           <NTh class="w-150px"> Device </NTh>
-          <NTh class="w-120px"> Name </NTh>
-          <NTh class="w-250px"> AppId </NTh>
+          <NTh class="w-110px"> Name </NTh>
+          <NTh class="w-110px"> VersionName </NTh>
+          <NTh class="w-110px"> VersionCode </NTh>
+          <NTh class="w-240px"> AppId </NTh>
           <NTh> ActivityId </NTh>
           <NTh class="w-175px"> 操作 </NTh>
         </NTr>
@@ -122,11 +124,21 @@ const renderLabel = (info: {
       <NTbody>
         <NTr>
           <NTd class="whitespace-nowrap">
-            {{ `${snapshot.manufacturer} Android ${snapshot.release || `13`}` }}
+            {{ `${snapshot.manufacturer} Android ${snapshot.release || ``}` }}
           </NTd>
-          <NTd class="whitespace-nowrap">
+          <NTd class="whitespace-nowrap" @click="copy(snapshot.appName)">
             <NEllipsis>
               {{ snapshot.appName }}
+            </NEllipsis>
+          </NTd>
+          <NTd class="whitespace-nowrap" @click="copy(snapshot.appVersionName)">
+            <NEllipsis>
+              {{ snapshot.appVersionName }}
+            </NEllipsis>
+          </NTd>
+          <NTd class="whitespace-nowrap" @click="copy(snapshot.appVersionCode.toString())">
+            <NEllipsis>
+              {{ snapshot.appVersionCode }}
             </NEllipsis>
           </NTd>
           <NTd class="whitespace-nowrap" @click="copy(snapshot.appId)">
