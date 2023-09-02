@@ -3,9 +3,12 @@ import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { shallowReactive } from 'vue';
 import { useAutoWrapWidthColumn } from './size';
 import type { Snapshot } from './types';
+import { getDevice } from './node';
 
 export const renderDveice = (row: Snapshot) => {
-  return `${row.manufacturer} Android${row.release || `13`}`;
+  return `${getDevice(row).manufacturer} Android${
+    getDevice(row).release || `13`
+  }`;
 };
 export const useSnapshotColumns = () => {
   const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({

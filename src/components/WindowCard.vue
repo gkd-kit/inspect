@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { getNodeLabel } from '@/utils/node';
+import { getDevice, getNodeLabel } from '@/utils/node';
 import { copy } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import {
@@ -15,6 +15,8 @@ import {
   type TreeOption,
 } from 'naive-ui';
 import { HTMLAttributes, nextTick, shallowRef, watchEffect } from 'vue';
+
+
 
 const props = withDefaults(
   defineProps<{
@@ -124,7 +126,7 @@ const renderLabel = (info: {
       <NTbody>
         <NTr>
           <NTd class="whitespace-nowrap">
-            {{ `${snapshot.manufacturer} Android ${snapshot.release || ``}` }}
+            {{ `${getDevice(snapshot).manufacturer} Android ${getDevice(snapshot).release || ``}` }}
           </NTd>
           <NTd class="whitespace-nowrap" @click="copy(snapshot.appName)">
             <NEllipsis>

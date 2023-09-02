@@ -59,10 +59,10 @@ export type Overview = {
   isLandscape: boolean;
 };
 
-export type Snapshot = Overview &
-  Device & {
-    nodes: RawNode[];
-  };
+export type Snapshot = Overview & {
+  device: Device;
+  nodes: RawNode[];
+};
 
 // export type SnapshotExt = Snapshot & {
 //   node: NaiveNode;

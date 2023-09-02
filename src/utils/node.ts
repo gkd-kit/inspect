@@ -1,4 +1,5 @@
-import type { RawNode, SizeExt } from './types';
+import { snapshotAsPng } from './export';
+import type { Device, RawNode, SizeExt, Snapshot } from './types';
 
 export const listToTree = (nodes: RawNode[]) => {
   // nodes = structuredClone(nodes);
@@ -93,4 +94,8 @@ export const getNodeLabel = (node: RawNode): string => {
   }
   Reflect.set(node, labelKey, label);
   return label;
+};
+
+export const getDevice = (snapshot: Snapshot) => {
+  return snapshot.device || (snapshot as unknown as Device);
 };
