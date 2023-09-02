@@ -97,5 +97,8 @@ export const getNodeLabel = (node: RawNode): string => {
 };
 
 export const getDevice = (snapshot: Snapshot) => {
-  return snapshot.device || (snapshot as unknown as Device);
+  if (typeof snapshot.device == 'object' && snapshot.device) {
+    return snapshot.device;
+  }
+  return snapshot as unknown as Device;
 };
