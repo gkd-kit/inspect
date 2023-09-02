@@ -34,3 +34,12 @@ export const parseSelector = (source: string): Selector => {
   };
   return selector;
 };
+
+export const checkSelector = (source: string) => {
+  if (!source.trim()) return false;
+  try {
+    return !!parseSelector(source);
+  } catch {
+    return false;
+  }
+};

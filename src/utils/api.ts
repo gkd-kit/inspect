@@ -1,21 +1,25 @@
 import { shallowRef } from 'vue';
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
-import { cacheStorage } from './storage';
 import type { Device, RpcError, Snapshot } from './types';
+
+type RpcOptions = {
+  query?: Record<string, unknown>;
+  init?: RequestInit;
+};
 
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = shallowRef(initOrigin);
-  const rpc = async (rpcName: string, query: Record<string, unknown> = {}) => {
+  const rpc = async (rpcName: string, options: RpcOptions = {}) => {
     if (!origin.value) {
       throw new Error(`origin must exist`);
     }
     const u = new URL(`/api/` + rpcName, origin.value);
-    Object.entries(query).forEach(([key, value]) => {
+    Object.entries(options.query || {}).forEach(([key, value]) => {
       if (value === undefined) return;
       u.searchParams.set(key, String(value));
     });
-    const response = await enhanceFetch(u).catch((e) => {
+    const response = await enhanceFetch(u, options.init).catch((e) => {
       message.error(`网络错误:/` + rpcName);
       throw e;
     });
@@ -47,16 +51,41 @@ export const useDeviceApi = (initOrigin?: string) => {
   const api = {
     device: async () => jsonRpc<Device>(`device`),
     snapshot: async (query?: { id?: string | number }) => {
-      return jsonRpc<Snapshot>(`snapshot`, query);
+      return jsonRpc<Snapshot>(`snapshot`, { query });
     },
     screenshot: async (query: { id: string | number }) => {
-      return arrayBufferRpc(`screenshot`, query);
+      return arrayBufferRpc(`screenshot`, { query });
     },
     captureSnapshot: async () => {
       return jsonRpc<Snapshot>(`captureSnapshot`);
     },
     snapshots: async () => {
       return jsonRpc<Snapshot[]>(`snapshots`);
+    },
+    subsApps: async () => {
+      return jsonRpc<unknown[]>(`subsApps`);
+    },
+    updateSubsApps: async (data: unknown[]) => {
+      return blobRpc(`updateSubsApps`, {
+        init: {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      });
+    },
+    execSelector: async (data: { value: string }) => {
+      return jsonRpc<{ message: string }>(`execSelector`, {
+        init: {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      });
     },
   };
   return { origin, api };

@@ -32,8 +32,6 @@ export const useTask = <T extends (...args: any[]) => Promise<void>>(
       await fn(...args).catch((e) => {
         if (handler) {
           handler(e);
-        } else {
-          console.error(e);
         }
       });
       await delay(miniInterval);

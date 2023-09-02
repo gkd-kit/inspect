@@ -10,7 +10,15 @@ const corsOkOrigins = new Set([
 ]);
 
 export const isAllowCorsUrl = (u: string | URL) => {
-  return corsOkOrigins.has(new URL(u).origin);
+  u = new URL(u);
+  if (
+    location.protocol == `http:` &&
+    u.protocol == `http:` &&
+    u.hostname.split(`.`).every((s) => Number.isSafeInteger(parseInt(s))) // is ip host
+  ) {
+    return true;
+  }
+  return corsOkOrigins.has(u.origin);
 };
 
 // https://github.com/gkd-kit/inspect/files/12448138/file.zip -> /import/12448138

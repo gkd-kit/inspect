@@ -8,7 +8,23 @@
 
 - <https://gkd-kit.vercel.app> vercel
 
-## example
+GKD 网页端审查工具, 抓取快照,审查快照,分享快照, 连接调试 GKD APP 内部 HTTP Server, 实时启用订阅规则, 实时执行点击选择器
+
+<details open>
+  <summary>示例: 审查快照</summary>
+
+![image](https://github.com/gkd-kit/inspect/assets/38517192/f37ec43c-cb39-4745-ad5b-e11a02cc5c28)
+
+</details>
+
+<details open>
+  <summary>示例: 实时执行点击选择器</summary>
+
+![2023-09-02_14-12-08](https://github.com/gkd-kit/inspect/assets/38517192/af79f677-bac0-49a3-964c-6d4cace9d9c9)
+
+</details>
+
+## 快照示例
 
 ```txt
 https://gkd-kit.gitee.io/import/12472597

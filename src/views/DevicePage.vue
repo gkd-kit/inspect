@@ -4,11 +4,13 @@ import { toValidURL } from '@/utils/check';
 import { message } from '@/utils/discrete';
 import { errorWrap } from '@/utils/error';
 import { delay } from '@/utils/others';
+import { checkSelector } from '@/utils/selector';
 import { snapshotStorage, screenshotStorage } from '@/utils/storage';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
 import { useStorage, useTitle } from '@vueuse/core';
+import JSON5 from 'json5';
 import {
   DataTableColumns,
   NButton,
@@ -18,6 +20,7 @@ import {
   NSpace,
   PaginationProps,
   NIcon,
+  NModal,
 } from 'naive-ui';
 import { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
@@ -59,12 +62,20 @@ watchEffect(async () => {
   const result = await api.snapshots();
   result.sort((a, b) => b.id - a.id);
   snapshots.value = result;
+  const subsApps = await api.subsApps();
+  subsText.value = JSON5.stringify(
+    subsApps || [],
+    function (key, value) {
+      if (value === null) return undefined;
+      return value;
+    },
+    2,
+  );
 });
 
 const captureSnapshot = useTask(async () => {
   const snapshot = await api.captureSnapshot();
   const screenshot = await api.screenshot({ id: snapshot.id });
-  message.success(`抓取快照成功`);
   await snapshotStorage.setItem(snapshot.id, snapshot);
   await screenshotStorage.setItem(snapshot.id, screenshot);
   message.success(`保存快照成功`);
@@ -180,8 +191,78 @@ const pagination = shallowReactive<PaginationProps>({
   },
 });
 watch(pagination, reseColWidth);
+
+const showSubsModel = shallowRef(false);
+const subsText = shallowRef(``);
+const updateSubs = useTask(async () => {
+  const appsSubs = errorWrap(() => JSON5.parse(subsText.value.trim() || `[]`));
+  await api.updateSubsApps([].concat(appsSubs));
+  message.success(`修改成功`);
+});
+
+const showSelectorModel = shallowRef(false);
+const selectorText = shallowRef(``);
+const execSelector = useTask(async () => {
+  const result = await api.execSelector({ value: selectorText.value });
+  if (!result.message) {
+    message.success(`无点击目标`);
+  } else {
+    message.success(`点击成功:` + result.message);
+  }
+});
 </script>
 <template>
+  <NModal
+    v-model:show="showSubsModel"
+    preset="dialog"
+    style="width: 800px"
+    title="修改内存订阅"
+    positive-text="确认"
+    :positiveButtonProps="{
+      loading: updateSubs.loading,
+      onClick() {
+        updateSubs.invoke();
+      },
+    }"
+  >
+    <NInput
+      v-model:value="subsText"
+      :disabled="updateSubs.loading"
+      type="textarea"
+      class="gkd_code"
+      :autosize="{
+        minRows: 10,
+        maxRows: 25,
+      }"
+      placeholder="请输入订阅文本"
+    />
+  </NModal>
+  <NModal
+    v-model:show="showSelectorModel"
+    preset="dialog"
+    style="width: 800px"
+    title="执行选择器"
+    positive-text="确认"
+    :positiveButtonProps="{
+      loading: execSelector.loading,
+      disabled: !checkSelector(selectorText),
+      onClick() {
+        execSelector.invoke();
+      },
+    }"
+  >
+    <NInput
+      v-model:value="selectorText"
+      :disabled="execSelector.loading"
+      type="textarea"
+      class="gkd_code"
+      :autosize="{
+        minRows: 4,
+        maxRows: 10,
+      }"
+      placeholder="请输入合法的选择器"
+    />
+  </NModal>
   <div flex flex-col p-10px gap-10px h-full>
     <NSpace>
       <RouterLink to="/">
@@ -209,7 +290,7 @@ watch(pagination, reseColWidth);
           :style="{ minWidth: `250px` }"
           @keyup.enter="connect.invoke"
         ></NInput>
-        <NButton ghost @click="connect.invoke" :loading="connect.loading">
+        <NButton @click="connect.invoke" :loading="connect.loading">
           刷新连接
         </NButton>
       </NInputGroup>
@@ -218,19 +299,19 @@ watch(pagination, reseColWidth);
           {{ `已连接 ${device.manufacturer} Android ${device.release}` }}
         </div>
         <NButton
-          ghost
           @click="captureSnapshot.invoke"
           :loading="captureSnapshot.loading"
         >
           快照
         </NButton>
         <NButton
-          ghost
           @click="downloadAllSnapshot.invoke"
           :loading="downloadAllSnapshot.loading"
         >
           下载设备所有快照
         </NButton>
+        <NButton @click="showSubsModel = true"> 修改内存订阅 </NButton>
+        <NButton @click="showSelectorModel = true"> 执行选择器 </NButton>
       </template>
     </NSpace>
     <NDataTable

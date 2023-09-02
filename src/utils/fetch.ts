@@ -9,7 +9,7 @@ export const enhanceFetch = async (
 ) => {
   const req = new Request(input);
   const u = new URL(req.url);
-  if (isAllowCorsUrl(u)) return fetch(input, init);
+  if (isAllowCorsUrl(u)) return fetch(input, { ...init,mode:'cors'});
 
   if (gmOk()) {
     // with cookie

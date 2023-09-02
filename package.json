@@ -25,6 +25,7 @@
     "dayjs": "^1.11.9",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.1.1",
+    "json5": "^2.2.3",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "naive-ui": "^2.34.4",
