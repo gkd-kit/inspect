@@ -4,7 +4,13 @@ const { CommonSelector, CommonTransform } = SelectorKit;
 
 const transform = new CommonTransform<RawNode>(
   (node, name) => {
-    return Reflect.get(node.attr, name);
+    const [key, subKey] = name.split('.');
+    if (subKey) {
+      // @ts-ignore
+      return node.attr[key]?.[subKey];
+    }
+    // @ts-ignore
+    return node.attr[key];
   },
   (node) => node.attr.name,
   (node) => node.children,

@@ -7,14 +7,26 @@ import DraggableCard from './DraggableCard.vue';
 
 const props = withDefaults(defineProps<{ focusNode: RawNode }>(), {});
 
+const lenAttrNames = [`text`, `desc`];
 const attrs = computed(() => {
-  return Object.entries(props.focusNode.attr).map(([name, value]) => {
-    value = JSON.stringify(value);
-    return {
-      name,
-      value,
-    };
-  });
+  return Object.entries(props.focusNode.attr)
+    .map(([name, value]) => {
+      const attr = {
+        name,
+        value: JSON.stringify(value),
+      };
+      if (lenAttrNames.includes(name)) {
+        return [
+          attr,
+          {
+            name: name + `.length`,
+            value: JSON.stringify((value as string)?.length || null),
+          },
+        ];
+      }
+      return attr;
+    })
+    .flat();
 });
 </script>
 
