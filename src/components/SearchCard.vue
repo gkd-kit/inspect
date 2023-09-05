@@ -87,7 +87,7 @@ const searchBySelector = errorTry(() => {
     selectorResults.unshift({ selector: text, results });
   }
 });
-const enableSearchBySelector = shallowRef(false);
+const enableSearchBySelector = shallowRef(true);
 </script>
 <template>
   <DraggableCard
