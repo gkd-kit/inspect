@@ -64,9 +64,10 @@ const positionStyle = computed(() => {
       absolute
       pointer-events-none
       transition-all-300
-      b-1px
-      b-red
+      b-2px
+      b-white
       b-solid
+      mix-blend-difference
     ></div>
   </div>
 </template>
