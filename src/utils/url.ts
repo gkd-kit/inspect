@@ -9,16 +9,21 @@ const corsOkOrigins = new Set([
   `https://raw.gitmirror.com`,
 ]);
 
-export const isAllowCorsUrl = (u: string | URL) => {
-  u = new URL(u);
+export const isAllowCorsUrl = (targetUrl: string | URL) => {
+  targetUrl = new URL(targetUrl);
+  if (targetUrl.hostname == `127.0.0.1` || targetUrl.hostname == `localhost`) {
+    return true;
+  }
   if (
     location.protocol == `http:` &&
-    u.protocol == `http:` &&
-    u.hostname.split(`.`).every((s) => Number.isSafeInteger(parseInt(s))) // is ip host
+    targetUrl.protocol == `http:` &&
+    targetUrl.hostname
+      .split(`.`)
+      .every((s) => Number.isSafeInteger(parseInt(s))) // is ip host
   ) {
     return true;
   }
-  return corsOkOrigins.has(u.origin);
+  return corsOkOrigins.has(targetUrl.origin);
 };
 
 // https://github.com/gkd-kit/inspect/files/12448138/file.zip -> /import/12448138
