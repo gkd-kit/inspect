@@ -65,8 +65,18 @@ const positionStyle = computed(() => {
       pointer-events-none
       transition-all-300
       b-1px
-      b-red
+      b-blue
       b-solid
-    ></div>
+    >
+      <div
+        absolute
+        left--2px
+        top--2px
+        b-1px
+        b-red
+        b-solid
+        style="height: calc(100% + 2px); width: calc(100% + 2px)"
+      ></div>
+    </div>
   </div>
 </template>
