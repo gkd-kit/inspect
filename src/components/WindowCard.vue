@@ -16,8 +16,6 @@ import {
 } from 'naive-ui';
 import { HTMLAttributes, nextTick, shallowRef, watchEffect } from 'vue';
 
-
-
 const props = withDefaults(
   defineProps<{
     snapshot: Snapshot;
@@ -62,20 +60,6 @@ const updateCheckedKeys = (
   },
 ) => {};
 
-const renderSuffix = ({
-  option,
-  checked,
-  selected,
-}: {
-  option: RawNode;
-  checked: boolean;
-  selected: boolean;
-}) => {
-  // if (props.skipKeys.includes(option.id)) {
-  //   return <div style={{ marginLeft: `10px`, color: `#ccc` }}>已隐藏</div>;
-  // }
-};
-
 const treeFilter = (pattern: string, node: RawNode) => {
   return node.id === props.focusNode?.id;
 };
@@ -90,14 +74,6 @@ const treeNodeProps = (info: {
       color: info.option.id == props.focusNode?.id ? `#00F` : void 0,
     },
   };
-};
-
-const renderPrefix = (info: {
-  option: RawNode;
-  checked: boolean;
-  selected: boolean;
-}) => {
-  return info.option.attr.childCount || ``;
 };
 
 const renderLabel = (info: {
@@ -126,7 +102,11 @@ const renderLabel = (info: {
       <NTbody>
         <NTr>
           <NTd class="whitespace-nowrap">
-            {{ `${getDevice(snapshot).manufacturer} Android ${getDevice(snapshot).release || ``}` }}
+            {{
+              `${getDevice(snapshot).manufacturer} Android ${
+                getDevice(snapshot).release || ``
+              }`
+            }}
           </NTd>
           <NTd class="whitespace-nowrap" @click="copy(snapshot.appName)">
             <NEllipsis>
@@ -138,7 +118,10 @@ const renderLabel = (info: {
               {{ snapshot.appVersionName }}
             </NEllipsis>
           </NTd>
-          <NTd class="whitespace-nowrap" @click="copy(snapshot.appVersionCode.toString())">
+          <NTd
+            class="whitespace-nowrap"
+            @click="copy(snapshot.appVersionCode.toString())"
+          >
             <NEllipsis>
               {{ snapshot.appVersionCode }}
             </NEllipsis>
@@ -168,8 +151,6 @@ const renderLabel = (info: {
       :data="[rootNode as any]"
       :filter="(treeFilter as any)"
       :nodeProps="(treeNodeProps as any)"
-      :renderSuffix="(renderSuffix as any)"
-      :renderPrefix="(renderPrefix as any)"
       :renderLabel="(renderLabel as any)"
     />
   </div>

@@ -86,7 +86,11 @@ export const getNodeLabel = (node: RawNode): string => {
   if (Reflect.has(node, labelKey)) {
     return Reflect.get(node, labelKey);
   }
-  let label = node.attr.name?.split(`.`)?.at(-1) ?? ``;
+  let label = node.attr.name?.split(`.`)?.at(-1) || ``;
+  const length = node.children.length;
+  if (length > 1) {
+    label = `${label} [${length}]`;
+  }
   if (node.attr.text) {
     label = `${label} : ${node.attr.text}`;
   } else if (node.attr.desc) {
