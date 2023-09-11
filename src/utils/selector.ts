@@ -1,6 +1,5 @@
-import SelectorKit from '@gkd-kit/selector';
+import { CommonSelector, CommonTransform } from '@gkd-kit/selector';
 import type { RawNode } from './types';
-const { CommonSelector, CommonTransform } = SelectorKit;
 
 const transform = new CommonTransform<RawNode>(
   (node, name) => {

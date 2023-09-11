@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@gkd-kit/selector':
-    specifier: 0.0.11
-    version: 0.0.11
+    specifier: 0.0.12
+    version: 0.0.12
   '@types/file-saver':
     specifier: ^2.0.5
     version: 2.0.5
@@ -1773,8 +1773,8 @@ packages:
     dev: false
     optional: true
 
-  /@gkd-kit/selector@0.0.11:
-    resolution: {integrity: sha512-WqerYbOBOnVQkDgiqhjSFWfZZdJwPNiM1faFFVHrUCL0cwtpi0QZa0MEknd66i82kTs2bBwqmD8y21syNZaNDg==}
+  /@gkd-kit/selector@0.0.12:
+    resolution: {integrity: sha512-gxA1uMBpbppLAcAng2g/GQwAud3tJFB/osYDYlrpQ2LwgBF7EkxfD0mDtgdHhfoQZpciA4XcdR+RXrYs9BacZw==}
     dev: false
 
   /@iconify/types@2.0.0:
