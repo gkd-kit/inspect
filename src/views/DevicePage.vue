@@ -234,7 +234,7 @@ const execSelector = useTask(async () => {
         minRows: 10,
         maxRows: 25,
       }"
-      placeholder="请输入订阅文本"
+      :placeholder="`请输入订阅文本\n订阅支持JSON5\n根节点可以是APP规则对象也可以是APP规则对象数组`"
     />
   </NModal>
   <NModal
