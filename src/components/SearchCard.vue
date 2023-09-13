@@ -110,6 +110,7 @@ const enableSearchBySelector = shallowRef(true);
           v-model:value="selectorText"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
           @keyup.enter="searchBySelector"
+          :inputProps="{ class: 'gkd_code' }"
         ></NInput>
         <NButton @click="searchBySelector">
           {{ enableSearchBySelector ? `查询` : `搜索` }}

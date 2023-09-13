@@ -76,6 +76,6 @@ import store from './utils/store';
   height: 100vh;
 }
 .gkd_code {
-  font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace;
+  font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace !important;
 }
 </style>
