@@ -28,6 +28,10 @@ watchEffect(async () => {
     message.error(`快照数据缺失`);
     return;
   }
+  if (localSnapshot.nodes.length > 5000) {
+    message.warning(`展示最大节点数量为5000,[5001, ${localSnapshot.nodes.length}]的节点将被丢弃`);
+    localSnapshot.nodes = localSnapshot.nodes.slice(0, 5000);
+  }
   const bf = await screenshotStorage.getItem(snapshotId.value);
   if (!bf) {
     message.create(`截屏数据缺失`);
