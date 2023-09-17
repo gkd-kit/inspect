@@ -20,7 +20,7 @@ const attrs = computed(() => {
           attr,
           {
             name: name + `.length`,
-            value: JSON.stringify((value as string)?.length || null),
+            value: JSON.stringify((value as string)?.length ?? null),
           },
         ];
       }
