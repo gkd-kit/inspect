@@ -18,6 +18,14 @@ const router = useRouter();
 const title = useTitle();
 
 const snapshotId = computed(() => String(route.params.snapshotId || ``));
+const maxShowSize = 5000
+const showSize = computed(() => {
+  const n = Number(route.params.maxShowSize || ``);
+  if (1 <= n && n <= maxShowSize) {
+    return n;
+  }
+  return maxShowSize;
+});
 
 const screenshotUrl = shallowRef(``);
 const snapshot = shallowRef<Snapshot>();
@@ -28,9 +36,13 @@ watchEffect(async () => {
     message.error(`快照数据缺失`);
     return;
   }
-  if (localSnapshot.nodes.length > 5000) {
-    message.warning(`展示最大节点数量为5000,[5001, ${localSnapshot.nodes.length}]的节点将被丢弃`);
-    localSnapshot.nodes = localSnapshot.nodes.slice(0, 5000);
+  if (localSnapshot.nodes.length > showSize.value) {
+    message.warning(
+      `当前展示最大节点数量为${showSize.value}\n之后的${
+        localSnapshot.nodes.length - showSize.value
+      }个节点将被丢弃\n使用showSize查询参数可以修改展示数量`,
+    );
+    localSnapshot.nodes = localSnapshot.nodes.slice(0, showSize.value);
   }
   const bf = await screenshotStorage.getItem(snapshotId.value);
   if (!bf) {
