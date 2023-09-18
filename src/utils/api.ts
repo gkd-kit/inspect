@@ -76,16 +76,20 @@ export const useDeviceApi = (initOrigin?: string) => {
         },
       });
     },
-    execSelector: async (data: { value: string }) => {
-      return jsonRpc<{ message: string }>(`execSelector`, {
-        init: {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: {
-            'Content-Type': 'application/json',
+    execSelector: async (data: { selector: string; action?: string }) => {
+      return jsonRpc<{ message: string; action: string; result: boolean }>(
+        `execSelector`,
+        {
+          init: {
+            method: 'POST',
+            // value 是旧版本的选择器
+            body: JSON.stringify({ ...data, value: data.selector }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
           },
         },
-      });
+      );
     },
   };
   return { origin, api };

@@ -21,6 +21,8 @@ import {
   PaginationProps,
   NIcon,
   NModal,
+  NRadioGroup,
+  NRadio,
 } from 'naive-ui';
 import { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
@@ -201,13 +203,19 @@ const updateSubs = useTask(async () => {
 });
 
 const showSelectorModel = shallowRef(false);
-const selectorText = shallowRef(``);
+
+const clickAction = shallowReactive({
+  selector: ``,
+  action: `click`,
+});
 const execSelector = useTask(async () => {
-  const result = await api.execSelector({ value: selectorText.value });
-  if (!result.message) {
-    message.success(`无点击目标`);
-  } else {
+  const result = await api.execSelector({ ...clickAction });
+  if (result.message) {
     message.success(`点击成功:` + result.message);
+    return;
+  }
+  if (result.action) {
+    message.success((result.result ? `点击成功:` : `点击失败`) + result.action);
   }
 });
 </script>
@@ -245,14 +253,14 @@ const execSelector = useTask(async () => {
     positive-text="确认"
     :positiveButtonProps="{
       loading: execSelector.loading,
-      disabled: !checkSelector(selectorText),
+      disabled: !checkSelector(clickAction.selector),
       onClick() {
         execSelector.invoke();
       },
     }"
   >
     <NInput
-      v-model:value="selectorText"
+      v-model:value="clickAction.selector"
       :disabled="execSelector.loading"
       type="textarea"
       class="gkd_code"
@@ -262,6 +270,14 @@ const execSelector = useTask(async () => {
       }"
       placeholder="请输入合法的选择器"
     />
+    <div h-15px></div>
+    <NRadioGroup v-model:value="clickAction.action">
+      <NSpace>
+        <NRadio value="click"> click </NRadio>
+        <NRadio value="clickNode"> clickNode </NRadio>
+        <NRadio value="clickCenter"> clickCenter </NRadio>
+      </NSpace>
+    </NRadioGroup>
   </NModal>
   <div flex flex-col p-10px gap-10px h-full>
     <NSpace>
