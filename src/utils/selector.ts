@@ -52,7 +52,6 @@ const simpleCheck = (source: string) => {
 };
 
 export const checkSelector = (source: string) => {
-  if (!simpleCheck(source)) return false;
   try {
     return !!parseSelector(source);
   } catch {
