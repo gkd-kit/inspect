@@ -24,6 +24,7 @@ export type Selector = {
 };
 
 export const parseSelector = (source: string): Selector => {
+  if (!simpleCheck(source)) throw new Error(`invalid selector syntax`);
   const cs = CommonSelector.Companion.parse(source);
   const selector: Selector = {
     toString: () => cs.toString(),
@@ -40,8 +41,18 @@ export const parseSelector = (source: string): Selector => {
   return selector;
 };
 
+const matchEndChar = /[0-9a-zA-Z\]\*\s]+$/;
+/**
+ * 
+ */
+const simpleCheck = (source: string) => {
+  source = source.trim();
+  if (!source || !source.match(matchEndChar)) return false;
+  return true;
+};
+
 export const checkSelector = (source: string) => {
-  if (!source.trim()) return false;
+  if (!simpleCheck(source)) return false;
   try {
     return !!parseSelector(source);
   } catch {

@@ -9,7 +9,7 @@ import { snapshotStorage, screenshotStorage } from '@/utils/storage';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
-import { useStorage, useTitle } from '@vueuse/core';
+import { useStorage, useTitle, useDebounceFn } from '@vueuse/core';
 import JSON5 from 'json5';
 import {
   DataTableColumns,
@@ -206,8 +206,13 @@ const showSelectorModel = shallowRef(false);
 
 const clickAction = shallowReactive({
   selector: ``,
+  selectorValid: false,
   action: `click`,
 });
+const checkSelectorValid = useDebounceFn(() => {
+  clickAction.selectorValid = checkSelector(clickAction.selector);
+}, 500);
+watch(() => clickAction.selector.trim(), checkSelectorValid);
 const execSelector = useTask(async () => {
   const result = await api.execSelector({ ...clickAction });
   if (result.message) {
@@ -253,7 +258,7 @@ const execSelector = useTask(async () => {
     positive-text="确认"
     :positiveButtonProps="{
       loading: execSelector.loading,
-      disabled: !checkSelector(clickAction.selector),
+      disabled: !clickAction.selectorValid,
       onClick() {
         execSelector.invoke();
       },
@@ -276,7 +281,11 @@ const execSelector = useTask(async () => {
         <NRadio value="click"> click </NRadio>
         <NRadio value="clickNode"> clickNode </NRadio>
         <NRadio value="clickCenter"> clickCenter </NRadio>
-        <a href="https://github.com/gkd-kit/subscription/blob/721e2f9c1d19c136b4879fbf25c58055222a6f4d/src/types.ts#L136-L153" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://github.com/gkd-kit/subscription/blob/721e2f9c1d19c136b4879fbf25c58055222a6f4d/src/types.ts#L136-L153"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           操作说明
         </a>
       </NSpace>
