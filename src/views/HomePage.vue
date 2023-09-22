@@ -57,9 +57,9 @@ const filterSnapshots = computed(() => {
   if (!actualQuery) return snapshots.value;
   return snapshots.value.filter((s) => {
     return (
-      s.appName.includes(actualQuery) ||
-      s.appId.includes(actualQuery) ||
-      s.activityId.includes(actualQuery)
+      (s.appName || ``).includes(actualQuery) ||
+      (s.appId || ``).includes(actualQuery) ||
+      (s.activityId || ``).includes(actualQuery)
     );
   });
 });
@@ -320,7 +320,11 @@ const batchShareZipUrl = useTask(async () => {
       </NSpace>
       <div flex-1></div>
       <NSpace>
-        <a href="https://github.com/gkd-kit/inspect" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://github.com/gkd-kit/inspect"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <NButton>
             <template #icon>
               <NIcon>
