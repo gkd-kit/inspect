@@ -1,12 +1,13 @@
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import pLimit from 'p-limit';
-import { GithubPoliciesAsset, uploadPoliciesAssets } from './github';
+import { uploadPoliciesAssets } from './github';
 import { delay } from './others';
 import {
   githubPngStorage,
   githubZipStorage,
   screenshotStorage,
+  urlStorage,
 } from './storage';
 import type { Snapshot } from './types';
 
@@ -70,6 +71,7 @@ export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
     uploadPoliciesAssets(
       await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
     ).then((r) => {
+      urlStorage[r.href] = snapshot.id;
       githubPngStorage[snapshot.id] = r.href;
       return r.href;
     })
@@ -83,6 +85,7 @@ export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
     ).then((r) => {
       githubZipStorage[snapshot.id] = r.href;
+      urlStorage[r.href] = snapshot.id;
       return r.href;
     })
   );
