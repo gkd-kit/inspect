@@ -18,13 +18,12 @@ const router = useRouter();
 const title = useTitle();
 
 const snapshotId = computed(() => String(route.params.snapshotId || ``));
-const maxShowSize = 5000
 const showSize = computed(() => {
-  const n = Number(route.params.maxShowSize || ``);
-  if (1 <= n && n <= maxShowSize) {
+  const n = Number(route.query.showSize || ``);
+  if (Number.isSafeInteger(n) && 1 <= n && n <= 8000) {
     return n;
   }
-  return maxShowSize;
+  return 2000;
 });
 
 const screenshotUrl = shallowRef(``);
@@ -38,7 +37,7 @@ watchEffect(async () => {
   }
   if (localSnapshot.nodes.length > showSize.value) {
     message.warning(
-      `当前展示最大节点数量为${showSize.value}\n之后的${
+      `当前展示节点数量为${showSize.value}\n之后的${
         localSnapshot.nodes.length - showSize.value
       }个节点将被丢弃\n使用showSize查询参数可以修改展示数量`,
     );
