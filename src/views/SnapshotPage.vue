@@ -20,10 +20,10 @@ const title = useTitle();
 const snapshotId = computed(() => String(route.params.snapshotId || ``));
 const showSize = computed(() => {
   const n = Number(route.query.showSize || ``);
-  if (Number.isSafeInteger(n) && 1 <= n && n <= 8000) {
-    return n;
+  if (!Number.isSafeInteger(n) || n <= 0) {
+    return 2000;
   }
-  return 2000;
+  return n;
 });
 
 const screenshotUrl = shallowRef(``);
