@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { findNodeByXy, getImageSize } from '@/utils/node';
 import type { RawNode, SizeExt, Snapshot } from '@/utils/types';
-import { computed, shallowRef, watchEffect } from 'vue';
+import { computed, shallowRef, watchEffect, defineComponent } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -16,49 +16,76 @@ const props = withDefaults(
   },
 );
 
-const sizeRef = shallowRef<SizeExt>();
-watchEffect(async () => {
-  sizeRef.value = await getImageSize(props.url);
-});
+// const sizeRef = shallowRef<SizeExt>();
+// watchEffect(async () => {
+//   sizeRef.value = await getImageSize(props.url);
+// });
+const imgRef = shallowRef<HTMLImageElement>();
 
 const evRef = shallowRef<MouseEvent>();
 watchEffect(() => {
   if (!props.rootNode) return;
   const ev = evRef.value;
-  const img = ev?.target;
-  if (!ev || !img || !(img instanceof HTMLImageElement)) {
+  const img = imgRef.value;
+  if (!ev || !img) {
     return;
   }
 
   const imgRect = img.getBoundingClientRect();
-  const ox = ((ev.clientX - imgRect.left) / img.offsetWidth) * img.naturalWidth;
+
+  const innerHeight = (imgRect.width / img.naturalWidth) * img.naturalHeight;
+  const offsetTop = (imgRect.height - innerHeight) / 2;
+
+  const ox = ((ev.clientX - imgRect.left) / imgRect.width) * img.naturalWidth;
   const oy =
-    ((ev.clientY - imgRect.top) / img.offsetHeight) * img.naturalHeight;
+    ((ev.clientY - imgRect.top - offsetTop) / innerHeight) * img.naturalHeight;
 
   const childNode = findNodeByXy(props.snapshot.nodes, ox, oy);
   if (childNode) {
     props.onUpdateFocusNode(childNode);
   }
 });
-
+const percent = (n: number) => {
+  return `${n * 100}%`;
+};
 const positionStyle = computed(() => {
-  const size = sizeRef.value;
-  if (!size || !props.focusNode) {
+  const img = imgRef.value;
+  const attr = props.focusNode?.attr;
+  if (!props.focusNode || !img || !attr) {
     return ``;
   }
-  const attr = props.focusNode.attr;
+  const imgRect = img.getBoundingClientRect();
+  const innerHeight = (imgRect.width / img.naturalWidth) * img.naturalHeight;
   return {
-    left: `calc(${(100 * attr.left) / size.width + '%'} - 1px)`,
-    top: `calc(${(100 * attr.top) / size.height + '%'} - 1px)`,
-    width: (100 * (attr.right - attr.left)) / size.width + '%',
-    height: (100 * (attr.bottom - attr.top)) / size.height + '%',
+    left: `calc(${percent(attr.left / img.naturalWidth)} - 2px)`,
+    width: `calc(${percent(
+      (attr.right - attr.left) / img.naturalWidth,
+    )} + 2px)`,
+
+    top: `calc(${percent(
+      ((attr.top / img.naturalHeight) * innerHeight +
+        (imgRect.height - innerHeight) / 2) /
+        imgRect.height,
+    )} - 2px)`,
+    height: `calc(${percent(
+      (((attr.bottom - attr.top) / img.naturalHeight) * innerHeight) /
+        imgRect.height,
+    )} + 2px)`,
   };
 });
 </script>
 
 <template>
   <div flex flex-col relative h-full>
-    <img :src="url" @click="evRef = $event" h-full cursor-crosshair />
+    <img
+      ref="imgRef"
+      :src="url"
+      @click="evRef = $event"
+      cursor-crosshair
+      h-full
+      object-contain
+      style="max-width: max(35vw, 400px);"
+    />
     <div
       :style="positionStyle"
       absolute
@@ -68,15 +95,7 @@ const positionStyle = computed(() => {
       b-blue
       b-solid
     >
-      <div
-        absolute
-        left--2px
-        top--2px
-        b-1px
-        b-red
-        b-solid
-        style="height: calc(100% + 2px); width: calc(100% + 2px)"
-      ></div>
+      <div absolute left-0 top-0 bottom-0 right-0 b-solid b-1px b-red></div>
     </div>
   </div>
 </template>
