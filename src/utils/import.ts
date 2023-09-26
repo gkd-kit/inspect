@@ -94,14 +94,16 @@ export const importFromLocal = async () => {
           importNum++;
         }
         const subZips = zip.filter((s) => s.endsWith('.zip'));
-        await Promise.any(
-          subZips.map(async (subZip) => {
-            const subFile = await loadAsync(subZip.async('blob'));
-            if (await parseZip(subFile)) {
-              importNum++;
-            }
-          }),
-        );
+        if (subZips.length > 0) {
+          await Promise.any(
+            subZips.map(async (subZip) => {
+              const subFile = await loadAsync(subZip.async('blob'));
+              if (await parseZip(subFile)) {
+                importNum++;
+              }
+            }),
+          );
+        }
       }),
     );
   }
