@@ -76,7 +76,11 @@ export const useDeviceApi = (initOrigin?: string) => {
         },
       });
     },
-    execSelector: async (data: { selector: string; action?: string }) => {
+    execSelector: async (data: {
+      selector: string;
+      action?: string;
+      quickFind?: boolean;
+    }) => {
       return jsonRpc<{ message: string; action: string; result: boolean }>(
         `execSelector`,
         {

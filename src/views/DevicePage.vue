@@ -23,6 +23,8 @@ import {
   NModal,
   NRadioGroup,
   NRadio,
+  NCheckboxGroup,
+  NCheckbox,
 } from 'naive-ui';
 import { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
@@ -208,6 +210,7 @@ const clickAction = shallowReactive({
   selector: ``,
   selectorValid: false,
   action: `click`,
+  quickFind: false,
 });
 const checkSelectorValid = useDebounceFn(() => {
   clickAction.selectorValid = checkSelector(clickAction.selector);
@@ -276,6 +279,17 @@ const execSelector = useTask(async () => {
       placeholder="请输入合法的选择器"
     />
     <div h-15px></div>
+    <NSpace>
+      <NCheckbox v-model:checked="clickAction.quickFind"> 快速查找 </NCheckbox>
+      <a
+        href="https://github.com/gkd-kit/subscription/blob/main/src/types.ts"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        查找说明
+      </a>
+    </NSpace>
+    <div h-10px></div>
     <NRadioGroup v-model:value="clickAction.action">
       <NSpace>
         <NRadio value="click"> click </NRadio>
