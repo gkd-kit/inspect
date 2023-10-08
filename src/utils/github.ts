@@ -77,11 +77,9 @@ export const uploadPoliciesAssets = async (
   const xRpcOk = resp.headers.get('X_RPC_OK');
   if (xRpcOk === 'true') {
     return resp.json();
-  } else if (xRpcOk === 'false') {
-    throw new Error((await resp.json()).message);
-  } else {
-    throw new Error(await resp.text());
   }
+  // 如果上传失败, 使用油猴脚本上传
+  return uploadPoliciesAssetsByExtension(bf);
 };
 
 export const uploadPoliciesAssetsByExtension = async (bf: ArrayBuffer) => {
