@@ -58,27 +58,26 @@ type UploadPoliciesAssetsRsonpse = {
 export const uploadPoliciesAssets = async (
   bf: ArrayBuffer,
 ): Promise<GithubPoliciesAsset> => {
-  const [name, content_type] = (() => {
-    if (isPngBf(bf)) {
-      return [`file.png`, `image/png`];
-    } else if (isZipBf(bf)) {
-      return [`file.zip`, `application/x-zip-compressed`];
-    }
-    throw new Error(`invalid buffer, it must be png or zip`);
-  })();
-  const file = new File([bf], name, { type: content_type });
-  const resp = await fetch(
-    'https://github-upload-assets.lisonge.workers.dev/',
-    {
-      method: 'POST',
-      body: obj2form({ file }),
-    },
-  );
-  const xRpcOk = resp.headers.get('X_RPC_OK');
-  if (xRpcOk === 'true') {
-    return resp.json();
-  }
-  // 如果上传失败, 使用油猴脚本上传
+  // const [name, content_type] = (() => {
+  //   if (isPngBf(bf)) {
+  //     return [`file.png`, `image/png`];
+  //   } else if (isZipBf(bf)) {
+  //     return [`file.zip`, `application/x-zip-compressed`];
+  //   }
+  //   throw new Error(`invalid buffer, it must be png or zip`);
+  // })();
+  // const file = new File([bf], name, { type: content_type });
+  // const resp = await fetch(
+  //   'https://github-upload-assets.lisonge.workers.dev/',
+  //   {
+  //     method: 'POST',
+  //     body: obj2form({ file }),
+  //   },
+  // );
+  // const xRpcOk = resp.headers.get('X_RPC_OK');
+  // if (xRpcOk === 'true') {
+  //   return resp.json();
+  // }
   return uploadPoliciesAssetsByExtension(bf);
 };
 

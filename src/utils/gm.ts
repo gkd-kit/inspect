@@ -38,7 +38,10 @@ export const parseHeaders = (rawHeaders = '') => {
       let key = parts.shift()?.trim();
       if (key) {
         let value = parts.join(':').trim();
-        headers.append(key, value);
+        try {
+          // https://github.com/gkd-kit/subscription/pull/762#discussion_r1349695154
+          headers.append(key, value);
+        } catch {}
       }
     });
   return headers;
