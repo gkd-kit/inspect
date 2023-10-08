@@ -34,14 +34,6 @@ import store from './utils/store';
         >
           Violentmonkey
         </a>
-        或
-        <a
-          href="https://www.tampermonkey.net/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Tampermonkey
-        </a>
       </div>
       <div>
         2. 安装油猴脚本
