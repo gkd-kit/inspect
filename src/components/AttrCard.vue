@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { copy } from '@/utils/others';
 import type { RawNode } from '@/utils/types';
-import { NEllipsis, NTable, NTbody, NTd, NTh, NTr } from 'naive-ui';
+import { NEllipsis, NTable, NTbody, NTd, NTh, NTr, NTooltip } from 'naive-ui';
 import { computed } from 'vue';
 import DraggableCard from './DraggableCard.vue';
 
@@ -59,6 +59,17 @@ const attrs = computed(() => {
             <NEllipsis style="width: 250px">
               {{ attrx.value }}
             </NEllipsis>
+          </NTd>
+        </NTr>
+        <NTr v-if="focusNode.quickFind !== undefined">
+          <NTd> quickFind </NTd>
+          <NTd>
+            <NTooltip>
+              <template #trigger>
+                <span>{{ JSON.stringify(focusNode.quickFind) }}</span>
+              </template>
+              此节点是否可使用 quickFind
+            </NTooltip>
           </NTd>
         </NTr>
       </NTbody>

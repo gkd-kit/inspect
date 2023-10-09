@@ -20,6 +20,7 @@ export type Device = {
 export type RawNode = {
   id: number;
   pid: number;
+  quickFind?: boolean;
   attr: RawAttr;
 
   // list to tree
