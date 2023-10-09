@@ -31,8 +31,17 @@ const attrs = computed(() => {
 </script>
 
 <template>
-  <DraggableCard :initialValue="{ top: 90, right: 10 }" v-slot="{ onRef }">
-    <NTable size="small" striped :singleLine="false" class="gkd_code">
+  <DraggableCard :initialValue="{ top: 75, right: 10 }" v-slot="{ onRef }">
+    <NTable
+      size="small"
+      striped
+      :singleLine="false"
+      class="gkd_code"
+      :themeOverrides="{
+        thPaddingSmall: '2px 4px',
+        tdPaddingSmall: '2px 4px',
+      }"
+    >
       <thead cursor-move :ref="onRef">
         <NTr>
           <NTh> Name </NTh>

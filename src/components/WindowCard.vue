@@ -87,14 +87,23 @@ const renderLabel = (info: {
 
 <template>
   <div flex flex-col>
-    <NTable size="small" striped :singleLine="false" class="table-fixed">
+    <NTable
+      size="small"
+      striped
+      :singleLine="false"
+      class="table-fixed"
+      :themeOverrides="{
+        thPaddingSmall: '2px 4px',
+        tdPaddingSmall: '2px 4px',
+      }"
+    >
       <NThead>
         <NTr>
-          <NTh class="w-150px"> Device </NTh>
-          <NTh class="w-110px"> Name </NTh>
-          <NTh class="w-110px"> VersionName </NTh>
-          <NTh class="w-110px"> VersionCode </NTh>
-          <NTh class="w-240px"> AppId </NTh>
+          <NTh class="w-140px"> Device </NTh>
+          <NTh class="w-100px"> Name </NTh>
+          <NTh class="w-100px"> VersionName </NTh>
+          <NTh class="w-100px"> VersionCode </NTh>
+          <NTh class="w-200px"> AppId </NTh>
           <NTh> ActivityId </NTh>
           <NTh class="w-175px"> 操作 </NTh>
         </NTr>
