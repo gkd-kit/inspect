@@ -17,6 +17,7 @@ export const showTextDLg = ({ title = `批量分享链接`, content = '' }) => {
           }}
           inputProps={{
             style: `white-space: nowrap;`,
+            class:`gkd_code`
           }}
           value={content}
         />

@@ -7,11 +7,17 @@ import WindowCard from '@/components/WindowCard.vue';
 import { listToTree } from '@/utils/node';
 import { message } from '@/utils/discrete';
 import { delay } from '@/utils/others';
-import { snapshotStorage, screenshotStorage } from '@/utils/storage';
+import {
+  snapshotStorage,
+  screenshotStorage,
+  githubZipStorage,
+} from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
 import { computed, shallowRef, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTitle } from '@vueuse/core';
+import { gmOk } from '@/utils/gm';
+import { exportSnapshotAsPngUrl, exportSnapshotAsZipUrl } from '@/utils/export';
 
 const route = useRoute();
 const router = useRouter();
@@ -34,6 +40,17 @@ watchEffect(async () => {
   if (!localSnapshot) {
     message.error(`快照数据缺失`);
     return;
+  }
+  if (gmOk()) {
+    // 静默生成 jpg/zip
+    setTimeout(async () => {
+      await exportSnapshotAsPngUrl(localSnapshot);
+      if (!githubZipStorage[localSnapshot.id]) {
+        await exportSnapshotAsZipUrl(
+          (await snapshotStorage.getItem(snapshotId.value))!,
+        );
+      }
+    }, 1000);
   }
   if (localSnapshot.nodes.length > showSize.value) {
     message.warning(

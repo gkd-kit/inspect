@@ -6,7 +6,7 @@ import { delay } from '@/utils/others';
 import { githubZipStorage } from '@/utils/storage';
 import { githubPngStorage } from '@/utils/storage';
 import { urlStorage, snapshotStorage } from '@/utils/storage';
-import { githubPngUrlReg, githubZipUrlReg } from '@/utils/url';
+import { githubImageUrlReg, githubZipUrlReg } from '@/utils/url';
 import { onMounted, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -52,7 +52,7 @@ onMounted(async () => {
         urlStorage[importUrl] = snapshot.id;
         if (importUrl.match(githubZipUrlReg)) {
           githubZipStorage[snapshot.id] = importUrl;
-        } else if (importUrl.match(githubPngUrlReg)) {
+        } else if (importUrl.match(githubImageUrlReg)) {
           githubPngStorage[snapshot.id] = importUrl;
         }
         loading.value = false;

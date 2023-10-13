@@ -9,7 +9,9 @@ import {
   screenshotStorage,
   urlStorage,
 } from './storage';
+import Compressor from 'compressorjs';
 import type { Snapshot } from './types';
+import { message } from './discrete';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
   const zip = new JSZip();
@@ -30,12 +32,30 @@ export const exportSnapshotAsZip = async (snapshot: Snapshot) => {
 
 export const snapshotAsPng = async (snapshot: Snapshot) => {
   const imgBf = (await screenshotStorage.getItem(snapshot.id))!;
-  const content = new Blob([imgBf, JSON.stringify(snapshot)]);
+  const jpgBlob = await new Promise<Blob>((res, rej) => {
+    new Compressor(new Blob([imgBf], { type: 'image/png' }), {
+      quality: 0.75,
+      convertSize: 200_000,
+      success(file) {
+        res(file);
+      },
+      error(error) {
+        rej(error);
+      },
+    });
+  });
+  // console.log([
+  //   snapshot.id,
+  //   (imgBf.byteLength / 1024).toFixed(3) + 'KB',
+  //   (jpgBlob.size / 1024).toFixed(3) + 'KB',
+  //   (1 - jpgBlob.size / imgBf.byteLength) * 100 + '%',
+  // ]);
+  const content = new Blob([jpgBlob]);
   return content;
 };
 
 export const exportSnapshotAsPng = async (snapshot: Snapshot) => {
-  const fileName = `snapshot-${snapshot.id}.png`;
+  const fileName = `snapshot-${snapshot.id}.jpg`;
   saveAs(await snapshotAsPng(snapshot), fileName);
 };
 
@@ -43,7 +63,7 @@ export const batchPngDownloadZip = async (snapshots: Snapshot[]) => {
   const zip = new JSZip();
   for (const snapshot of snapshots) {
     await delay();
-    zip.file(snapshot.id + `.png`, snapshotAsPng(snapshot));
+    zip.file(snapshot.id + `.jpg`, snapshotAsPng(snapshot));
   }
   const batchZipFile = await zip.generateAsync({
     type: 'blob',
@@ -70,8 +90,10 @@ export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
     githubPngStorage[snapshot.id] ??
     uploadPoliciesAssets(
       await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
+      'file.jpg',
+      'image/jpeg',
     ).then((r) => {
-      urlStorage[r.href] = snapshot.id;
+      // urlStorage[r.href] = snapshot.id;
       githubPngStorage[snapshot.id] = r.href;
       return r.href;
     })
@@ -83,6 +105,8 @@ export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
     githubZipStorage[snapshot.id] ??
     uploadPoliciesAssets(
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
+      'file.zip',
+      'application/x-zip-compressed',
     ).then((r) => {
       githubZipStorage[snapshot.id] = r.href;
       urlStorage[r.href] = snapshot.id;

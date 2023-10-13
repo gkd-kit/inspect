@@ -250,7 +250,7 @@ const batchShareZipUrl = useTask(async () => {
         }
       "
       type="textarea"
-      :placeholder="`请输入文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
+      :placeholder="`仅支持ZIP文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
       :autosize="{
         minRows: 8,
         maxRows: 16,
@@ -283,7 +283,7 @@ const batchShareZipUrl = useTask(async () => {
                 @click="batchDownloadPng.invoke"
                 :loading="batchDownloadPng.loading"
               >
-                批量下载-png
+                批量下载-jpg
               </NButton>
               <NButton
                 @click="batchDownloadZip.invoke"
@@ -302,7 +302,7 @@ const batchShareZipUrl = useTask(async () => {
                 @click="batchSharePngUrl.invoke"
                 :loading="batchSharePngUrl.loading"
               >
-                批量生成链接-png
+                批量生成链接-jpg
               </NButton>
               <NButton
                 @click="batchShareZipUrl.invoke"

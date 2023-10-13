@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import { showTextDLg } from '@/utils/dialog';
+import { message } from '@/utils/discrete';
 import {
   exportSnapshotAsPng,
   exportSnapshotAsPngUrl,
@@ -7,10 +8,14 @@ import {
   exportSnapshotAsZipUrl,
 } from '@/utils/export';
 import { delay } from '@/utils/others';
-import { snapshotStorage } from '@/utils/storage';
+import {
+  githubPngStorage,
+  snapshotStorage,
+  githubZipStorage,
+} from '@/utils/storage';
 import { useTask } from '@/utils/task';
 import { Snapshot } from '@/utils/types';
-import { githubUrlToSelfUrl } from '@/utils/url';
+import { githubUrlToSelfUrl, githubZipUrlReg } from '@/utils/url';
 import { NButton, NPopover, NSpace, NIcon } from 'naive-ui';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
@@ -74,7 +79,17 @@ const deleteSnapshot = async () => {
   await delay(500);
   props.onDelete();
 };
-HTMLAnchorElement;
+
+const copy = async (content: string) => {
+  return navigator.clipboard
+    .writeText(content)
+    .then(() => {
+      message.success(`复制成功`);
+    })
+    .catch(() => {
+      message.success(`复制失败`);
+    });
+};
 </script>
 <template>
   <NSpace>
@@ -126,7 +141,7 @@ HTMLAnchorElement;
       </template>
       <NSpace vertical>
         <NButton @click="exportPng.invoke" :loading="exportPng.loading">
-          下载-png
+          下载-jpg
         </NButton>
         <NButton @click="exportZip.invoke" :loading="exportZip.loading">
           下载-zip
@@ -154,10 +169,30 @@ HTMLAnchorElement;
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton @click="exportPngUrl.invoke" :loading="exportPngUrl.loading">
-          生成链接-png
+        <NButton
+          v-if="githubPngStorage[snapshot.id]"
+          @click="copy(githubPngStorage[snapshot.id])"
+        >
+          复制链接-jpg
         </NButton>
-        <NButton @click="exportZipUrl.invoke" :loading="exportZipUrl.loading">
+        <NButton
+          v-else
+          @click="exportPngUrl.invoke"
+          :loading="exportPngUrl.loading"
+        >
+          生成链接-jpg
+        </NButton>
+        <NButton
+          v-if="githubZipStorage[snapshot.id]"
+          @click="copy(githubUrlToSelfUrl(githubZipStorage[snapshot.id]))"
+        >
+          复制链接-zip
+        </NButton>
+        <NButton
+          v-else
+          @click="exportZipUrl.invoke"
+          :loading="exportZipUrl.loading"
+        >
           生成链接-zip
         </NButton>
       </NSpace>
