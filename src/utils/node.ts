@@ -1,4 +1,3 @@
-import { snapshotAsPng } from './export';
 import type { Device, RawNode, SizeExt, Snapshot } from './types';
 
 export const listToTree = (nodes: RawNode[]) => {

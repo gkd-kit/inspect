@@ -2,21 +2,21 @@
 import { showTextDLg } from '@/utils/dialog';
 import { message } from '@/utils/discrete';
 import {
-  exportSnapshotAsPng,
-  exportSnapshotAsPngUrl,
+  exportSnapshotAsJpg,
+  exportSnapshotAsJpgUrl,
   exportSnapshotAsZip,
   exportSnapshotAsZipUrl,
 } from '@/utils/export';
 import { delay } from '@/utils/others';
 import {
-  githubPngStorage,
-  snapshotStorage,
+  githubJpgStorage,
   githubZipStorage,
+  snapshotStorage,
 } from '@/utils/storage';
 import { useTask } from '@/utils/task';
 import { Snapshot } from '@/utils/types';
-import { githubUrlToSelfUrl, githubZipUrlReg } from '@/utils/url';
-import { NButton, NPopover, NSpace, NIcon } from 'naive-ui';
+import { githubUrlToSelfUrl } from '@/utils/url';
+import { NButton, NIcon, NPopover, NSpace } from 'naive-ui';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -40,8 +40,8 @@ const props = withDefaults(
 
 const router = useRouter();
 
-const exportPng = useTask(async () =>
-  exportSnapshotAsPng((await snapshotStorage.getItem(props.snapshot.id))!),
+const exportJpg = useTask(async () =>
+  exportSnapshotAsJpg((await snapshotStorage.getItem(props.snapshot.id))!),
 );
 const exportZip = useTask(async () =>
   exportSnapshotAsZip((await snapshotStorage.getItem(props.snapshot.id))!),
@@ -54,8 +54,8 @@ const previewUrl = computed(() => {
   }).href;
 });
 
-const exportPngUrl = useTask(async () => {
-  const pngUrl = await exportSnapshotAsPngUrl(
+const exportJpgUrl = useTask(async () => {
+  const pngUrl = await exportSnapshotAsJpgUrl(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );
   showTextDLg({
@@ -140,7 +140,7 @@ const copy = async (content: string) => {
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton @click="exportPng.invoke" :loading="exportPng.loading">
+        <NButton @click="exportJpg.invoke" :loading="exportJpg.loading">
           下载-jpg
         </NButton>
         <NButton @click="exportZip.invoke" :loading="exportZip.loading">
@@ -170,15 +170,15 @@ const copy = async (content: string) => {
       </template>
       <NSpace vertical>
         <NButton
-          v-if="githubPngStorage[snapshot.id]"
-          @click="copy(githubPngStorage[snapshot.id])"
+          v-if="githubJpgStorage[snapshot.id]"
+          @click="copy(githubJpgStorage[snapshot.id])"
         >
           复制链接-jpg
         </NButton>
         <NButton
           v-else
-          @click="exportPngUrl.invoke"
-          :loading="exportPngUrl.loading"
+          @click="exportJpgUrl.invoke"
+          :loading="exportJpgUrl.loading"
         >
           生成链接-jpg
         </NButton>

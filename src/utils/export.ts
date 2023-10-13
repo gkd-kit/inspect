@@ -4,7 +4,7 @@ import pLimit from 'p-limit';
 import { uploadPoliciesAssets } from './github';
 import { delay } from './others';
 import {
-  githubPngStorage,
+  githubJpgStorage,
   githubZipStorage,
   screenshotStorage,
   urlStorage,
@@ -30,7 +30,7 @@ export const exportSnapshotAsZip = async (snapshot: Snapshot) => {
   saveAs(await snapshotAsZip(snapshot), fileName);
 };
 
-export const snapshotAsPng = async (snapshot: Snapshot) => {
+export const snapshotAsJpg = async (snapshot: Snapshot) => {
   const imgBf = (await screenshotStorage.getItem(snapshot.id))!;
   const jpgBlob = await new Promise<Blob>((res, rej) => {
     new Compressor(new Blob([imgBf], { type: 'image/png' }), {
@@ -54,16 +54,16 @@ export const snapshotAsPng = async (snapshot: Snapshot) => {
   return content;
 };
 
-export const exportSnapshotAsPng = async (snapshot: Snapshot) => {
+export const exportSnapshotAsJpg = async (snapshot: Snapshot) => {
   const fileName = `snapshot-${snapshot.id}.jpg`;
-  saveAs(await snapshotAsPng(snapshot), fileName);
+  saveAs(await snapshotAsJpg(snapshot), fileName);
 };
 
-export const batchPngDownloadZip = async (snapshots: Snapshot[]) => {
+export const batchJpgDownloadZip = async (snapshots: Snapshot[]) => {
   const zip = new JSZip();
   for (const snapshot of snapshots) {
     await delay();
-    zip.file(snapshot.id + `.jpg`, snapshotAsPng(snapshot));
+    zip.file(snapshot.id + `.jpg`, snapshotAsJpg(snapshot));
   }
   const batchZipFile = await zip.generateAsync({
     type: 'blob',
@@ -85,16 +85,16 @@ export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
   saveAs(batchZipFile, `batch-zip-${snapshots.length}.zip`);
 };
 
-export const exportSnapshotAsPngUrl = async (snapshot: Snapshot) => {
+export const exportSnapshotAsJpgUrl = async (snapshot: Snapshot) => {
   return (
-    githubPngStorage[snapshot.id] ??
+    githubJpgStorage[snapshot.id] ??
     uploadPoliciesAssets(
-      await snapshotAsPng(snapshot).then((r) => r.arrayBuffer()),
+      await snapshotAsJpg(snapshot).then((r) => r.arrayBuffer()),
       'file.jpg',
       'image/jpeg',
     ).then((r) => {
       // urlStorage[r.href] = snapshot.id;
-      githubPngStorage[snapshot.id] = r.href;
+      githubJpgStorage[snapshot.id] = r.href;
       return r.href;
     })
   );
@@ -115,11 +115,11 @@ export const exportSnapshotAsZipUrl = async (snapshot: Snapshot) => {
   );
 };
 
-export const batchCreatePngUrl = async (snapshots: Snapshot[]) => {
+export const batchCreateJpgUrl = async (snapshots: Snapshot[]) => {
   const limit = pLimit(3);
   return (
     await Promise.allSettled(
-      snapshots.map((s) => limit(() => exportSnapshotAsPngUrl(s))),
+      snapshots.map((s) => limit(() => exportSnapshotAsJpgUrl(s))),
     )
   ).reduce<string[]>((p, c) => {
     if (c.status == 'fulfilled') {

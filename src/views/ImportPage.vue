@@ -4,7 +4,7 @@ import { loadingBar, message } from '@/utils/discrete';
 import { importFromNetwork } from '@/utils/import';
 import { delay } from '@/utils/others';
 import { githubZipStorage } from '@/utils/storage';
-import { githubPngStorage } from '@/utils/storage';
+import { githubJpgStorage } from '@/utils/storage';
 import { urlStorage, snapshotStorage } from '@/utils/storage';
 import { githubImageUrlReg, githubZipUrlReg } from '@/utils/url';
 import { onMounted, shallowRef } from 'vue';
@@ -53,7 +53,7 @@ onMounted(async () => {
         if (importUrl.match(githubZipUrlReg)) {
           githubZipStorage[snapshot.id] = importUrl;
         } else if (importUrl.match(githubImageUrlReg)) {
-          githubPngStorage[snapshot.id] = importUrl;
+          githubJpgStorage[snapshot.id] = importUrl;
         }
         loading.value = false;
         await delay(500);

@@ -17,7 +17,7 @@ import { computed, shallowRef, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTitle } from '@vueuse/core';
 import { gmOk } from '@/utils/gm';
-import { exportSnapshotAsPngUrl, exportSnapshotAsZipUrl } from '@/utils/export';
+import { exportSnapshotAsJpgUrl, exportSnapshotAsZipUrl } from '@/utils/export';
 
 const route = useRoute();
 const router = useRouter();
@@ -44,9 +44,9 @@ watchEffect(async () => {
   if (gmOk()) {
     // 静默生成 jpg/zip
     setTimeout(async () => {
-      await exportSnapshotAsPngUrl(localSnapshot);
+      exportSnapshotAsJpgUrl(localSnapshot);
       if (!githubZipStorage[localSnapshot.id]) {
-        await exportSnapshotAsZipUrl(
+        exportSnapshotAsZipUrl(
           (await snapshotStorage.getItem(snapshotId.value))!,
         );
       }

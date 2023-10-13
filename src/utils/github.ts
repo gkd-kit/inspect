@@ -1,5 +1,4 @@
 import { enhanceFetch } from './fetch';
-import { isPngBf, isZipBf } from './file_type';
 import { obj2form } from './others';
 import store from './store';
 

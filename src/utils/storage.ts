@@ -101,9 +101,9 @@ export const cacheStorage = useStorage({
 
 export const urlStorage = useReactiveStorage<Record<string, number>>(`url`, {});
 
-export const githubPngStorage = useReactiveStorage<
+export const githubJpgStorage = useReactiveStorage<
   Record<number, string>
->(`githubPng`, {});
+>(`githubJpg`, {});
 
 export const githubZipStorage = useReactiveStorage<
   Record<number, string>

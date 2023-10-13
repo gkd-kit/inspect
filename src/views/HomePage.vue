@@ -4,9 +4,9 @@ import { toValidURL } from '@/utils/check';
 import { showTextDLg } from '@/utils/dialog';
 import { dialog } from '@/utils/discrete';
 import {
-  batchCreatePngUrl,
+  batchCreateJpgUrl,
   batchCreateZipUrl,
-  batchPngDownloadZip,
+  batchJpgDownloadZip,
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
@@ -210,15 +210,15 @@ const batchDelete = useTask(async () => {
   );
   await updateSnapshots();
 });
-const batchDownloadPng = useTask(async () => {
-  await batchPngDownloadZip(await checkedSnapshots());
+const batchDownloadJpg = useTask(async () => {
+  await batchJpgDownloadZip(await checkedSnapshots());
 });
 const batchDownloadZip = useTask(async () => {
   await batchZipDownloadZip(await checkedSnapshots());
 });
 
-const batchSharePngUrl = useTask(async () => {
-  const pngUrls = await batchCreatePngUrl(await checkedSnapshots());
+const batchShareJpgUrl = useTask(async () => {
+  const pngUrls = await batchCreateJpgUrl(await checkedSnapshots());
   showTextDLg({
     content: pngUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
   });
@@ -280,8 +280,8 @@ const batchShareZipUrl = useTask(async () => {
             </template>
             <NSpace vertical>
               <NButton
-                @click="batchDownloadPng.invoke"
-                :loading="batchDownloadPng.loading"
+                @click="batchDownloadJpg.invoke"
+                :loading="batchDownloadJpg.loading"
               >
                 批量下载-jpg
               </NButton>
@@ -299,8 +299,8 @@ const batchShareZipUrl = useTask(async () => {
             </template>
             <NSpace vertical>
               <NButton
-                @click="batchSharePngUrl.invoke"
-                :loading="batchSharePngUrl.loading"
+                @click="batchShareJpgUrl.invoke"
+                :loading="batchShareJpgUrl.loading"
               >
                 批量生成链接-jpg
               </NButton>
