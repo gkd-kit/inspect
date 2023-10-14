@@ -170,30 +170,30 @@ const copy = async (content: string) => {
       </template>
       <NSpace vertical>
         <NButton
-          v-if="githubJpgStorage[snapshot.id]"
-          @click="copy(githubJpgStorage[snapshot.id])"
-        >
-          复制链接-jpg
-        </NButton>
-        <NButton
-          v-else
-          @click="exportJpgUrl.invoke"
-          :loading="exportJpgUrl.loading"
-        >
-          生成链接-jpg
-        </NButton>
-        <NButton
           v-if="githubZipStorage[snapshot.id]"
           @click="copy(githubUrlToSelfUrl(githubZipStorage[snapshot.id]))"
         >
-          复制链接-zip
+          复制链接-快照
         </NButton>
         <NButton
           v-else
           @click="exportZipUrl.invoke"
           :loading="exportZipUrl.loading"
         >
-          生成链接-zip
+          生成链接-快照
+        </NButton>
+        <NButton
+          v-if="githubJpgStorage[snapshot.id]"
+          @click="copy(githubJpgStorage[snapshot.id])"
+        >
+          复制链接-图片
+        </NButton>
+        <NButton
+          v-else
+          @click="exportJpgUrl.invoke"
+          :loading="exportJpgUrl.loading"
+        >
+          生成链接-图片
         </NButton>
       </NSpace>
     </NPopover>

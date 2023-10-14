@@ -299,16 +299,16 @@ const batchShareZipUrl = useTask(async () => {
             </template>
             <NSpace vertical>
               <NButton
-                @click="batchShareJpgUrl.invoke"
-                :loading="batchShareJpgUrl.loading"
-              >
-                批量生成链接-jpg
-              </NButton>
-              <NButton
                 @click="batchShareZipUrl.invoke"
                 :loading="batchShareZipUrl.loading"
               >
-                批量生成链接-zip
+                批量生成链接-快照
+              </NButton>
+              <NButton
+                @click="batchShareJpgUrl.invoke"
+                :loading="batchShareJpgUrl.loading"
+              >
+                批量生成链接-图片
               </NButton>
             </NSpace>
           </NPopover>
