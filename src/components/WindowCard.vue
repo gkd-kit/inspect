@@ -154,6 +154,7 @@ const renderLabel = (info: {
     <NTree
       ref="treeRef"
       virtualScroll
+      showLine
       @update:checked-keys="updateCheckedKeys"
       keyField="id"
       :defaultExpandedKeys="defaultExpandedKeys"
@@ -161,6 +162,7 @@ const renderLabel = (info: {
       :filter="(treeFilter as any)"
       :nodeProps="(treeNodeProps as any)"
       :renderLabel="(renderLabel as any)"
+      style="--n-border-color: rgb(239, 239, 245)"
     />
   </div>
 </template>
