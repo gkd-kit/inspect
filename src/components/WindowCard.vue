@@ -103,7 +103,7 @@ const renderLabel = (info: {
           <NTh class="w-100px"> Name </NTh>
           <NTh class="w-100px"> VersionName </NTh>
           <NTh class="w-100px"> VersionCode </NTh>
-          <NTh class="w-200px"> AppId </NTh>
+          <NTh class="w-150px"> AppId </NTh>
           <NTh> ActivityId </NTh>
           <NTh class="w-175px"> 操作 </NTh>
         </NTr>

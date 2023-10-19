@@ -12,6 +12,7 @@ import {
   NRadio,
   NRadioGroup,
   NSpace,
+  NIcon,
 } from 'naive-ui';
 import { shallowReactive, shallowRef } from 'vue';
 import DraggableCard from './DraggableCard.vue';
@@ -90,14 +91,24 @@ const searchBySelector = errorTry(() => {
   }
 });
 const enableSearchBySelector = shallowRef(true);
+const _1vw = window.innerWidth / 100;
 </script>
 <template>
   <DraggableCard
-    :initialValue="{ top: 75, right: 390 }"
+    :initialValue="{ top: 75, right: Math.max(315, 12 * _1vw + 135) }"
     v-slot="{ onRef }"
     class="z-1"
   >
-    <div w-500px bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
+    <div
+      w-480px
+      bg-white
+      b-1px
+      b-solid
+      b-gray-200
+      rounded-4px
+      p-8px
+      style="min-width: max(25vw, 480px)"
+    >
       <div flex m-b-4px>
         <NRadioGroup v-model:value="enableSearchBySelector">
           <NSpace>
@@ -115,7 +126,20 @@ const enableSearchBySelector = shallowRef(true);
           :inputProps="{ class: 'gkd_code' }"
         ></NInput>
         <NButton @click="searchBySelector">
-          {{ enableSearchBySelector ? `查询` : `搜索` }}
+          <template #icon>
+            <NIcon>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 32 32"
+              >
+                <path
+                  d="M29 27.586l-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29zM4 13a9 9 0 1 1 9 9a9.01 9.01 0 0 1-9-9z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </NIcon>
+          </template>
         </NButton>
       </NInputGroup>
       <div p-5px></div>

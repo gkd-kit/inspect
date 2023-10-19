@@ -56,7 +56,14 @@ const attrs = computed(() => {
             </span>
           </NTd>
           <NTd>
-            <NEllipsis style="width: 250px">
+            <NEllipsis
+              style="
+                width: 180px;
+                min-width: max(12vw, 180px);
+                direction: rtl;
+                text-align: left;
+              "
+            >
               {{ attrx.value }}
             </NEllipsis>
           </NTd>
