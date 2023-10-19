@@ -142,8 +142,8 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
       />
       <div
         absolute
-        left-0
-        top-0
+        left-2px
+        top-2px
         class="leading-[1]"
         style="background-color: rgba(256, 256, 256, 0.7)"
       >
