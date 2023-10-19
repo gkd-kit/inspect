@@ -65,7 +65,11 @@ watchEffect(async () => {
     message.create(`截屏数据缺失`);
     return;
   }
-  screenshotUrl.value = URL.createObjectURL(new Blob([bf]));
+  screenshotUrl.value = URL.createObjectURL(
+    new Blob([bf], {
+      type: 'image/png',
+    }),
+  );
   snapshot.value = localSnapshot;
   rootNode.value = listToTree(localSnapshot.nodes);
   title.value = '快照-' + localSnapshot.appName || localSnapshot.appId;

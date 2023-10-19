@@ -44,13 +44,7 @@ export const snapshotAsJpg = async (snapshot: Snapshot) => {
       },
     });
   });
-  // console.log([
-  //   snapshot.id,
-  //   (imgBf.byteLength / 1024).toFixed(3) + 'KB',
-  //   (jpgBlob.size / 1024).toFixed(3) + 'KB',
-  //   (1 - jpgBlob.size / imgBf.byteLength) * 100 + '%',
-  // ]);
-  const content = new Blob([jpgBlob]);
+  const content = new Blob([jpgBlob], { type: 'image/jpeg' });
   return content;
 };
 
