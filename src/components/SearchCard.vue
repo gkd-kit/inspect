@@ -44,16 +44,18 @@ const searchBySelector = errorTry(() => {
   if (!text) return;
 
   if (enableSearchBySelector.value) {
+    const selector = errorWrap(() => parseSelector(text), `选择器非法`);
     if (
       selectorResults.find(
-        (s) => typeof s.selector == 'object' && s.selector.toString() == text,
+        (s) =>
+          typeof s.selector == 'object' &&
+          s.selector.toString() == selector.toString(),
       )
     ) {
       message.warning(`不可重复选择`);
       return;
     }
 
-    const selector = errorWrap(() => parseSelector(text), `选择器非法`);
     const results = selector.querySelectorAll(props.rootNode);
     if (results.length == 0) {
       message.success(`没有选择到节点`);
