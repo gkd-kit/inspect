@@ -140,11 +140,11 @@ const copy = async (content: string) => {
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton @click="exportJpg.invoke" :loading="exportJpg.loading">
-          下载-jpg
-        </NButton>
         <NButton @click="exportZip.invoke" :loading="exportZip.loading">
-          下载-zip
+          下载-快照
+        </NButton>
+        <NButton @click="exportJpg.invoke" :loading="exportJpg.loading">
+          下载-图片
         </NButton>
       </NSpace>
     </NPopover>
