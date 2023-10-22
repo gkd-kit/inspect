@@ -1,6 +1,6 @@
 # @gkd-kit/inspect
 
-- <https://gkd-kit.songe.li> github pages
+- <https://inspect.gkd.li> github pages
 
 - <https://gkd-kit.gitee.io> 大陆访问
 
