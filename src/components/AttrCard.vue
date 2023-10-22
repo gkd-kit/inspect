@@ -63,7 +63,11 @@ const attrs = computed(() => {
                 direction: rtl;
                 text-align: left;
               "
+              v-if="attrx.name == 'id'"
             >
+              {{ attrx.value }}
+            </NEllipsis>
+            <NEllipsis v-else>
               {{ attrx.value }}
             </NEllipsis>
           </NTd>
