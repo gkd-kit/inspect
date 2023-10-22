@@ -4,10 +4,6 @@
 
 - <https://gkd-kit.gitee.io> 大陆访问
 
-- <https://gkd-kit.netlify.app> netlify
-
-- <https://gkd-kit.vercel.app> vercel
-
 GKD 网页端审查工具, 抓取快照,审查快照,分享快照, 连接调试 GKD APP 内部 HTTP Server, 实时启用订阅规则, 实时执行点击选择器
 
 <details open>
