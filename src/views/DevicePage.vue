@@ -295,8 +295,9 @@ const execSelector = useTask(async () => {
         <NRadio value="click"> click </NRadio>
         <NRadio value="clickNode"> clickNode </NRadio>
         <NRadio value="clickCenter"> clickCenter </NRadio>
+        <NRadio value="back"> back </NRadio>
         <a
-          href="https://github.com/gkd-kit/subscription/blob/721e2f9c1d19c136b4879fbf25c58055222a6f4d/src/types.ts#L136-L153"
+          href="https://github.com/gkd-kit/subscription/blob/main/src/types.ts"
           target="_blank"
           rel="noopener noreferrer"
         >
