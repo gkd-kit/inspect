@@ -67,7 +67,7 @@ const attrs = computed(() => {
             >
               {{ attrx.value }}
             </NEllipsis>
-            <NEllipsis v-else>
+            <NEllipsis v-else style="width: 180px; min-width: max(12vw, 180px)">
               {{ attrx.value }}
             </NEllipsis>
           </NTd>
