@@ -73,6 +73,10 @@ watchEffect(async () => {
   snapshot.value = localSnapshot;
   rootNode.value = listToTree(localSnapshot.nodes);
   title.value = '快照-' + localSnapshot.appName || localSnapshot.appId;
+  await delay(500);
+  if (!focusNode.value) {
+    focusNode.value = rootNode.value;
+  }
 });
 
 const rootNode = shallowRef<RawNode>();
