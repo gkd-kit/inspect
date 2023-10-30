@@ -69,10 +69,8 @@ const attrs = computed(() => {
     >
       <NTbody>
         <NTr v-for="attrx in attrs" :key="attrx.name">
-          <NTd>
-            <span @click="copy(`${attrx.name}=${attrx.value}`)">
-              {{ attrx.name }}
-            </span>
+          <NTd @click="copy(`${attrx.name}=${attrx.value}`)">
+            {{ attrx.name }}
           </NTd>
           <NTd>
             <NEllipsis
