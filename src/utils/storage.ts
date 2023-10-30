@@ -1,6 +1,5 @@
 import localforage from 'localforage';
 import { reactive, toRaw, watch } from 'vue';
-import type { GithubPoliciesAsset } from './github';
 import { Snapshot } from './types';
 
 const useStorage = <T>(options: LocalForageOptions = {}) => {
@@ -90,6 +89,17 @@ export const screenshotStorage = useStorage<ArrayBuffer>({
 });
 
 export const setSnapshot = async (snapshot: Snapshot, bf: ArrayBuffer) => {
+  Object.entries(urlStorage).forEach(([k, v]) => {
+    if (v == snapshot.id) {
+      delete urlStorage[k];
+    }
+  });
+  if (githubJpgStorage[snapshot.id]) {
+    delete githubJpgStorage[snapshot.id];
+  }
+  if (githubZipStorage[snapshot.id]) {
+    delete githubZipStorage[snapshot.id];
+  }
   await snapshotStorage.setItem(snapshot.id, snapshot);
   await screenshotStorage.setItem(snapshot.id, bf);
 };
@@ -101,10 +111,12 @@ export const cacheStorage = useStorage({
 
 export const urlStorage = useReactiveStorage<Record<string, number>>(`url`, {});
 
-export const githubJpgStorage = useReactiveStorage<
-  Record<number, string>
->(`githubJpg`, {});
+export const githubJpgStorage = useReactiveStorage<Record<number, string>>(
+  `githubJpg`,
+  {},
+);
 
-export const githubZipStorage = useReactiveStorage<
-  Record<number, string>
->(`githubZip`, {});
+export const githubZipStorage = useReactiveStorage<Record<number, string>>(
+  `githubZip`,
+  {},
+);
