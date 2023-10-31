@@ -38,6 +38,15 @@ const attrs = computed(() => {
     })
     .flat();
 });
+
+const getNameDesc = (n: string) => {
+  if (n == '_id') {
+    return `虚拟属性:深度优先先序遍历的顺序`;
+  }
+  if (n == '_pid') {
+    return `虚拟属性:父节点的 _id`;
+  }
+};
 </script>
 
 <template>
@@ -70,7 +79,34 @@ const attrs = computed(() => {
       <NTbody>
         <NTr v-for="attrx in attrs" :key="attrx.name">
           <NTd @click="copy(`${attrx.name}=${attrx.value}`)">
-            {{ attrx.name }}
+            <div
+              v-if="attrx.name.startsWith(`_`)"
+              flex
+              flex-justify-between
+              flex-items-center
+            >
+              <div>
+                {{ attrx.name }}
+              </div>
+              <NTooltip>
+                <template #trigger>
+                  <NIcon size="16">
+                    <svg viewBox="0 0 28 28">
+                      <g fill="none">
+                        <path
+                          d="M15 8a1 1 0 1 1-2 0a1 1 0 0 1 2 0zm-1.75 3.75v7.5a.75.75 0 0 0 1.5 0v-7.5a.75.75 0 0 0-1.5 0zM2 14C2 7.373 7.373 2 14 2s12 5.373 12 12s-5.373 12-12 12S2 20.627 2 14zM14 3.5C8.201 3.5 3.5 8.201 3.5 14S8.201 24.5 14 24.5S24.5 19.799 24.5 14S19.799 3.5 14 3.5z"
+                          fill="currentColor"
+                        ></path>
+                      </g>
+                    </svg>
+                  </NIcon>
+                </template>
+                {{ getNameDesc(attrx.name) }}
+              </NTooltip>
+            </div>
+            <template v-else>
+              {{ attrx.name }}
+            </template>
           </NTd>
           <NTd>
             <NEllipsis
