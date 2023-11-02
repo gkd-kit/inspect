@@ -41,7 +41,7 @@ const attrs = computed(() => {
 
 const getNameDesc = (n: string) => {
   if (n == '_id') {
-    return `虚拟属性:深度优先先序遍历的顺序`;
+    return `虚拟属性:生成快照访问节点顺序`;
   }
   if (n == '_pid') {
     return `虚拟属性:父节点的 _id`;
