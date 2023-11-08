@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import dayjs from 'dayjs';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { Selector, parseSelector } from '@/utils/selector';
-import type { RawNode } from '@/utils/types';
+import type { RawNode, Snapshot } from '@/utils/types';
 import {
   NButton,
   NCollapse,
@@ -20,6 +21,7 @@ import { getNodeLabel } from '@/utils/node';
 
 const props = withDefaults(
   defineProps<{
+    snapshot: Snapshot;
     rootNode: RawNode;
     onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
@@ -89,6 +91,38 @@ const searchBySelector = errorTry(() => {
     message.success(`搜索到 ${results.length} 个节点`);
     selectorResults.unshift({ selector: text, results });
   }
+});
+const generateRules = errorTry((selectorResult) => {
+  const rule = {
+    id: props.snapshot.appId,
+    name: props.snapshot.appName,
+    groups: [
+      {
+        key: 1,
+        name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+        desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
+        rules: [
+          {
+            activityIds: props.snapshot.activityId,
+            matches: selectorResult.selector.toString(),
+            snapshotUrls: ``
+          }
+        ]
+      }
+    ]
+  };
+
+  (async (content: string) => {
+    return navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        message.success(`生成成功,已复制到剪贴板`);
+      })
+      .catch(() => {
+        message.error(`复制失败,请查看控制台`);
+        console.log(`规则字符串: ${content}`);
+      });
+    })(JSON.stringify(rule));
 });
 const enableSearchBySelector = shallowRef(true);
 const _1vw = window.innerWidth / 100;
@@ -161,6 +195,10 @@ const _1vw = window.innerWidth / 100;
           </template>
           <template #header-extra>
             {{ selectorResult.results.length + `个节点` }}
+            <div p-l-8px></div>
+            <NButton @click="generateRules(selectorResult)">
+              生成规则
+            </NButton>
             <div p-l-8px></div>
             <NButton @click.stop="selectorResults.splice(index, 1)">
               删除
