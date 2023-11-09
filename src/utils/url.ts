@@ -36,7 +36,6 @@ export const githubImageUrlReg =
 
 export const githubUrlToSelfUrl = (u: string | URL): string => {
   u = u.toString();
-  let href: string;
   const { 1: zipAssetId } = u.match(githubZipUrlReg) || [];
   const { 1: userId, 2: imgAssetId } = u.match(githubImageUrlReg) || [];
   if (zipAssetId) {
@@ -47,7 +46,7 @@ export const githubUrlToSelfUrl = (u: string | URL): string => {
       }).href
     );
   } else if (userId && imgAssetId) {
-    return u;
+    return `https://m.gkd.li/${userId}/${imgAssetId}`;
   } else {
     throw new Error(
       `github url ${u} should come from gkd-kit/inspect files/assets`,

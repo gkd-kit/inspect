@@ -184,7 +184,7 @@ const copy = async (content: string) => {
         </NButton>
         <NButton
           v-if="githubJpgStorage[snapshot.id]"
-          @click="copy(githubJpgStorage[snapshot.id])"
+          @click="copy(githubUrlToSelfUrl(githubJpgStorage[snapshot.id]))"
         >
           复制链接-图片
         </NButton>

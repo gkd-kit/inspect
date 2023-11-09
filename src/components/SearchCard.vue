@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import dayjs from 'dayjs';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
-import { Selector, parseSelector } from '@/utils/selector';
-import type { RawNode } from '@/utils/types';
+import { parseSelector } from '@/utils/selector';
+import type { Selector } from '@/utils/selector';
+import type { RawNode, Snapshot } from '@/utils/types';
 import {
   NButton,
   NCollapse,
@@ -17,9 +19,13 @@ import {
 import { shallowReactive, shallowRef } from 'vue';
 import DraggableCard from './DraggableCard.vue';
 import { getNodeLabel } from '@/utils/node';
+import { copy } from '@/utils/others';
+import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
+import { githubUrlToSelfUrl } from '@/utils/url';
 
 const props = withDefaults(
   defineProps<{
+    snapshot: Snapshot;
     rootNode: RawNode;
     onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
@@ -90,6 +96,38 @@ const searchBySelector = errorTry(() => {
     selectorResults.unshift({ selector: text, results });
   }
 });
+const generateRules = errorTry(async (selector: Selector) => {
+  let jpgUrl = githubJpgStorage[props.snapshot.id];
+  if (jpgUrl) {
+    jpgUrl = githubUrlToSelfUrl(jpgUrl);
+  }
+  let zipUrl = githubZipStorage[props.snapshot.id];
+  if (zipUrl) {
+    zipUrl = githubUrlToSelfUrl(zipUrl);
+  }
+
+  const rule = {
+    id: props.snapshot.appId,
+    name: props.snapshot.appName,
+    groups: [
+      {
+        key: 1,
+        name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+        desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
+        rules: [
+          {
+            activityIds: props.snapshot.activityId,
+            matches: selector.toString(),
+            exampleUrls: jpgUrl,
+            snapshotUrls: zipUrl,
+          },
+        ],
+      },
+    ],
+  };
+
+  copy(JSON.stringify(rule, undefined, 2));
+});
 const enableSearchBySelector = shallowRef(true);
 const _1vw = window.innerWidth / 100;
 </script>
@@ -150,19 +188,22 @@ const _1vw = window.innerWidth / 100;
         >
           <template #header>
             <span break-all>
-              {{
-                (typeof selectorResult.selector == 'string'
-                  ? `字符搜索`
-                  : `选择器查询`) +
-                `：` +
-                selectorResult.selector.toString()
-              }}
+              {{ selectorResult.selector.toString() }}
             </span>
           </template>
           <template #header-extra>
-            {{ selectorResult.results.length + `个节点` }}
+            <NButton
+              size="small"
+              v-if="typeof selectorResult.selector == 'object'"
+              @click.stop="generateRules(selectorResult.selector as Selector)"
+            >
+              生成规则
+            </NButton>
             <div p-l-8px></div>
-            <NButton @click.stop="selectorResults.splice(index, 1)">
+            <NButton
+              size="small"
+              @click.stop="selectorResults.splice(index, 1)"
+            >
               删除
             </NButton>
           </template>
