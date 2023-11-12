@@ -1,17 +1,7 @@
 <script setup lang="ts">
 import { copy } from '@/utils/others';
 import type { RawNode } from '@/utils/types';
-import {
-  NEllipsis,
-  NTable,
-  NTbody,
-  NTd,
-  NTh,
-  NTr,
-  NIcon,
-  NSpace,
-  NTooltip,
-} from 'naive-ui';
+import { NEllipsis, NIcon, NTable, NTbody, NTd, NTooltip, NTr } from 'naive-ui';
 import { computed } from 'vue';
 import DraggableCard from './DraggableCard.vue';
 
@@ -39,13 +29,10 @@ const attrs = computed(() => {
     .flat();
 });
 
-const getNameDesc = (n: string) => {
-  if (n == '_id') {
-    return `虚拟属性:生成快照访问节点顺序`;
-  }
-  if (n == '_pid') {
-    return `虚拟属性:父节点的 _id`;
-  }
+const attrDesc: Record<string, string> = {
+  _id: `虚拟属性:生成快照访问节点顺序`,
+  _pid: `虚拟属性:父节点的 _id`,
+  depth: `在某些应用上可能造成无限节点错误`,
 };
 </script>
 
@@ -80,7 +67,7 @@ const getNameDesc = (n: string) => {
         <NTr v-for="attrx in attrs" :key="attrx.name">
           <NTd @click="copy(`${attrx.name}=${attrx.value}`)">
             <div
-              v-if="attrx.name.startsWith(`_`)"
+              v-if="attrx.name in attrDesc"
               flex
               flex-justify-between
               flex-items-center
@@ -101,7 +88,7 @@ const getNameDesc = (n: string) => {
                     </svg>
                   </NIcon>
                 </template>
-                {{ getNameDesc(attrx.name) }}
+                {{ attrDesc[attrx.name] }}
               </NTooltip>
             </div>
             <template v-else>
@@ -110,13 +97,13 @@ const getNameDesc = (n: string) => {
           </NTd>
           <NTd>
             <NEllipsis
+              v-if="attrx.name == 'id'"
               style="
                 width: 180px;
                 min-width: max(12vw, 180px);
                 direction: rtl;
                 text-align: left;
               "
-              v-if="attrx.name == 'id'"
             >
               {{ attrx.value }}
             </NEllipsis>
