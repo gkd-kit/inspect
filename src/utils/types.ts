@@ -21,6 +21,8 @@ export type RawNode = {
   id: number;
   pid: number;
   quickFind?: boolean;
+  idQf?: boolean;
+  textQf?: boolean;
   attr: RawAttr;
 
   // list to tree

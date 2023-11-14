@@ -35,7 +35,6 @@ const attrDesc: Record<string, string> = {
   depth: `在某些应用上可能造成无限节点错误`,
   id: `可快速查找`,
   text: `可快速查找`,
-  // TODO id 和 text 的 quickFind 属性应该分别标识
 };
 </script>
 
@@ -83,7 +82,12 @@ const attrDesc: Record<string, string> = {
                       </g>
                     </svg>
                     <svg
-                      v-else-if="JSON.parse(attrx.value) && focusNode.quickFind"
+                      v-else-if="
+                        (focusNode.quickFind ||
+                          (attrx.name == 'id' && focusNode.idQf) ||
+                          (attrx.name == 'text' && focusNode.textQf)) &&
+                        JSON.parse(attrx.value)
+                      "
                       viewBox="0 0 1024 1024"
                     >
                       <path
