@@ -4,9 +4,10 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 import { fileURLToPath, URL } from 'node:url';
 import unocss from 'unocss/vite';
 import { defineConfig } from 'vite';
-import { _404Page, commit } from './plugins';
+import { _404Page, commit, mirror } from './plugins';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({}) => {
+  const useMirror = process.env.MIRROR == `ON`;
   return {
     plugins: [
       vue(),
@@ -14,6 +15,7 @@ export default defineConfig(({ mode }) => {
       unocss(),
       legacy({ renderLegacyChunks: false, modernPolyfills: true }),
       commit(),
+      useMirror ? mirror() : undefined,
       _404Page(),
     ],
     resolve: {

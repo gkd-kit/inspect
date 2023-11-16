@@ -21,7 +21,16 @@ jobs:
       - run: pnpm -v
 
       - run: pnpm install
-      - run: pnpm run build
+
+      - run: pnpm exec tsx ./scripts/updateVersion.ts
+      - run: pnpm run build:mirror
+      - name: Publish package
+        run: |
+          pnpm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+          pnpm publish --no-git-checks
+
+      - run: git checkout .
+      - run: curl -X PUT 'https://registry-direct.npmmirror.com/@gkd-kit/inspect/sync'
 
       - uses: peaceiris/actions-gh-pages@v3
         with:
