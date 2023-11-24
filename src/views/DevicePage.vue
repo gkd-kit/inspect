@@ -23,7 +23,7 @@ import {
   NModal,
   NRadioGroup,
   NRadio,
-  NCheckboxGroup,
+  NSelect,
   NCheckbox,
 } from 'naive-ui';
 import { SortState } from 'naive-ui/es/data-table/src/interface';
@@ -206,10 +206,19 @@ const updateSubs = useTask(async () => {
 
 const showSelectorModel = shallowRef(false);
 
+const actionOptions = [
+  'click',
+  'clickNode',
+  'clickCenter',
+  'back',
+  'longClick',
+  'longClickNode',
+  'longClickCenter',
+].map((s) => ({ value: s, label: s }));
 const clickAction = shallowReactive({
   selector: ``,
   selectorValid: false,
-  action: `click`,
+  action: actionOptions[0].value,
   quickFind: false,
 });
 const checkSelectorValid = useDebounceFn(() => {
@@ -290,21 +299,20 @@ const execSelector = useTask(async () => {
       </a>
     </NSpace>
     <div h-10px></div>
-    <NRadioGroup v-model:value="clickAction.action">
-      <NSpace>
-        <NRadio value="click"> click </NRadio>
-        <NRadio value="clickNode"> clickNode </NRadio>
-        <NRadio value="clickCenter"> clickCenter </NRadio>
-        <NRadio value="back"> back </NRadio>
-        <a
-          href="https://github.com/gkd-kit/subscription/blob/main/src/types.ts"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          操作说明
-        </a>
-      </NSpace>
-    </NRadioGroup>
+    <div flex gap-10px flex-items-center>
+      <NSelect
+        v-model:value="clickAction.action"
+        :options="actionOptions"
+        class="w-150px"
+      />
+      <a
+        href="https://github.com/gkd-kit/subscription/blob/main/src/types.ts"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        操作说明
+      </a>
+    </div>
   </NModal>
   <div flex flex-col p-10px gap-10px h-full>
     <NSpace>
