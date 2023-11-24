@@ -29,3 +29,6 @@ coverage
 .env
 
 vite.config.{js,ts}.timestamp-*.mjs
+
+/public/service-worker.js
+/public/service-worker.js.map
