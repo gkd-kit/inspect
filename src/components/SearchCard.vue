@@ -22,6 +22,7 @@ import { getNodeLabel } from '@/utils/node';
 import { copy } from '@/utils/others';
 import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
 import { githubUrlToSelfUrl } from '@/utils/url';
+import JSON5 from 'json5'
 
 const props = withDefaults(
   defineProps<{
@@ -126,7 +127,7 @@ const generateRules = errorTry(async (selector: Selector) => {
     ],
   };
 
-  copy(JSON.stringify(rule, undefined, 2));
+  copy(JSON5.stringify(rule, undefined, 2));
 });
 const enableSearchBySelector = shallowRef(true);
 const _1vw = window.innerWidth / 100;
