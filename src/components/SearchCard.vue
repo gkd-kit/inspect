@@ -188,10 +188,23 @@ const _1vw = window.innerWidth / 100;
           :key="selectorResult.selector.toString()"
         >
           <template #header>
-            <span v-if="selectorResult.results.length > 1" underline decoration-1 m-r-4px title="查询数量">
+            <span
+              v-if="selectorResult.results.length > 1"
+              underline
+              decoration-1
+              m-r-4px
+              title="查询数量"
+            >
               {{ selectorResult.results.length }}
             </span>
-            <span break-all title="选择器">
+            <span
+              break-all
+              :title="
+                typeof selectorResult.selector == 'object'
+                  ? `选择器`
+                  : `搜索字符`
+              "
+            >
               {{ selectorResult.selector.toString() }}
             </span>
           </template>
