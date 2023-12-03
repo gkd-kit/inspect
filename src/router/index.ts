@@ -1,3 +1,5 @@
+import { toValidURL } from '@/utils/check';
+import { errorTry, errorWrap } from '@/utils/error';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -34,6 +36,16 @@ const router = createRouter({
       path: '/device',
       name: 'device',
       component: () => import('@/views/DevicePage.vue'),
+      beforeEnter(to, from, next) {
+        const u = toValidURL(String(to.query.url));
+        if (u) {
+          localStorage.setItem('device_link', u.origin);
+          const query = { ...to.query };
+          delete query.url;
+          return next({ ...to, query });
+        }
+        next();
+      },
     },
     {
       path: '/404',
