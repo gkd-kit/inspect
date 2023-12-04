@@ -166,18 +166,3 @@ const renderLabel = (info: {
     />
   </div>
 </template>
-
-<style scoped lang="scss">
-.WindowCard {
-  .n-tree {
-    overflow: scroll;
-  }
-
-  :deep(.n-tree-node-content__text) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 800px;
-  }
-}
-</style>

@@ -1,7 +1,6 @@
-import type { Plugin } from 'vite';
 import fs from 'node:fs/promises';
+import type { Plugin } from 'vite';
 import type selfPkgT from '../package.json';
-import { parse } from 'node-html-parser';
 
 const selfPkg: typeof selfPkgT = JSON.parse(
   await fs.readFile(process.cwd() + '/package.json', 'utf-8'),
@@ -14,26 +13,13 @@ export const mirror = (): Plugin => {
     name: 'mirror',
     apply: 'build',
     enforce: 'post',
-    transformIndexHtml(html) {
-      const root = parse(html);
-      const hrefEls = root.querySelectorAll(`[href^="/"]`);
-      hrefEls.forEach((e) => {
-        const value = e.getAttribute('href');
-        if (value.startsWith('//')) return;
-        e.setAttribute('href', mirrorBaseUrl + value);
-      });
-      const srcEls = root.querySelectorAll(`[src^="/"]`);
-      srcEls.forEach((e) => {
-        const value = e.getAttribute('src');
-        if (value.startsWith('//')) return;
-        e.setAttribute('src', mirrorBaseUrl + value);
-      });
-      return root.toString();
-    },
-    renderDynamicImport() {
+    config() {
       return {
-        left: `import(new URL(`,
-        right: `, import.meta.url).href)`,
+        experimental: {
+          renderBuiltUrl(filename) {
+            return mirrorBaseUrl + '/' + filename;
+          },
+        },
       };
     },
   };
