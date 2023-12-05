@@ -56,8 +56,6 @@ import store from './utils/store';
     <RouterView />
   </NConfigProvider>
 </template>
-
-<style scoped lang="scss"></style>
 <style lang="scss">
 #app {
   min-width: 1200px;

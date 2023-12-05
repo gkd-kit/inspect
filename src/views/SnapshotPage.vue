@@ -119,7 +119,7 @@ const onDelete = async () => {
     </WindowCard>
     <AttrCard v-if="focusNode" :focusNode="focusNode" />
     <SearchCard
-      v-if="rootNode"
+      v-if="rootNode && snapshot"
       :snapshot="snapshot"
       :rootNode="rootNode"
       @updateFocusNode="focusNode = $event"

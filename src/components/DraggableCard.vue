@@ -125,12 +125,3 @@ const updateTarget = (arg: unknown) => {
     </div>
   </Teleport>
 </template>
-<style>
-.smooth-1s {
-  transition:
-    bottom 1s,
-    top 1s,
-    right 1s,
-    left 1s;
-}
-</style>
