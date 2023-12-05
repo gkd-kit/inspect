@@ -29,8 +29,7 @@ export default defineConfig(({}) => {
     },
     build: {
       target: `chrome80`,
-      // sourcemap: true,
-      minify:false
+      sourcemap: true,
     },
   };
 });
