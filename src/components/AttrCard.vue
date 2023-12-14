@@ -34,8 +34,11 @@ const attrDesc: Record<string, string> = {
   _pid: `虚拟属性:父节点的 _id`,
   depth: `在某些应用上可能造成无限节点错误`,
   id: `可快速查找`,
+  vid: `可快速查找`,
   text: `可快速查找`,
 };
+
+const qfAttrs = [`id`,`vid`, `text`];
 </script>
 
 <template>
@@ -61,8 +64,8 @@ const attrDesc: Record<string, string> = {
             <div
               v-if="attrx.name in attrDesc"
               flex
-              flex-justify-between
-              flex-items-center
+              justify-between
+              items-center
             >
               <div>
                 {{ attrx.name }}
@@ -72,7 +75,7 @@ const attrDesc: Record<string, string> = {
                   <NIcon size="16">
                     <svg
                       viewBox="0 0 28 28"
-                      v-if="attrx.name != `id` && attrx.name != `text`"
+                      v-if="!qfAttrs.includes(attrx.name)"
                     >
                       <g fill="none">
                         <path
@@ -85,6 +88,7 @@ const attrDesc: Record<string, string> = {
                       v-else-if="
                         (focusNode.quickFind ||
                           (attrx.name == 'id' && focusNode.idQf) ||
+                          (attrx.name == 'vid' && focusNode.idQf) ||
                           (attrx.name == 'text' && focusNode.textQf)) &&
                         JSON.parse(attrx.value)
                       "
