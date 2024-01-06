@@ -7,6 +7,7 @@ import type { Selector } from '@/utils/selector';
 import type { RawNode, Snapshot } from '@/utils/types';
 import {
   NButton,
+  NButtonGroup,
   NCollapse,
   NCollapseItem,
   NInput,
@@ -23,25 +24,35 @@ import { copy } from '@/utils/others';
 import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
 import { githubUrlToSelfUrl } from '@/utils/url';
 import JSON5 from 'json5';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const props = withDefaults(
   defineProps<{
     snapshot: Snapshot;
     rootNode: RawNode;
     onUpdateFocusNode?: (data: RawNode) => void;
+    onUpdateTrack?: (track: { selector: Selector; nodes: RawNode[] }) => void;
   }>(),
   {
     onUpdateFocusNode: () => () => {},
+    onUpdateTrack: () => () => {},
   },
 );
 
 const selectorText = shallowRef(``);
 const selectorResults = shallowReactive<
-  {
-    selector: string | Selector;
-
-    results: RawNode[];
-  }[]
+  (
+    | {
+        selector: string;
+        nodes: RawNode[];
+      }
+    | {
+        selector: Selector;
+        nodes: RawNode[][];
+      }
+  )[]
 >([]);
 const searchBySelector = errorTry(() => {
   if (!props.rootNode) {
@@ -64,13 +75,13 @@ const searchBySelector = errorTry(() => {
       return;
     }
 
-    const results = selector.querySelectorAll(props.rootNode);
+    const results = selector.querySelectorTrackAll(props.rootNode);
     if (results.length == 0) {
       message.success(`没有选择到节点`);
       return;
     }
     message.success(`选择到 ${results.length} 个节点`);
-    selectorResults.unshift({ selector, results });
+    selectorResults.unshift({ selector, nodes: results });
   } else {
     if (
       selectorResults.find(
@@ -94,17 +105,17 @@ const searchBySelector = errorTry(() => {
       return;
     }
     message.success(`搜索到 ${results.length} 个节点`);
-    selectorResults.unshift({ selector: text, results });
+    selectorResults.unshift({ selector: text, nodes: results });
   }
 });
 const generateRules = errorTry(async (selector: Selector) => {
   let jpgUrl = githubJpgStorage[props.snapshot.id];
   if (jpgUrl) {
-    jpgUrl = githubUrlToSelfUrl(jpgUrl);
+    jpgUrl = githubUrlToSelfUrl(router, jpgUrl);
   }
   let zipUrl = githubZipStorage[props.snapshot.id];
   if (zipUrl) {
-    zipUrl = githubUrlToSelfUrl(zipUrl);
+    zipUrl = githubUrlToSelfUrl(router, zipUrl);
   }
 
   const rule = {
@@ -167,11 +178,7 @@ const _1vw = window.innerWidth / 100;
         <NButton @click="searchBySelector">
           <template #icon>
             <NIcon>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                viewBox="0 0 32 32"
-              >
+              <svg viewBox="0 0 32 32">
                 <path
                   d="M29 27.586l-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29zM4 13a9 9 0 1 1 9 9a9.01 9.01 0 0 1-9-9z"
                   fill="currentColor"
@@ -184,35 +191,33 @@ const _1vw = window.innerWidth / 100;
       <div p-5px></div>
       <NCollapse>
         <NCollapseItem
-          v-for="(selectorResult, index) in selectorResults"
-          :key="selectorResult.selector.toString()"
+          v-for="(result, index) in selectorResults"
+          :key="result.selector.toString()"
         >
           <template #header>
             <span
-              v-if="selectorResult.results.length > 1"
+              v-if="result.nodes.length > 1"
               underline
               decoration-1
               m-r-4px
               title="查询数量"
             >
-              {{ selectorResult.results.length }}
+              {{ result.nodes.length }}
             </span>
             <span
               break-all
               :title="
-                typeof selectorResult.selector == 'object'
-                  ? `选择器`
-                  : `搜索字符`
+                typeof result.selector == 'object' ? `选择器` : `搜索字符`
               "
             >
-              {{ selectorResult.selector.toString() }}
+              {{ result.selector.toString() }}
             </span>
           </template>
           <template #header-extra>
             <NButton
               size="small"
-              v-if="typeof selectorResult.selector == 'object'"
-              @click.stop="generateRules(selectorResult.selector as Selector)"
+              v-if="typeof result.selector == 'object'"
+              @click.stop="generateRules(result.selector as Selector)"
               title="复制规则"
             >
               <template #icon>
@@ -248,14 +253,58 @@ const _1vw = window.innerWidth / 100;
           <NSpace
             style="max-height: 400px; overflow-y: scroll; padding-bottom: 10px"
           >
-            <NButton
-              v-for="resultNode in selectorResult.results"
-              :key="resultNode.id"
-              @click="onUpdateFocusNode(resultNode)"
-              size="small"
+            <template
+              v-if="
+                typeof result.selector == 'string' ||
+                result.selector.tracks.length <= 1
+              "
             >
-              {{ getNodeLabel(resultNode) }}
-            </NButton>
+              <NButton
+                v-for="resultNode in result.nodes.map((r) =>
+                  Array.isArray(r) ? r[0] : r,
+                )"
+                :key="resultNode.id"
+                @click="onUpdateFocusNode(resultNode)"
+                size="small"
+              >
+                {{ getNodeLabel(resultNode) }}
+              </NButton>
+            </template>
+            <template v-else>
+              <NButtonGroup
+                v-for="(trackNodes, index) in result.nodes.map((r) =>
+                  Array.isArray(r) ? r : [r],
+                )"
+                :key="index"
+              >
+                <NButton
+                  size="small"
+                  @click="
+                    onUpdateTrack({
+                      nodes: trackNodes,
+                      selector: result.selector,
+                    })
+                  "
+                >
+                  <NIcon>
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M5 21V8.825Q4.125 8.5 3.563 7.738T3 6q0-1.25.875-2.125T6 3q1.25 0 2.125.875T9 6q0 .975-.562 1.738T7 8.825V19h4V3h8v12.175q.875.325 1.438 1.088T21 18q0 1.25-.875 2.125T18 21q-1.25 0-2.125-.875T15 18q0-.975.563-1.75T17 15.175V5h-4v16zM6 7q.425 0 .713-.288T7 6q0-.425-.288-.712T6 5q-.425 0-.712.288T5 6q0 .425.288.713T6 7m12 12q.425 0 .713-.288T19 18q0-.425-.288-.712T18 17q-.425 0-.712.288T17 18q0 .425.288.713T18 19m0-1"
+                      />
+                    </svg>
+                  </NIcon>
+                </NButton>
+                <NButton
+                  @click="
+                    onUpdateFocusNode(trackNodes[result.selector.trackIndex])
+                  "
+                  size="small"
+                >
+                  {{ getNodeLabel(trackNodes[result.selector.trackIndex]) }}
+                </NButton>
+              </NButtonGroup>
+            </template>
           </NSpace>
         </NCollapseItem>
       </NCollapse>

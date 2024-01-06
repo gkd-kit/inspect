@@ -1,4 +1,4 @@
-import router from '@/router';
+import type { Router } from 'vue-router';
 
 const corsOkOrigins = new Set([
   location.origin,
@@ -34,7 +34,7 @@ export const githubZipUrlReg =
 export const githubImageUrlReg =
   /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/([0-9]+)\/([0-9a-z\-]+)$/;
 
-export const githubUrlToSelfUrl = (u: string | URL): string => {
+export const githubUrlToSelfUrl = (router: Router, u: string | URL): string => {
   u = u.toString();
   const { 1: zipAssetId } = u.match(githubZipUrlReg) || [];
   const { 1: userId, 2: imgAssetId } = u.match(githubImageUrlReg) || [];

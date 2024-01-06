@@ -6,8 +6,10 @@ export const obj2form = (...objs: Record<string, unknown>[]) => {
     for (const k in obj) {
       const v = obj[k];
       if (v === undefined) continue;
-      if (v instanceof Blob) {
+      if (v instanceof File) {
         fd.append(k, v, v.name);
+      } else if (v instanceof Blob) {
+        fd.append(k, v);
       } else {
         fd.append(k, String(v));
       }

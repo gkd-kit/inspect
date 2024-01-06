@@ -162,7 +162,6 @@ const renderLabel = (info: {
       :filter="(treeFilter as any)"
       :nodeProps="(treeNodeProps as any)"
       :renderLabel="(renderLabel as any)"
-      style="--n-border-color: rgb(239, 239, 245)"
     />
   </div>
 </template>

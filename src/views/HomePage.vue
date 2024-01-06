@@ -36,7 +36,9 @@ import {
   watch,
   watchEffect,
 } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const updateSnapshots = async () => {
@@ -220,13 +222,15 @@ const batchDownloadZip = useTask(async () => {
 const batchShareJpgUrl = useTask(async () => {
   const pngUrls = await batchCreateJpgUrl(await checkedSnapshots());
   showTextDLg({
-    content: pngUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
+    content:
+      pngUrls.map((s) => githubUrlToSelfUrl(router, s)).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
   const zipUrls = await batchCreateZipUrl(await checkedSnapshots());
   showTextDLg({
-    content: zipUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
+    content:
+      zipUrls.map((s) => githubUrlToSelfUrl(router, s)).join(`\n`) + `\n`,
   });
 });
 </script>

@@ -60,7 +60,7 @@ const exportJpgUrl = useTask(async () => {
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(pngUrl),
+    content: githubUrlToSelfUrl(router, pngUrl),
   });
 });
 
@@ -70,7 +70,7 @@ const exportZipUrl = useTask(async () => {
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(zipUrl),
+    content: githubUrlToSelfUrl(router, zipUrl),
   });
 });
 
@@ -171,7 +171,9 @@ const copy = async (content: string) => {
       <NSpace vertical>
         <NButton
           v-if="githubZipStorage[snapshot.id]"
-          @click="copy(githubUrlToSelfUrl(githubZipStorage[snapshot.id]))"
+          @click="
+            copy(githubUrlToSelfUrl($router, githubZipStorage[snapshot.id]))
+          "
         >
           复制链接-快照
         </NButton>
@@ -184,7 +186,9 @@ const copy = async (content: string) => {
         </NButton>
         <NButton
           v-if="githubJpgStorage[snapshot.id]"
-          @click="copy(githubUrlToSelfUrl(githubJpgStorage[snapshot.id]))"
+          @click="
+            copy(githubUrlToSelfUrl($router, githubJpgStorage[snapshot.id]))
+          "
         >
           复制链接-图片
         </NButton>

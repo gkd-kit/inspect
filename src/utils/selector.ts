@@ -17,24 +17,28 @@ const transform = new CommonTransform<RawNode>(
 );
 
 export type Selector = {
+  tracks: boolean[];
+  trackIndex: number;
   toString: () => string;
   match: (node: RawNode) => RawNode | undefined;
   querySelectorAll: (node: RawNode) => RawNode[];
-  querySelector: (node: RawNode) => RawNode | undefined;
+  querySelectorTrackAll: (node: RawNode) => RawNode[][];
 };
 
 export const parseSelector = (source: string): Selector => {
   const cs = CommonSelector.Companion.parse(source);
   const selector: Selector = {
+    tracks: cs.tracks,
+    trackIndex: cs.trackIndex,
     toString: () => cs.toString(),
-    match: (node: RawNode): RawNode | undefined => {
+    match: (node) => {
       return cs.match(node, transform) ?? void 0;
     },
-    querySelectorAll: (node: RawNode): RawNode[] => {
+    querySelectorAll: (node) => {
       return transform.querySelectorAll(node, cs);
     },
-    querySelector: (node: RawNode): RawNode | undefined => {
-      return transform.querySelector(node, cs) as RawNode | undefined;
+    querySelectorTrackAll: (node) => {
+      return transform.querySelectorTrackAll(node, cs);
     },
   };
   return selector;

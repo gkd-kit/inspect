@@ -18,6 +18,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useTitle } from '@vueuse/core';
 import { gmOk } from '@/utils/gm';
 import { exportSnapshotAsJpgUrl, exportSnapshotAsZipUrl } from '@/utils/export';
+import TrackGraph from '@/components/TrackGraph.vue';
+import type { Selector } from '@/utils/selector';
+import { NModal, NIcon } from 'naive-ui';
 
 const route = useRoute();
 const router = useRouter();
@@ -81,8 +84,6 @@ watchEffect(async () => {
 
 const rootNode = shallowRef<RawNode>();
 const focusNode = shallowRef<RawNode>();
-// 节点存在层叠渲染的情况,而且 Android 无障碍无法获取 z-index
-// const skipKeys = shallowRef<number[]>([]);
 
 const onDelete = async () => {
   message.success(`删除成功,即将回到首页`);
@@ -91,6 +92,23 @@ const onDelete = async () => {
     path: `/`,
   });
 };
+
+const track = shallowRef<{
+  selector: Selector;
+  nodes: RawNode[];
+}>();
+const trackVisible = shallowRef(false);
+watchEffect(() => {
+  if (track.value) {
+    trackVisible.value = true;
+  }
+});
+watchEffect(async () => {
+  if (!trackVisible.value) {
+    await delay(1000);
+    track.value = undefined;
+  }
+});
 </script>
 <template>
   <div h-full flex gap-5px p-5px box-border>
@@ -123,6 +141,28 @@ const onDelete = async () => {
       :snapshot="snapshot"
       :rootNode="rootNode"
       @updateFocusNode="focusNode = $event"
+      @updateTrack="track = $event"
     />
+    <NModal
+      v-model:show="trackVisible"
+      preset="dialog"
+      title="选择器路径视图"
+      style="width: max(600px, 80vh)"
+    >
+      <template #icon>
+        <NIcon>
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M5 21V8.825Q4.125 8.5 3.563 7.738T3 6q0-1.25.875-2.125T6 3q1.25 0 2.125.875T9 6q0 .975-.562 1.738T7 8.825V19h4V3h8v12.175q.875.325 1.438 1.088T21 18q0 1.25-.875 2.125T18 21q-1.25 0-2.125-.875T15 18q0-.975.563-1.75T17 15.175V5h-4v16zM6 7q.425 0 .713-.288T7 6q0-.425-.288-.712T6 5q-.425 0-.712.288T5 6q0 .425.288.713T6 7m12 12q.425 0 .713-.288T19 18q0-.425-.288-.712T18 17q-.425 0-.712.288T17 18q0 .425.288.713T18 19m0-1"
+            />
+          </svg>
+        </NIcon>
+      </template>
+      <div v-if="track" class="gkd_code">
+        {{ track.selector.toString() }}
+      </div>
+      <TrackGraph v-if="track" :track="track" />
+    </NModal>
   </div>
 </template>
