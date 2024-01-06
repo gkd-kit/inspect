@@ -31,7 +31,7 @@ G6.registerNode('file-node', {
         y: 8,
         fontSize: 16,
         text: cfg.label,
-        fill: '#333639',
+        fill: cfg.tracked ? `#00f` : '#333639',
         textAlign: 'left',
         fontFamily: window
           .getComputedStyle(document.body, null)

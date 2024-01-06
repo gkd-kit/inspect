@@ -19,6 +19,7 @@ const props = withDefaults(
 
 const visibleNodes = computed(() => {
   const nodes = props.track.nodes;
+  const trackId = props.track.nodes[props.track.selector.trackIndex]?.id;
   const minNode = (() => {
     const tempNode = nodes.reduce((p, c) => {
       return c.id < p.id ? c : p;
@@ -41,9 +42,11 @@ const visibleNodes = computed(() => {
       subNodes.add(p);
       p = p.parent;
     }
-    n.parent?.children?.forEach((c) => {
-      subNodes.add(c);
-    });
+    if (n !== minNode && n.parent) {
+      n.parent.children.forEach((c) => {
+        subNodes.add(c);
+      });
+    }
   });
   const graphNodes = Array.from(subNodes).map<
     TreeGraphData & { _node: RawNode }
@@ -53,6 +56,7 @@ const visibleNodes = computed(() => {
       children: [],
       id: n.id.toString(),
       label: getNodeLabel(n),
+      tracked: trackId === n.id,
     };
   });
   graphNodes.sort((a, b) => {
@@ -89,7 +93,7 @@ watchEffect(() => {
       },
     },
   });
-  graph.node(() => {
+  graph.node((config) => {
     return {
       type: 'file-node',
     };
