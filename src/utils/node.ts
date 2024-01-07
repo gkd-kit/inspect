@@ -98,7 +98,7 @@ export const getNodeLabel = (node: RawNode): string => {
   Reflect.set(node, labelKey, label);
   return label;
 };
-export const getLimitLabel = (node: RawNode, limit = 10): string => {
+export const getLimitLabel = (node: RawNode, limit = 15): string => {
   let label = node.attr.name?.split(`.`)?.at(-1) || ``;
   const length = node.children.length;
   if (length > 1) {
