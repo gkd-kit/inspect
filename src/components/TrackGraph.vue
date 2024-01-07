@@ -169,7 +169,7 @@ watchEffect(() => {
           },
           '-': () => {
             return t
-              .parent!.children.slice(t.parent!.children.indexOf(t))
+              .parent!.children.slice(t.parent!.children.indexOf(t) + 1)
               .indexOf(n);
           },
           '>': () => {
