@@ -158,6 +158,7 @@ watchEffect(() => {
         {{ track.selector.toString() }}
       </div>
       <TrackGraph v-if="track" :track="track" />
+      <div>*为简化视图已隐藏部分节点</div>
     </NModal>
   </div>
 </template>
