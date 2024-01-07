@@ -2,12 +2,26 @@
 
 - <https://i.gkd.li> github pages
 
-GKD 网页端审查工具, 抓取快照,审查快照,分享快照, 连接调试 GKD APP 内部 HTTP Server, 实时启用订阅规则, 实时执行点击选择器
+GKD 网页端审查工具,
+
+- 抓取快照
+- 审查快照
+- 分享快照
+- 连接调试 GKD APP 内部 HTTP Server
+- 实时启用订阅规则, 实时执行点击选择器
+- 选择器路径视图
 
 <details open>
   <summary>示例: 审查快照</summary>
 
 ![image](https://github.com/gkd-kit/inspect/assets/38517192/f37ec43c-cb39-4745-ad5b-e11a02cc5c28)
+
+</details>
+
+<details open>
+  <summary>示例: 选择器路径视图</summary>
+
+![image](https://github.com/gkd-kit/inspect/assets/38517192/639661be-3ab4-4098-8676-b2a7ed136d66)
 
 </details>
 
