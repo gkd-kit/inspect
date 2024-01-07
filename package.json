@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "@antv/g6": "^4.8.24",
-    "@gkd-kit/selector": "0.0.16",
+    "@gkd-kit/selector": "0.0.17",
     "@types/file-saver": "^2.0.7",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.6",

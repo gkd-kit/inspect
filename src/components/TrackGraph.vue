@@ -100,16 +100,47 @@ watchEffect(() => {
   });
   graph.edge((config) => {
     if (config.id && config.id.startsWith('-')) {
-      const curveOffset =
+      const direction =
         Number.parseInt(config.source!) > Number.parseInt(config.target!)
-          ? 20
-          : -20;
+          ? 1
+          : -1;
+      const connect = String(config.connect);
+      let curveOffset = direction * 20;
+      if (connect.startsWith('<<')) {
+        const c = props.track.nodes.find(
+          (n) => n.id.toString() == config.source,
+        )!;
+        let p = c.parent;
+        let i = 1;
+        while (p) {
+          if (p.id.toString() == config.target) break;
+          p = p.parent;
+          i++;
+        }
+        if (i > 1) {
+          curveOffset += i * 2;
+        }
+      }
       return {
         type: 'arc',
-        color: '#f0f',
+        color: '#ff00ff80',
         curveOffset,
         style: {
           startArrow: true,
+        },
+        label: connect,
+        labelCfg: {
+          style: {
+            fill: '#f00',
+            fontSize: 12,
+            background: {
+              fill: '#ffffff',
+              stroke: '#f0f',
+              lineWidth: 1,
+              padding: [2, 1, 0, 1],
+              radius: 2,
+            },
+          },
         },
       };
     }
@@ -122,15 +153,57 @@ watchEffect(() => {
   });
   graph.render();
   const nodes = Array.from(props.track.nodes).reverse();
+  const connectKeys = props.track.selector.connectKeys;
   nodes.forEach((n, i) => {
-    if (nodes[i + 1] && graph) {
-      const id = `-${n.id}:${nodes[i + 1].id}`;
+    const t = nodes[i + 1];
+    if (t && graph) {
+      const id = `-${n.id}:${t.id}`;
+      const key = connectKeys[connectKeys.length - i - 1];
+      const distance =
+        {
+          '+': () => {
+            return t
+              .parent!.children.slice(0, t.parent!.children.indexOf(t))
+              .reverse()
+              .indexOf(n);
+          },
+          '-': () => {
+            return t
+              .parent!.children.slice(t.parent!.children.indexOf(t))
+              .indexOf(n);
+          },
+          '>': () => {
+            let i = 0;
+            let p = t.parent;
+            while (p) {
+              if (p === n) return i;
+              p = p.parent;
+              i++;
+            }
+            return i;
+          },
+          '<': () => {
+            return t.children.indexOf(n);
+          },
+          '<<': () => {
+            let i = 0;
+            const stack = Array.from(t.children).reverse();
+            while (stack.length > 0) {
+              const c = stack.pop()!;
+              if (c === n) return i;
+              stack.push(...Array.from(c.children).reverse());
+              i++;
+            }
+            return i;
+          },
+        }[key]() + 1;
       graph.addItem(
         'edge',
         {
           source: n.id.toString(),
-          target: nodes[i + 1].id.toString(),
+          target: t.id.toString(),
           id,
+          connect: key + distance,
         },
         false,
       );
@@ -147,8 +220,9 @@ const resize = () => {
     !container ||
     !container.value.scrollWidth ||
     !container.value.scrollHeight
-  )
+  ) {
     return;
+  }
   graph.changeSize(container.value.scrollWidth, container.value.scrollHeight);
 };
 window.addEventListener('resize', resize);

@@ -19,6 +19,7 @@ const transform = new CommonTransform<RawNode>(
 export type Selector = {
   tracks: boolean[];
   trackIndex: number;
+  connectKeys: string[];
   toString: () => string;
   match: (node: RawNode) => RawNode | undefined;
   querySelectorAll: (node: RawNode) => RawNode[];
@@ -30,6 +31,7 @@ export const parseSelector = (source: string): Selector => {
   const selector: Selector = {
     tracks: cs.tracks,
     trackIndex: cs.trackIndex,
+    connectKeys: cs.connectKeys,
     toString: () => cs.toString(),
     match: (node) => {
       return cs.match(node, transform) ?? void 0;
