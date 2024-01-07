@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import '@/utils/g6';
-import { getNodeLabel } from '@/utils/node';
+import { getLimitLabel } from '@/utils/node';
 import type { Selector } from '@/utils/selector';
 import type { RawNode } from '@/utils/types';
-import type { TreeGraphData, TreeGraph } from '@antv/g6';
+import type { TreeGraph, TreeGraphData } from '@antv/g6';
 import G6 from '@antv/g6';
 import { computed, onUnmounted, shallowRef, watchEffect } from 'vue';
 
@@ -55,7 +55,7 @@ const visibleNodes = computed(() => {
       _node: n,
       children: [],
       id: n.id.toString(),
-      label: getNodeLabel(n),
+      label: getLimitLabel(n),
       tracked: trackId === n.id,
     };
   });

@@ -98,6 +98,21 @@ export const getNodeLabel = (node: RawNode): string => {
   Reflect.set(node, labelKey, label);
   return label;
 };
+export const getLimitLabel = (node: RawNode, limit = 10): string => {
+  let label = node.attr.name?.split(`.`)?.at(-1) || ``;
+  const length = node.children.length;
+  if (length > 1) {
+    label = `${label} [${length}]`;
+  }
+  const text = node.attr.text || node.attr.desc || ``;
+  if (text) {
+    if (text.length > limit) {
+      return `${label} : ${text.slice(0, limit)}...`;
+    }
+    return `${label} : ${text}`;
+  }
+  return label;
+};
 
 export const getDevice = (snapshot: Snapshot) => {
   if (typeof snapshot.device == 'object' && snapshot.device) {
