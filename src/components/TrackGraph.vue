@@ -159,7 +159,7 @@ watchEffect(() => {
     if (t && graph) {
       const id = `-${n.id}:${t.id}`;
       const key = connectKeys[connectKeys.length - i - 1];
-      const distance =
+      const distance: number =
         {
           '+': () => {
             return t
@@ -203,7 +203,7 @@ watchEffect(() => {
           source: n.id.toString(),
           target: t.id.toString(),
           id,
-          connect: key + distance,
+          connect: distance > 1 ? key + distance : key,
         },
         false,
       );
