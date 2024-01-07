@@ -1,0 +1,2 @@
+import{d as i,f as e,u as r,m as p,h as c,aq as d,ar as l,o as t}from"./index-0e_I0V8O.js";const f={flex:"","flex-col":"","flex-items-center":"","w-100vw":"","pt-50px":"","gap-20px":""},_={key:0},u={key:1},x=i({__name:"_404Page",setup(m){const a=l(),{fullPath:o}=a.redirectedFrom??{};return(n,s)=>(t(),e("div",f,[r(o)?(t(),e("div",_,p("访问的地址 "+r(o)+" 不存在"),1)):(t(),e("div",u,"欢迎来到404页面")),c("a",{href:"/",onClick:s[0]||(s[0]=d(h=>n.$router.replace({path:"/"}),["prevent"]))}," 回到首页 ")]))}});export{x as default};
+//# sourceMappingURL=_404Page-HcTqCTyY.js.map
