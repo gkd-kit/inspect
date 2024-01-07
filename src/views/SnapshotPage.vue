@@ -103,12 +103,6 @@ watchEffect(() => {
     trackVisible.value = true;
   }
 });
-watchEffect(async () => {
-  if (!trackVisible.value) {
-    await delay(1000);
-    track.value = undefined;
-  }
-});
 </script>
 <template>
   <div h-full flex gap-5px p-5px box-border>
@@ -148,6 +142,7 @@ watchEffect(async () => {
       preset="dialog"
       title="选择器路径视图"
       style="width: max(600px, 80vh)"
+      @afterLeave="track = undefined"
     >
       <template #icon>
         <NIcon>
