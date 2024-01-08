@@ -21,7 +21,7 @@ GKD 网页端审查工具,
 <details open>
   <summary>示例: 选择器路径视图</summary>
 
-![image](https://github.com/gkd-kit/inspect/assets/38517192/639661be-3ab4-4098-8676-b2a7ed136d66)
+![image](https://github.com/gkd-kit/inspect/assets/38517192/27d0656a-2239-426c-930c-749ffb9f189b)
 
 </details>
 
