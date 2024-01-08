@@ -102,10 +102,11 @@ watchEffect(() => {
     if (config.id && config.id.startsWith('-')) {
       const direction =
         Number.parseInt(config.source!) > Number.parseInt(config.target!)
-          ? 1
-          : -1;
+          ? -1
+          : 1;
       const connect = String(config.connect);
-      let curveOffset = direction * 20;
+      const count = Number(config.count);
+      let curveOffset = 40;
       if (connect.startsWith('<<')) {
         const c = props.track.nodes.find(
           (n) => n.id.toString() == config.source,
@@ -118,11 +119,15 @@ watchEffect(() => {
           i++;
         }
         if (i > 1) {
-          curveOffset += i * 2;
+          curveOffset += i * 20;
         }
       }
+      if (count > 1) {
+        curveOffset += (count - 1) * 20;
+      }
+      curveOffset *= direction;
       return {
-        type: 'arc',
+        type: 'quadratic',
         color: '#ff00ff80',
         curveOffset,
         style: {
@@ -154,10 +159,13 @@ watchEffect(() => {
   graph.render();
   const nodes = Array.from(props.track.nodes).reverse();
   const connectKeys = props.track.selector.connectKeys;
+  const edgeCountMap: Record<string, number> = {};
   nodes.forEach((n, i) => {
     const t = nodes[i + 1];
     if (t && graph) {
-      const id = `-${n.id}:${t.id}`;
+      const tempId = t.id > n.id ? `-${n.id}:${t.id}` : `-${t.id}:${n.id}`;
+      edgeCountMap[tempId] = (edgeCountMap[tempId] || 0) + 1;
+      const id = `${tempId}/${edgeCountMap[tempId]}`;
       const key = connectKeys[connectKeys.length - i - 1];
       const distance: number =
         {
@@ -204,6 +212,8 @@ watchEffect(() => {
           target: t.id.toString(),
           id,
           connect: distance > 1 ? key + distance : key,
+          // 两个节点之间的边的数量
+          count: edgeCountMap[tempId],
         },
         false,
       );
