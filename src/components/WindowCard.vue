@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { getDevice, getNodeLabel } from '@/utils/node';
-import { copy } from '@/utils/others';
+import { copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import {
   NEllipsis,
@@ -32,6 +32,12 @@ const expandedKeys = shallowRef<number[]>([]);
 watch([() => props.focusNode, () => props.focusCount], async () => {
   if (!props.focusNode) return;
   const key = props.focusNode.id;
+  nextTick().then(async () => {
+    await delay(100);
+    if (key === props.focusNode?.id) {
+      treeRef.value?.scrollTo({ key, behavior: 'smooth', debounce: true });
+    }
+  });
   let parent = props.focusNode.parent;
   if (!parent) {
     return;
@@ -48,8 +54,6 @@ watch([() => props.focusNode, () => props.focusCount], async () => {
     return;
   }
   expandedKeys.value = [...s];
-  await nextTick();
-  treeRef.value?.scrollTo({ key });
 });
 
 const treeRef = shallowRef<TreeInst>();
