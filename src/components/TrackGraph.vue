@@ -20,7 +20,7 @@ const props = withDefaults(
 const visibleNodes = computed(() => {
   const nodes = props.track.nodes;
   const trackId = props.track.nodes[props.track.selector.trackIndex]?.id;
-  const minNode = (() => {
+  const topNode = (() => {
     const tempNode = nodes.reduce((p, c) => {
       return c.id < p.id ? c : p;
     }, nodes[0]);
@@ -34,22 +34,25 @@ const visibleNodes = computed(() => {
     }
   })();
   const subNodes = new Set<RawNode>();
-  subNodes.add(minNode);
+  subNodes.add(topNode);
   nodes.forEach((n) => {
     subNodes.add(n);
     let p: RawNode | undefined = n;
-    while (p && p !== minNode) {
+    while (p && p !== topNode) {
       subNodes.add(p);
       p = p.parent;
     }
-    if (n !== minNode && n.parent) {
-      n.parent.children.forEach((c) => {
-        subNodes.add(c);
+    if (n !== topNode && n.parent) {
+      const selfIndex = n.parent.children.indexOf(n);
+      n.parent.children.forEach((c, broIndex) => {
+        if (Math.abs(broIndex - selfIndex) <= 1) {
+          subNodes.add(c);
+        }
       });
     }
   });
   const graphNodes = Array.from(subNodes).map<
-    TreeGraphData & { _node: RawNode }
+    TreeGraphData & { _node: RawNode; children: TreeGraphData[] }
   >((n) => {
     return {
       _node: n,
@@ -65,7 +68,47 @@ const visibleNodes = computed(() => {
   graphNodes.forEach((n) => {
     const t = graphNodes.find((g) => g.id === n._node.pid.toString());
     if (t) {
-      t.children!.push(n);
+      t.children.push(n);
+    }
+  });
+  graphNodes.forEach((n) => {
+    if (n.children.length < n._node.children.length) {
+      const rawGroup: RawNode[] = [];
+      const insert = () => {
+        if (rawGroup.length == 0) return;
+        const g = rawGroup[0];
+        n.children.push({
+          _node: g,
+          children: [],
+          id: g.id.toString(),
+          label:
+            rawGroup.length == 1
+              ? getLimitLabel(g)
+              : `[${g.parent!.children.indexOf(g)} ... ${g.parent!.children.indexOf(
+                  rawGroup.at(-1)!,
+                )}]`,
+          tracked: trackId === g.id,
+        });
+        while (rawGroup.length > 0) {
+          rawGroup.pop();
+        }
+      };
+      n._node.children.forEach((c) => {
+        if (!n.children.find((g) => g.id === c.id.toString())) {
+          rawGroup.push(c);
+        } else {
+          insert();
+        }
+      });
+      if (rawGroup.length > 0) {
+        insert();
+      }
+      n.children.sort((a, b) => {
+        return (
+          n._node.children.indexOf(a._node as RawNode) -
+          n._node.children.indexOf(b._node as RawNode)
+        );
+      });
     }
   });
   return graphNodes;
