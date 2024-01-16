@@ -3,6 +3,7 @@ import { getDevice, getNodeLabel } from '@/utils/node';
 import { copy } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import {
+  NEllipsis,
   NTable,
   NTbody,
   NTd,
@@ -10,11 +11,9 @@ import {
   NThead,
   NTr,
   NTree,
-  NEllipsis,
   type TreeInst,
-  type TreeOption,
 } from 'naive-ui';
-import { HTMLAttributes, nextTick, shallowRef, watchEffect } from 'vue';
+import { HTMLAttributes, nextTick, shallowRef, watch } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -28,37 +27,34 @@ const props = withDefaults(
   },
 );
 
-const defaultExpandedKeys = shallowRef<number[]>([]);
-watchEffect(async () => {
-  if (!props.focusNode) return;
-  const key = props.focusNode.id;
-  let n = props.focusNode.parent;
-  if (!n) {
-    return;
-  }
-  const s = new Set(defaultExpandedKeys.value);
-  while (n) {
-    s.add(n.id);
-    n = n.parent;
-  }
-  if (s.size == defaultExpandedKeys.value.length) {
-    return;
-  }
-  defaultExpandedKeys.value = [...s];
-  await nextTick();
-  treeRef.value?.scrollTo({ key });
-});
+const expandedKeys = shallowRef<number[]>([]);
+watch(
+  () => props.focusNode,
+  async () => {
+    if (!props.focusNode) return;
+    const key = props.focusNode.id;
+    let parent = props.focusNode.parent;
+    if (!parent) {
+      return;
+    }
+    const s = new Set(expandedKeys.value);
+    while (parent) {
+      s.add(parent.id);
+      parent = parent.parent;
+    }
+    if (
+      s.size == expandedKeys.value.length &&
+      expandedKeys.value.every((v) => s.has(v))
+    ) {
+      return;
+    }
+    expandedKeys.value = [...s];
+    await nextTick();
+    treeRef.value?.scrollTo({ key });
+  },
+);
 
 const treeRef = shallowRef<TreeInst>();
-
-const updateCheckedKeys = (
-  keys: Array<string | number>,
-  options: Array<TreeOption | null>,
-  meta: {
-    node: TreeOption | null;
-    action: 'check' | 'uncheck';
-  },
-) => {};
 
 const treeFilter = (pattern: string, node: RawNode) => {
   return node.id === props.focusNode?.id;
@@ -155,9 +151,8 @@ const renderLabel = (info: {
       ref="treeRef"
       virtualScroll
       showLine
-      @update:checked-keys="updateCheckedKeys"
       keyField="id"
-      :defaultExpandedKeys="defaultExpandedKeys"
+      v-model:expandedKeys="expandedKeys"
       :data="[rootNode as any]"
       :filter="(treeFilter as any)"
       :nodeProps="(treeNodeProps as any)"

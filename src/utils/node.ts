@@ -37,7 +37,11 @@ export const inBoxNode = (box: RawNode, child: RawNode) => {
     box.attr.bottom >= child.attr.bottom
   );
 };
-export const findNodeByXy = (nodes: RawNode[], ox: number, oy: number) => {
+export const findNodeByXy = (
+  nodes: RawNode[],
+  ox: number,
+  oy: number,
+) => {
   let prevNode: RawNode | undefined = void 0;
   nodes.forEach((node) => {
     if (node?.attr?.left === void 0) return;
@@ -50,7 +54,7 @@ export const findNodeByXy = (nodes: RawNode[], ox: number, oy: number) => {
       prevNode = node;
     }
   });
-  return prevNode;
+  return prevNode as RawNode | undefined;
 };
 
 export function* traverseNode(node: RawNode, skipKeys: number[] = []) {
