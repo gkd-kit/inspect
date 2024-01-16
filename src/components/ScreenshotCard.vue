@@ -18,12 +18,10 @@ const props = withDefaults(
 
 const imgRef = shallowRef<HTMLImageElement>();
 
-const clickEvRef = shallowRef<MouseEvent>();
-watchEffect(() => {
+const clickImg = (ev: MouseEvent) => {
   if (!props.rootNode) return;
-  const ev = clickEvRef.value;
   const img = imgRef.value;
-  if (!ev || !img) {
+  if (!img) {
     return;
   }
 
@@ -40,7 +38,8 @@ watchEffect(() => {
   if (childNode) {
     props.onUpdateFocusNode(childNode);
   }
-});
+};
+
 const percent = (n: number) => {
   return `${n * 100}%`;
 };
@@ -96,7 +95,7 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
     <img
       ref="imgRef"
       :src="url"
-      @click="clickEvRef = $event"
+      @click="clickImg"
       cursor-crosshair
       h-full
       object-contain
