@@ -44,11 +44,13 @@ const visibleNodes = computed(() => {
     }
     if (n !== topNode && n.parent) {
       const selfIndex = n.parent.children.indexOf(n);
-      n.parent.children.forEach((c, broIndex) => {
-        if (Math.abs(broIndex - selfIndex) <= 1) {
-          subNodes.add(c);
-        }
-      });
+      if (selfIndex != 0) {
+        n.parent.children.forEach((c, broIndex) => {
+          if (Math.abs(broIndex - selfIndex) <= 1) {
+            subNodes.add(c);
+          }
+        });
+      }
     }
   });
   const graphNodes = Array.from(subNodes).map<
