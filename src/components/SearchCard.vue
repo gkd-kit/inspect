@@ -45,15 +45,18 @@ const selectorText = shallowRef(``);
 const selectorResults = shallowReactive<
   (
     | {
+        key: number;
         selector: string;
         nodes: RawNode[];
       }
     | {
+        key: number;
         selector: Selector;
         nodes: RawNode[][];
       }
   )[]
 >([]);
+const expandedKeys = shallowRef<number[]>([]);
 const searchBySelector = errorTry(() => {
   if (!props.rootNode) {
     message.error(`根节点不存在`);
@@ -81,7 +84,7 @@ const searchBySelector = errorTry(() => {
       return;
     }
     message.success(`选择到 ${results.length} 个节点`);
-    selectorResults.unshift({ selector, nodes: results });
+    selectorResults.unshift({ selector, nodes: results, key: Date.now() });
   } else {
     if (
       selectorResults.find(
@@ -105,8 +108,16 @@ const searchBySelector = errorTry(() => {
       return;
     }
     message.success(`搜索到 ${results.length} 个节点`);
-    selectorResults.unshift({ selector: text, nodes: results });
+    selectorResults.unshift({
+      selector: text,
+      nodes: results,
+      key: Date.now(),
+    });
   }
+  const allKeys = new Set(selectorResults.map((s) => s.key));
+  const newKeys = expandedKeys.value.filter((k) => allKeys.has(k));
+  newKeys.push(selectorResults[0].key);
+  expandedKeys.value = newKeys;
 });
 const generateRules = errorTry(async (selector: Selector) => {
   let jpgUrl = githubJpgStorage[props.snapshot.id];
@@ -189,10 +200,11 @@ const _1vw = window.innerWidth / 100;
         </NButton>
       </NInputGroup>
       <div p-5px></div>
-      <NCollapse>
+      <NCollapse v-model:expandedNames="expandedKeys">
         <NCollapseItem
           v-for="(result, index) in selectorResults"
-          :key="result.selector.toString()"
+          :key="result.key"
+          :name="result.key"
         >
           <template #header>
             <span
