@@ -20,6 +20,7 @@ const props = withDefaults(
     snapshot: Snapshot;
     rootNode: RawNode;
     focusNode?: RawNode;
+    focusCount: number;
     onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
   {
@@ -28,31 +29,28 @@ const props = withDefaults(
 );
 
 const expandedKeys = shallowRef<number[]>([]);
-watch(
-  () => props.focusNode,
-  async () => {
-    if (!props.focusNode) return;
-    const key = props.focusNode.id;
-    let parent = props.focusNode.parent;
-    if (!parent) {
-      return;
-    }
-    const s = new Set(expandedKeys.value);
-    while (parent) {
-      s.add(parent.id);
-      parent = parent.parent;
-    }
-    if (
-      s.size == expandedKeys.value.length &&
-      expandedKeys.value.every((v) => s.has(v))
-    ) {
-      return;
-    }
-    expandedKeys.value = [...s];
-    await nextTick();
-    treeRef.value?.scrollTo({ key });
-  },
-);
+watch([() => props.focusNode, () => props.focusCount], async () => {
+  if (!props.focusNode) return;
+  const key = props.focusNode.id;
+  let parent = props.focusNode.parent;
+  if (!parent) {
+    return;
+  }
+  const s = new Set(expandedKeys.value);
+  while (parent) {
+    s.add(parent.id);
+    parent = parent.parent;
+  }
+  if (
+    s.size == expandedKeys.value.length &&
+    expandedKeys.value.every((v) => s.has(v))
+  ) {
+    return;
+  }
+  expandedKeys.value = [...s];
+  await nextTick();
+  treeRef.value?.scrollTo({ key });
+});
 
 const treeRef = shallowRef<TreeInst>();
 

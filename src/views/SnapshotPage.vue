@@ -84,6 +84,7 @@ watchEffect(async () => {
 
 const rootNode = shallowRef<RawNode>();
 const focusNode = shallowRef<RawNode>();
+const focusCount = shallowRef(0);
 
 const onDelete = async () => {
   message.success(`删除成功,即将回到首页`);
@@ -112,7 +113,10 @@ watchEffect(() => {
       :snapshot="snapshot"
       :rootNode="rootNode"
       :focusNode="focusNode"
-      @updateFocusNode="focusNode = $event"
+      @updateFocusNode="
+        focusNode = $event;
+        focusCount++;
+      "
     />
     <WindowCard
       v-if="snapshot && rootNode"
@@ -120,6 +124,7 @@ watchEffect(() => {
       :snapshot="snapshot"
       :focusNode="focusNode"
       @updateFocusNode="focusNode = $event"
+      :focusCount="focusCount"
       class="flex-1"
     >
       <ActionCard
@@ -134,7 +139,10 @@ watchEffect(() => {
       v-if="rootNode && snapshot"
       :snapshot="snapshot"
       :rootNode="rootNode"
-      @updateFocusNode="focusNode = $event"
+      @updateFocusNode="
+        focusNode = $event;
+        focusCount++;
+      "
       @updateTrack="track = $event"
     />
     <NModal
