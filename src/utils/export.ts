@@ -11,7 +11,6 @@ import {
 } from './storage';
 import Compressor from 'compressorjs';
 import type { Snapshot } from './types';
-import { message } from './discrete';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
   const zip = new JSZip();

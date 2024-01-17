@@ -32,7 +32,7 @@ export const githubZipUrlReg =
 
 // https://github.com/gkd-kit/inspect/assets/38517192/83fc7e58-8b8e-4114-a897-3e7bb7d8c45a -> /import/38517192/83fc7e58-8b8e-4114-a897-3e7bb7d8c45a
 export const githubImageUrlReg =
-  /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/([0-9]+)\/([0-9a-z\-]+)$/;
+  /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/([0-9]+)\/([0-9a-z-]+)$/;
 
 export const githubUrlToSelfUrl = (router: Router, u: string | URL): string => {
   u = u.toString();

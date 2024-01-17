@@ -1,5 +1,3 @@
-import type { VNode } from 'vue';
-
 export type PrimitiveType = boolean | string | number | null | undefined;
 
 export type RpcError = {

@@ -38,7 +38,7 @@ const attrDesc: Record<string, string> = {
   text: `可快速查找`,
 };
 
-const qfAttrs = [`id`,`vid`, `text`];
+const qfAttrs = [`id`, `vid`, `text`];
 </script>
 
 <template>

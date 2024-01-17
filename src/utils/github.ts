@@ -45,7 +45,7 @@ export type GithubPoliciesAsset = {
 
 type UploadPoliciesAssetsRsonpse = {
   upload_url: string;
-  header: {};
+  header: object;
   asset: GithubPoliciesAsset;
   form: S3Form;
   same_origin: boolean;

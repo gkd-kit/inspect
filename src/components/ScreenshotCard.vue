@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { findNodeByXy } from '@/utils/node';
 import type { RawNode, Snapshot } from '@/utils/types';
-import { computed, shallowRef, watchEffect } from 'vue';
+import { computed, shallowRef } from 'vue';
 
 const props = withDefaults(
   defineProps<{

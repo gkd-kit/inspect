@@ -8,7 +8,10 @@
     "build:mirror": "cross-env MIRROR=ON vite build",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix --ignore-path .gitignore .",
+    "format": "prettier --cache --write --ignore-unknown .",
+    "postinstall": "simple-git-hooks"
   },
   "publishConfig": {
     "access": "public",
@@ -20,12 +23,15 @@
   "dependencies": {
     "@antv/g6": "^4.8.24",
     "@gkd-kit/selector": "0.0.17",
+    "@rushstack/eslint-patch": "^1.7.0",
     "@types/file-saver": "^2.0.7",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.11.4",
     "@vitejs/plugin-legacy": "^5.2.0",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/tsconfig": "^0.5.1",
     "@vueuse/components": "^10.7.2",
     "@vueuse/core": "^10.7.2",
@@ -33,20 +39,26 @@
     "compressorjs": "^1.2.1",
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.10",
+    "eslint": "^8.56.0",
+    "eslint-define-config": "^2.1.0",
+    "eslint-plugin-unused-imports": "3.0.0",
+    "eslint-plugin-vue": "^9.20.1",
     "file-saver": "^2.0.5",
     "fs-extra": "^11.2.0",
     "json5": "^2.2.3",
     "jszip": "^3.10.1",
+    "lint-staged": "^15.2.0",
     "localforage": "^1.10.0",
     "naive-ui": "^2.37.3",
-    "node-html-parser": "6.1.12",
+    "node-html-parser": "^6.1.12",
     "normalize.css": "^8.0.1",
     "npm-run-all": "^4.1.5",
     "p-limit": "^5.0.0",
     "pinia": "^2.1.7",
     "prettier": "^3.2.2",
     "sass": "^1.69.7",
-    "simple-git": "3.22.0",
+    "simple-git": "^3.22.0",
+    "simple-git-hooks": "^2.9.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "unocss": "^0.58.3",
@@ -60,5 +72,14 @@
   "volta": {
     "node": "18.13.0"
   },
-  "packageManager": "pnpm@8.6.0"
+  "packageManager": "pnpm@8.6.0",
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec lint-staged"
+  },
+  "lint-staged": {
+    "*.{vue,js,jsx,cjs,mjs,ts,tsx}": [
+      "prettier --cache --write",
+      "eslint --cache --fix"
+    ]
+  }
 }

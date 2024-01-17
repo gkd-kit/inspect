@@ -272,7 +272,7 @@ onUnmounted(() => {
 const resize = () => {
   if (!graph || graph.get('destroyed') || !container.value) return;
   if (
-    !container ||
+    !container.value ||
     !container.value.scrollWidth ||
     !container.value.scrollHeight
   ) {

@@ -6,7 +6,7 @@ import unocss from 'unocss/vite';
 import { defineConfig } from 'vite';
 import { _404Page, commit, mirror } from './plugins';
 
-export default defineConfig(({}) => {
+export default defineConfig(() => {
   const useMirror = process.env.MIRROR == `ON`;
   return {
     plugins: [
