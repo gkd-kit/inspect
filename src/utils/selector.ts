@@ -47,9 +47,5 @@ export const parseSelector = (source: string): Selector => {
 };
 
 export const checkSelector = (source: string) => {
-  try {
-    return !!parseSelector(source);
-  } catch {
-    return false;
-  }
+  return CommonSelector.Companion.parseOrNull(source) != null;
 };

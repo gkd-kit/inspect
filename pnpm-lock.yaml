@@ -9,8 +9,8 @@ dependencies:
     specifier: ^4.8.24
     version: 4.8.24
   '@gkd-kit/selector':
-    specifier: 0.0.17
-    version: 0.0.17
+    specifier: 0.0.18
+    version: 0.0.18
   '@rushstack/eslint-patch':
     specifier: ^1.7.0
     version: 1.7.0
@@ -2077,8 +2077,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: false
 
-  /@gkd-kit/selector@0.0.17:
-    resolution: {integrity: sha512-3e01WE/TOv2b4fYQ8E9CHJvXw0AFwl0XLfHf8daaGVbWBj2oRxbt7MyoQFBR9/4zbHCrKO7iCBq83Hguh7qz7A==}
+  /@gkd-kit/selector@0.0.18:
+    resolution: {integrity: sha512-5aDHh45pkRLd82d+TLE5vbaz64PkcYZABOuqCXhsEQW8PtNMT05sTTW6WQeM+RH/IjGvULz/p9Hl8vpVm2bPCg==}
     dev: false
 
   /@humanwhocodes/config-array@0.11.14:

@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "@antv/g6": "^4.8.24",
-    "@gkd-kit/selector": "0.0.17",
+    "@gkd-kit/selector": "0.0.18",
     "@rushstack/eslint-patch": "^1.7.0",
     "@types/file-saver": "^2.0.7",
     "@types/fs-extra": "^11.0.4",
