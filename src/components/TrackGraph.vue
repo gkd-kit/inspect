@@ -76,9 +76,23 @@ const visibleNodes = computed(() => {
   graphNodes.forEach((n) => {
     if (n.children.length < n._node.children.length) {
       const rawGroup: RawNode[] = [];
+      const clear = () => {
+        while (rawGroup.length > 0) {
+          rawGroup.pop();
+        }
+      };
       const insert = () => {
         if (rawGroup.length == 0) return;
+        const children = rawGroup[0].parent!.children!;
         const g = rawGroup[0];
+        if (
+          children.length > 1 &&
+          children.indexOf(g) == 1 &&
+          children.indexOf(rawGroup.at(-1)!) == children.length - 1
+        ) {
+          clear();
+          return;
+        }
         n.children.push({
           _node: g,
           children: [],
@@ -86,14 +100,12 @@ const visibleNodes = computed(() => {
           label:
             rawGroup.length == 1
               ? getLimitLabel(g)
-              : `[${g.parent!.children.indexOf(g)} ... ${g.parent!.children.indexOf(
+              : `[${children.indexOf(g)} ... ${children.indexOf(
                   rawGroup.at(-1)!,
                 )}]`,
           tracked: trackId === g.id,
         });
-        while (rawGroup.length > 0) {
-          rawGroup.pop();
-        }
+        clear();
       };
       n._node.children.forEach((c) => {
         if (!n.children.find((g) => g.id === c.id.toString())) {
