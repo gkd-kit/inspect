@@ -19,10 +19,16 @@ const router = createRouter({
       component: () => import('@/views/ImportPage.vue'),
     },
     {
+      // https://github.com/gkd-kit/inspect/files/12448138/file.zip
       path: `/import/:github_zip_asset_id`,
       redirect(to) {
-        // https://github.com/gkd-kit/inspect/files/12448138/file.zip
-        const url = `https://github.com/gkd-kit/inspect/files/${to.params.github_zip_asset_id}/file.zip`;
+        const github_zip_asset_id = String(to.params.github_zip_asset_id).match(
+          /^\d+/,
+        )?.[0]; // 丢弃非法字符
+        if (!github_zip_asset_id) {
+          return { path: '/404' };
+        }
+        const url = `https://github.com/gkd-kit/inspect/files/${github_zip_asset_id}/file.zip`;
         return {
           name: `import`,
           query: {
