@@ -79,13 +79,16 @@ export const getImageSize = async (src: string) => {
     img.src = src;
   });
 };
-
+const getSafeName = (node: RawNode) => {
+  const c = node.attr.childCount;
+  return (node.attr.name || `🐔` + (c > 1 ? `` : ` [${c}]`)).split('.').at(-1)!;
+};
 const labelKey = Symbol(`labelKey`);
 export const getNodeLabel = (node: RawNode): string => {
   if (Reflect.has(node, labelKey)) {
     return Reflect.get(node, labelKey);
   }
-  let label = node.attr.name?.split(`.`)?.at(-1) || ``;
+  let label = getSafeName(node);
   const length = node.children.length;
   if (length > 1) {
     label = `${label} [${length}]`;
@@ -99,7 +102,7 @@ export const getNodeLabel = (node: RawNode): string => {
   return label;
 };
 export const getLimitLabel = (node: RawNode, limit = 15): string => {
-  let label = node.attr.name?.split(`.`)?.at(-1) || ``;
+  let label = getSafeName(node);
   const length = node.children.length;
   if (length > 1) {
     label = `${label} [${length}]`;
