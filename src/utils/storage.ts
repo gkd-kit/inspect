@@ -1,6 +1,6 @@
 import localforage from 'localforage';
 import { reactive, toRaw, watch } from 'vue';
-import { Snapshot } from './types';
+import type { Snapshot } from './types';
 
 const useStorage = <T>(options: LocalForageOptions = {}) => {
   options.driver ??= localforage.INDEXEDDB;
@@ -100,8 +100,11 @@ export const setSnapshot = async (snapshot: Snapshot, bf: ArrayBuffer) => {
   if (githubZipStorage[snapshot.id]) {
     delete githubZipStorage[snapshot.id];
   }
-  await snapshotStorage.setItem(snapshot.id, snapshot);
-  await screenshotStorage.setItem(snapshot.id, bf);
+  importTimeStorage[snapshot.id] = Date.now();
+  await Promise.all([
+    snapshotStorage.setItem(snapshot.id, snapshot),
+    screenshotStorage.setItem(snapshot.id, bf),
+  ]);
 };
 
 export const cacheStorage = useStorage({
@@ -110,6 +113,11 @@ export const cacheStorage = useStorage({
 });
 
 export const urlStorage = useReactiveStorage<Record<string, number>>(`url`, {});
+
+export const importTimeStorage = useReactiveStorage<Record<number, number>>(
+  'importTime',
+  {},
+);
 
 export const githubJpgStorage = useReactiveStorage<Record<number, string>>(
   `githubJpg`,

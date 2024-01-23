@@ -18,6 +18,7 @@ import { githubUrlToSelfUrl } from '@/utils/url';
 import {
   NButton,
   NDataTable,
+  NIcon,
   NInput,
   NInputGroup,
   NModal,
@@ -25,7 +26,6 @@ import {
   NSpace,
   PaginationProps,
   type DataTableColumns,
-  NIcon,
 } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import {
@@ -76,6 +76,7 @@ const {
   appIdCol,
   appNameCol,
   ctimeCol,
+  mtimeCol,
   deviceCol,
   appVersionCodeCol,
   appVersionNameCol,
@@ -132,6 +133,7 @@ const columns: DataTableColumns<Snapshot> = reactive([
     type: 'selection',
   },
   ctimeCol,
+  mtimeCol,
   deviceCol,
   appNameCol,
   appIdCol,
@@ -165,11 +167,15 @@ const pagination = shallowReactive<PaginationProps>({
 watch(pagination, reseColWidth);
 
 const handleSorterChange = (sorter: SortState) => {
-  if (sorter.columnKey == ctimeCol.key) {
-    ctimeCol.sortOrder = sorter.order;
-  }
+  [ctimeCol, mtimeCol].forEach((c) => {
+    if (sorter.columnKey != c.key) {
+      c.sortOrder = undefined;
+    } else {
+      c.sortOrder = sorter.order;
+    }
+  });
 };
-
+mtimeCol.sortOrder = `descend`;
 const showModal = shallowRef(false);
 const text = shallowRef(``);
 const importNetwork = useTask(async () => {

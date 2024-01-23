@@ -4,12 +4,14 @@ import { shallowReactive } from 'vue';
 import { useAutoWrapWidthColumn } from './size';
 import type { Snapshot } from './types';
 import { getDevice } from './node';
+import { importTimeStorage } from './storage';
 
 export const renderDveice = (row: Snapshot) => {
   return `${getDevice(row).manufacturer} Android${
     getDevice(row).release || `13`
   }`;
 };
+
 export const useSnapshotColumns = () => {
   const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `id`,
@@ -22,6 +24,23 @@ export const useSnapshotColumns = () => {
     },
     render(row) {
       return dayjs(row.id).format('MM-DD HH:mm:ss');
+    },
+  });
+  const mtimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
+    key: `mtime`,
+    title: `导入时间`,
+    width: `130px`,
+    sortOrder: false,
+    sorter(rowA, rowB) {
+      return (
+        (importTimeStorage[rowA.id] || rowA.id) -
+        (importTimeStorage[rowB.id] || rowB.id)
+      );
+    },
+    render(row) {
+      return dayjs(importTimeStorage[row.id] || row.id).format(
+        'MM-DD HH:mm:ss',
+      );
     },
   });
 
@@ -95,6 +114,7 @@ export const useSnapshotColumns = () => {
   };
   return {
     ctimeCol,
+    mtimeCol,
     deviceCol,
     appNameCol,
     appIdCol,
