@@ -11,9 +11,10 @@ import {
   NThead,
   NTr,
   NTree,
-  type TreeInst,
 } from 'naive-ui';
-import { HTMLAttributes, nextTick, shallowRef, watch } from 'vue';
+import type { TreeInst } from 'naive-ui';
+import { nextTick, shallowRef, watch } from 'vue';
+import type { HTMLAttributes } from 'vue';
 
 const props = withDefaults(
   defineProps<{

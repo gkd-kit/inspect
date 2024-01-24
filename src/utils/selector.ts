@@ -20,6 +20,11 @@ export type Selector = {
   tracks: boolean[];
   trackIndex: number;
   connectKeys: string[];
+  canQf: boolean;
+  qfIdValue: string | null | undefined;
+  qfVidValue: string | null | undefined;
+  qfTextValue: string | null | undefined;
+  canCopy: boolean;
   toString: () => string;
   match: (node: RawNode) => RawNode | undefined;
   querySelectorAll: (node: RawNode) => RawNode[];
@@ -32,6 +37,11 @@ export const parseSelector = (source: string): Selector => {
     tracks: cs.tracks,
     trackIndex: cs.trackIndex,
     connectKeys: cs.connectKeys,
+    canQf: cs.canQf,
+    qfIdValue: cs.qfIdValue,
+    qfVidValue: cs.qfVidValue,
+    qfTextValue: cs.qfTextValue,
+    canCopy: cs.propertyNames.every((name) => allowPropertyNames.has(name)),
     toString: () => cs.toString(),
     match: (node) => {
       return cs.match(node, transform) ?? void 0;
@@ -49,3 +59,33 @@ export const parseSelector = (source: string): Selector => {
 export const checkSelector = (source: string) => {
   return CommonSelector.Companion.parseOrNull(source) != null;
 };
+
+const allowPropertyNames = new Set([
+  'id',
+  'vid',
+
+  'name',
+  'text',
+  'text.length',
+  'desc',
+  'desc.length',
+
+  'clickable',
+  'focusable',
+  'checkable',
+  'checked',
+  'editable',
+  'longClickable',
+  'visibleToUser',
+
+  'left',
+  'top',
+  'right',
+  'bottom',
+  'width',
+  'height',
+
+  'index',
+  'depth',
+  'childCount',
+]);

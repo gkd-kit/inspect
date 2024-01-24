@@ -30,6 +30,7 @@ export type RawNode = {
 
 export type RawAttr = {
   id?: string;
+  vid?: string;
   name: string;
   text?: string;
   textLen?: number;

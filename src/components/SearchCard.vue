@@ -119,38 +119,49 @@ const searchBySelector = errorTry(() => {
   newKeys.push(selectorResults[0].key);
   expandedKeys.value = newKeys;
 });
-const generateRules = errorTry(async (selector: Selector) => {
-  let jpgUrl = githubJpgStorage[props.snapshot.id];
-  if (jpgUrl) {
-    jpgUrl = githubUrlToSelfUrl(router, jpgUrl);
-  }
-  let zipUrl = githubZipStorage[props.snapshot.id];
-  if (zipUrl) {
-    zipUrl = githubUrlToSelfUrl(router, zipUrl);
-  }
+const generateRules = errorTry(
+  async (result: { key: number; selector: Selector; nodes: RawNode[][] }) => {
+    let jpgUrl = githubJpgStorage[props.snapshot.id];
+    if (jpgUrl) {
+      jpgUrl = githubUrlToSelfUrl(router, jpgUrl);
+    }
+    let zipUrl = githubZipStorage[props.snapshot.id];
+    if (zipUrl) {
+      zipUrl = githubUrlToSelfUrl(router, zipUrl);
+    }
 
-  const rule = {
-    id: props.snapshot.appId,
-    name: props.snapshot.appName,
-    groups: [
-      {
-        key: 1,
-        name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
-        desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
-        rules: [
-          {
-            activityIds: props.snapshot.activityId,
-            matches: selector.toString(),
-            exampleUrls: jpgUrl,
-            snapshotUrls: zipUrl,
-          },
-        ],
-      },
-    ],
-  };
+    const s = result.selector;
+    const t = result.nodes[0][0];
 
-  copy(JSON5.stringify(rule, undefined, 2));
-});
+    const quickFind = [
+      (t.quickFind ?? t.idQf) && t.attr.id && s.qfIdValue,
+      (t.quickFind ?? t.idQf) && t.attr.vid && s.qfVidValue,
+      (t.quickFind ?? t.textQf) && t.attr.text && s.qfTextValue,
+    ].some(Boolean);
+    const rule = {
+      id: props.snapshot.appId,
+      name: props.snapshot.appName,
+      groups: [
+        {
+          key: 1,
+          name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+          desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
+          rules: [
+            {
+              quickFind: quickFind || undefined,
+              activityIds: props.snapshot.activityId,
+              matches: s.toString(),
+              exampleUrls: jpgUrl,
+              snapshotUrls: zipUrl,
+            },
+          ],
+        },
+      ],
+    };
+
+    copy(JSON5.stringify(rule, undefined, 2));
+  },
+);
 const enableSearchBySelector = shallowRef(true);
 const _1vw = window.innerWidth / 100;
 </script>
@@ -228,8 +239,13 @@ const _1vw = window.innerWidth / 100;
           <template #header-extra>
             <NButton
               size="small"
-              v-if="typeof result.selector == 'object'"
-              @click.stop="generateRules(result.selector as Selector)"
+              v-if="
+                typeof result.selector == 'object' && result.selector.canCopy
+              "
+              @click.stop="
+                // @ts-ignore
+                generateRules(result)
+              "
               title="复制规则"
             >
               <template #icon>
