@@ -65,12 +65,14 @@ const treeFilter = (pattern: string, node: RawNode) => {
 const treeNodeProps = (info: {
   option: RawNode;
 }): HTMLAttributes & Record<string, unknown> => {
+  const qf = info.option.idQf || info.option.textQf || info.option.quickFind;
   return {
     onClick: () => {
       props.onUpdateFocusNode(info.option);
     },
     style: {
-      color: info.option.id == props.focusNode?.id ? `#00F` : void 0,
+      color: info.option.id == props.focusNode?.id ? `#00F` : undefined,
+      fontWeight: qf ? `bold` : undefined,
     },
   };
 };
