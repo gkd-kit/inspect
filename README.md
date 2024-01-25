@@ -34,35 +34,11 @@ GKD 网页端审查工具,
 
 ## 快照示例
 
-```txt
-https://i.gkd.li/import/12472597
-https://i.gkd.li/import/12472598
-https://i.gkd.li/import/12472599
-https://i.gkd.li/import/12472605
-https://i.gkd.li/import/12472606
-https://i.gkd.li/import/12472607
-https://i.gkd.li/import/12472608
-https://i.gkd.li/import/12472610
-https://i.gkd.li/import/12472611
-https://i.gkd.li/import/12472612
-https://i.gkd.li/import/12472613
-https://i.gkd.li/import/12472615
-https://i.gkd.li/import/12472616
-https://i.gkd.li/import/12472617
-https://i.gkd.li/import/12472619
-https://i.gkd.li/import/12472620
-https://i.gkd.li/import/12472621
-https://i.gkd.li/import/12472623
-https://i.gkd.li/import/12472625
-https://i.gkd.li/import/12472627
-https://i.gkd.li/import/12472628
-https://i.gkd.li/import/12472629
-https://i.gkd.li/import/12472630
-https://i.gkd.li/import/12472631
-https://i.gkd.li/import/12472632
-https://i.gkd.li/import/12472633
-https://i.gkd.li/import/12472634
-https://i.gkd.li/import/12472635
-https://i.gkd.li/import/12472636
-https://i.gkd.li/import/12472637
-```
+- <https://i.gkd.li/import/14045424>
+- <https://i.gkd.li/import/14039510>
+- <https://i.gkd.li/import/14035418>
+- <https://i.gkd.li/import/14034770>
+- <https://i.gkd.li/import/14031920>
+- <https://i.gkd.li/import/14018243>
+- <https://i.gkd.li/import/14011298>
+- <https://i.gkd.li/import/13999908>
