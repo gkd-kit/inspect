@@ -28,7 +28,7 @@ export default defineConfig(() => {
       port: 8444,
     },
     build: {
-      target: `chrome80`,
+      target: `chrome70`,
       sourcemap: true,
     },
   };
