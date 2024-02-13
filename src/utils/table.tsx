@@ -59,7 +59,7 @@ export const useSnapshotColumns = () => {
   const appNameCol = useAutoWrapWidthColumn<Snapshot>({
     key: `appName`,
     minWidth: 100,
-    title: `APP名称`,
+    title: `应用名称`,
     filterMultiple: true,
     filter(value, row) {
       return value.toString() == row.appName;
@@ -70,7 +70,7 @@ export const useSnapshotColumns = () => {
   });
   const appIdCol = useAutoWrapWidthColumn<Snapshot>({
     key: `appId`,
-    title: `ID`,
+    title: `应用ID`,
     minWidth: 100,
     render(row) {
       return row.appId;

@@ -92,7 +92,6 @@ const renderLabel = (info: {
       size="small"
       striped
       :singleLine="false"
-      class="table-fixed"
       :themeOverrides="{
         thPaddingSmall: '2px 4px',
         tdPaddingSmall: '2px 4px',
@@ -100,13 +99,13 @@ const renderLabel = (info: {
     >
       <NThead>
         <NTr>
-          <NTh class="w-140px"> Device </NTh>
-          <NTh class="w-100px"> Name </NTh>
-          <NTh class="w-100px"> VersionName </NTh>
-          <NTh class="w-100px"> VersionCode </NTh>
-          <NTh class="w-150px"> AppId </NTh>
-          <NTh> ActivityId </NTh>
-          <NTh class="w-175px"> 操作 </NTh>
+          <NTh> 设备 </NTh>
+          <NTh> 应用名称 </NTh>
+          <NTh> 版本名称 </NTh>
+          <NTh> 版本代码 </NTh>
+          <NTh> 应用ID </NTh>
+          <NTh> 界面ID </NTh>
+          <NTh> 操作 </NTh>
         </NTr>
       </NThead>
       <NTbody>
@@ -141,12 +140,15 @@ const renderLabel = (info: {
               {{ snapshot.appId }}
             </NEllipsis>
           </NTd>
-          <NTd @click="copy(snapshot.activityId)" class="break-words">
+          <NTd
+            @click="copy(snapshot.activityId)"
+            class="break-words max-w-[max(15vw,200px)]"
+          >
             <NEllipsis>
               {{ snapshot.activityId }}
             </NEllipsis>
           </NTd>
-          <NTd>
+          <NTd class="min-w-175px">
             <slot></slot>
           </NTd>
         </NTr>

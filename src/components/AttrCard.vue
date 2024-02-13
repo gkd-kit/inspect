@@ -110,16 +110,12 @@ const qfAttrs = [`id`, `vid`, `text`];
           <NTd>
             <NEllipsis
               v-if="attrx.name == 'id'"
-              style="
-                width: 180px;
-                min-width: max(12vw, 180px);
-                direction: rtl;
-                text-align: left;
-              "
+              class="w-180px min-w-[max(12vw,180px)] text-left"
+              style="direction: rtl"
             >
               {{ attrx.value }}
             </NEllipsis>
-            <NEllipsis v-else style="width: 180px; min-width: max(12vw, 180px)">
+            <NEllipsis v-else class="w-180px min-w-[max(12vw,180px)]">
               {{ attrx.value }}
             </NEllipsis>
           </NTd>
