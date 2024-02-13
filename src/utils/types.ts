@@ -13,6 +13,8 @@ export type Device = {
   brand: string;
   sdkInt: number;
   release: string;
+  gkdVersionCode: number;
+  gkdVersionName: string;
 };
 
 export type RawNode = {

@@ -62,14 +62,27 @@ export const useDeviceApi = (initOrigin?: string) => {
     snapshots: async () => {
       return jsonRpc<Snapshot[]>(`snapshots`);
     },
-    subsApps: async () => {
-      return jsonRpc<unknown[]>(`subsApps`);
-    },
     updateSubsApps: async (data: unknown[]) => {
       return blobRpc(`updateSubsApps`, {
         init: {
           method: 'POST',
           body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      });
+    },
+    updateSubscription: async (data: any) => {
+      return blobRpc(`updateSubscription`, {
+        init: {
+          method: 'POST',
+          body: JSON.stringify({
+            ...data,
+            id: -1,
+            name: '内存订阅',
+            version: 0,
+          }),
           headers: {
             'Content-Type': 'application/json',
           },

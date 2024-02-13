@@ -60,18 +60,11 @@ const snapshots = shallowRef<Snapshot[]>([]);
 watchEffect(async () => {
   if (!device.value) return;
   title.value = `已连接 ` + device.value.manufacturer;
+  device.value.release;
   const result = await api.snapshots();
   result.sort((a, b) => b.id - a.id);
   snapshots.value = result;
-  const subsApps = await api.subsApps();
-  subsText.value = JSON5.stringify(
-    subsApps || [],
-    function (key, value) {
-      if (value === null) return undefined;
-      return value;
-    },
-    2,
-  );
+  subsText.value = '';
 });
 
 const captureSnapshot = useTask(async () => {
@@ -196,22 +189,75 @@ watch(pagination, reseColWidth);
 const showSubsModel = shallowRef(false);
 const subsText = shallowRef(``);
 const updateSubs = useTask(async () => {
-  const appsSubs = errorWrap(() => JSON5.parse(subsText.value.trim() || `[]`));
-  await api.updateSubsApps([].concat(appsSubs));
+  const data = errorWrap(() => JSON5.parse(subsText.value.trim()));
+  if (!data) return;
+  if (device.value?.gkdVersionCode) {
+    if (data.categories || data.globalGroups || data.apps) {
+      await api.updateSubscription(data);
+    } else if (typeof data.id == 'string') {
+      await api.updateSubscription({
+        apps: [data],
+      });
+    } else if (Array.isArray(data) && typeof data[0].id == 'string') {
+      await api.updateSubscription({
+        apps: data,
+      });
+    } else if (typeof data.key == 'number') {
+      await api.updateSubscription({
+        globalGroups: [data],
+      });
+    } else if (Array.isArray(data) && typeof data[0].key == 'number') {
+      await api.updateSubscription({
+        globalGroups: data,
+      });
+    } else {
+      message.error(`无法识别的订阅文本`);
+      return;
+    }
+  } else {
+    await api.updateSubsApps([].concat(data));
+  }
   message.success(`修改成功`);
 });
 
 const showSelectorModel = shallowRef(false);
 
-const actionOptions = [
-  'click',
-  'clickNode',
-  'clickCenter',
-  'back',
-  'longClick',
-  'longClickNode',
-  'longClickCenter',
-].map((s) => ({ value: s, label: s }));
+const actionOptions: {
+  value?: string;
+  label: string;
+}[] = [
+  {
+    value: 'click',
+    label: 'click',
+  },
+  {
+    value: 'clickNode',
+    label: 'clickNode',
+  },
+  {
+    value: 'clickCenter',
+    label: 'clickCenter',
+  },
+  {
+    value: 'back',
+    label: 'back',
+  },
+  {
+    value: 'longClick',
+    label: 'longClick',
+  },
+  {
+    value: 'longClickNode',
+    label: 'longClickNode',
+  },
+  {
+    value: 'longClickCenter',
+    label: 'longClickCenter',
+  },
+  {
+    label: '仅查询',
+  },
+];
 const clickAction = shallowReactive({
   selector: ``,
   selectorValid: false,
@@ -225,13 +271,64 @@ watch(() => clickAction.selector.trim(), checkSelectorValid);
 const execSelector = useTask(async () => {
   const result = await api.execSelector({ ...clickAction });
   if (result.message) {
-    message.success(`点击成功:` + result.message);
+    message.success(`操作成功:` + result.message);
     return;
   }
   if (result.action) {
-    message.success((result.result ? `点击成功:` : `点击失败`) + result.action);
+    message.success((result.result ? `操作成功:` : `操作失败`) + result.action);
+  } else if (!result.action && result.result) {
+    message.success(`查询成功`);
   }
 });
+
+const placeholder = `
+请输入订阅文本(JSON5语法):
+示例1-更新单个应用的规则:
+{
+  id: 'appId',
+  groups: []
+}
+
+示例2-更新多个应用的规则:
+[
+  {
+    id: 'appId1',
+    groups: []
+  },
+  {
+    id: 'appId2',
+    groups: []
+  }
+]
+
+示例3-更新全局规则(1.7.0):
+{
+  name: '全局规则-1',
+  key: 0,
+  rules: []
+}
+
+示例3-更新多个全局规则(1.7.0):
+[
+  {
+    name: '全局规则-1',
+    key: 0,
+    rules: []
+  },
+  {
+    name: '全局规则-2',
+    key: 1,
+    rules: []
+  }
+]
+
+示例4-更新整个订阅(1.7.0):
+{
+  apps: [],
+  globalGroups: [],
+  categories: [],
+}
+`.trim();
 </script>
 <template>
   <NModal
@@ -253,10 +350,10 @@ const execSelector = useTask(async () => {
       type="textarea"
       class="gkd_code"
       :autosize="{
-        minRows: 10,
+        minRows: 20,
         maxRows: 25,
       }"
-      :placeholder="`请输入订阅文本\n订阅支持JSON5\n根节点可以是APP规则对象也可以是APP规则对象数组`"
+      :placeholder="placeholder"
     />
   </NModal>
   <NModal
@@ -288,7 +385,7 @@ const execSelector = useTask(async () => {
     <NSpace>
       <NCheckbox v-model:checked="clickAction.quickFind"> 快速查找 </NCheckbox>
       <a
-        href="https://github.com/gkd-kit/subscription/blob/main/src/types.ts"
+        href="https://gkd.li/api/interfaces/RawCommonProps.html#quickfind"
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -303,7 +400,7 @@ const execSelector = useTask(async () => {
         class="w-150px"
       />
       <a
-        href="https://github.com/gkd-kit/subscription/blob/main/src/types.ts"
+        href="https://gkd.li/api/interfaces/RawRuleProps#action"
         target="_blank"
         rel="noopener noreferrer"
       >
