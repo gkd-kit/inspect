@@ -100,6 +100,7 @@ const renderLabel = (info: {
       <NThead>
         <NTr>
           <NTh> 设备 </NTh>
+          <NTh> GKD </NTh>
           <NTh> 应用名称 </NTh>
           <NTh> 版本名称 </NTh>
           <NTh> 版本代码 </NTh>
@@ -116,6 +117,9 @@ const renderLabel = (info: {
                 getDevice(snapshot).release || ``
               }`
             }}
+          </NTd>
+          <NTd class="whitespace-nowrap">
+            {{ getDevice(snapshot).gkdVersionName || '1.6.4' }}
           </NTd>
           <NTd class="whitespace-nowrap" @click="copy(snapshot.appName)">
             <NEllipsis>
