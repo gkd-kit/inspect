@@ -111,7 +111,7 @@ const renderLabel = (info: {
       </NThead>
       <NTbody>
         <NTr>
-          <NTd class="whitespace-nowrap">
+          <NTd class="whitespace-nowrap w-0">
             {{
               `${getDevice(snapshot).manufacturer} Android ${
                 getDevice(snapshot).release || ``
