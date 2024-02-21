@@ -1,5 +1,20 @@
 import { toValidURL } from '@/utils/check';
+import type { RouteRecordRedirectOption } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
+
+const redirectImport: RouteRecordRedirectOption = (to) => {
+  const github_asset_id = String(to.params.github_asset_id).match(/^\d+/)?.[0]; // 丢弃非法字符
+  if (!github_asset_id) {
+    return { path: '/404' };
+  }
+  const url = `https://github.com/gkd-kit/inspect/files/${github_asset_id}/file.zip`;
+  return {
+    path: '/i',
+    query: {
+      url,
+    },
+  };
+};
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,34 +29,30 @@ const router = createRouter({
       component: () => import('@/views/SnapshotPage.vue'),
     },
     {
-      path: '/import',
-      name: 'import',
+      path: '/i',
       component: () => import('@/views/ImportPage.vue'),
     },
     {
-      // https://github.com/gkd-kit/inspect/files/12448138/file.zip
-      path: `/import/:github_zip_asset_id`,
+      path: '/i/:github_asset_id',
+      redirect: redirectImport,
+    },
+    {
+      path: '/import',
       redirect(to) {
-        const github_zip_asset_id = String(to.params.github_zip_asset_id).match(
-          /^\d+/,
-        )?.[0]; // 丢弃非法字符
-        if (!github_zip_asset_id) {
-          return { path: '/404' };
-        }
-        const url = `https://github.com/gkd-kit/inspect/files/${github_zip_asset_id}/file.zip`;
         return {
-          name: `import`,
-          query: {
-            url,
-          },
+          path: '/i',
+          query: to.query,
         };
       },
     },
     {
+      path: `/import/:github_asset_id`,
+      redirect: redirectImport,
+    },
+    {
       path: '/device',
-      name: 'device',
       component: () => import('@/views/DevicePage.vue'),
-      beforeEnter(to, from, next) {
+      beforeEnter(to, _, next) {
         const u = toValidURL(String(to.query.url));
         if (u) {
           localStorage.setItem('device_link', u.origin);
@@ -50,6 +61,36 @@ const router = createRouter({
           return next({ ...to, query });
         }
         next();
+      },
+    },
+    {
+      path: '/s',
+      component: () => import('@/views/PreviewSharePage.vue'),
+      beforeEnter(to, _, next) {
+        if (to.query.url) {
+          const u = toValidURL(String(to.query.url));
+          if (u) {
+            return next();
+          }
+        }
+        return next({ path: '/404' });
+      },
+    },
+    {
+      path: '/s/:github_asset_id',
+      component: () => import('@/views/PreviewSharePage.vue'),
+      beforeEnter(to, _, next) {
+        const github_asset_id = String(to.params.github_asset_id).match(
+          /^\d+/,
+        )?.[0];
+        if (!github_asset_id) {
+          return next({ path: '/404' });
+        }
+        if (to.params.github_asset_id === github_asset_id) {
+          return next();
+        } else {
+          return next('/s/' + github_asset_id);
+        }
       },
     },
     {

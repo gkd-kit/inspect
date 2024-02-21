@@ -139,9 +139,12 @@ const renderLabel = (info: {
               {{ snapshot.appVersionCode }}
             </NEllipsis>
           </NTd>
-          <NTd class="whitespace-nowrap" @click="copy(snapshot.appId)">
+          <NTd
+            class="whitespace-nowrap max-w-[max(12vw,180px)]"
+            @click="copy(snapshot.appId)"
+          >
             <NEllipsis>
-              {{ snapshot.appId }}
+              {{ snapshot.appId + snapshot.appId }}
             </NEllipsis>
           </NTd>
           <NTd
@@ -152,7 +155,7 @@ const renderLabel = (info: {
               {{ snapshot.activityId }}
             </NEllipsis>
           </NTd>
-          <NTd class="min-w-175px">
+          <NTd>
             <slot></slot>
           </NTd>
         </NTr>

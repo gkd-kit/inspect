@@ -59,14 +59,6 @@ export const uploadPoliciesAssets = async (
   name: string,
   content_type: string,
 ): Promise<GithubPoliciesAsset> => {
-  return uploadPoliciesAssetsByExtension(bf, name, content_type);
-};
-
-export const uploadPoliciesAssetsByExtension = async (
-  bf: ArrayBuffer,
-  name: string,
-  content_type: string,
-) => {
   const authenticity_token = await getCsrfToken();
   if (!authenticity_token) {
     store.githubErrorDlgVisible = true;

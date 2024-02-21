@@ -1,5 +1,6 @@
 <script lang="tsx" setup>
 import ActionCard from '@/components/ActionCard.vue';
+import BuildShareDlg from '@/components/BuildShareDlg.vue';
 import { toValidURL } from '@/utils/check';
 import { showTextDLg } from '@/utils/dialog';
 import { dialog } from '@/utils/discrete';
@@ -239,49 +240,34 @@ const batchShareZipUrl = useTask(async () => {
       zipUrls.map((s) => githubUrlToSelfUrl(router, s)).join(`\n`) + `\n`,
   });
 });
+
+const shareDlgShow = shallowRef(false);
 </script>
 <template>
-  <NModal
-    v-model:show="showModal"
-    preset="dialog"
-    title="导入网络文件"
-    :showIcon="false"
-    positiveText="确认"
-    negativeText="取消"
-    style="width: 800px"
-    @positiveClick="importNetwork.invoke"
-    :loading="importNetwork.loading"
-  >
-    <NInput
-      :value="text"
-      @update:value="
-        if (!importNetwork.loading) {
-          text = $event;
-        }
-      "
-      type="textarea"
-      :placeholder="`仅支持ZIP文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
-      :autosize="{
-        minRows: 8,
-        maxRows: 16,
-      }"
-      :inputProps="{
-        style: `white-space: nowrap;`,
-      }"
-    />
-  </NModal>
   <div flex flex-col p-10px gap-10px h-full>
     <div flex>
       <NSpace>
         <NInputGroup>
           <NInput
-            placeholder="请输入关键字搜索"
+            placeholder="请输入应用名称/应用ID/界面ID"
             clearable
+            class="min-w-320px"
             v-model:value="filterOption.query"
             @keyup.enter="filterOption.updateQuery"
             @change="filterOption.updateQuery"
           ></NInput>
-          <NButton @click="filterOption.updateQuery"> 搜索 </NButton>
+          <NButton @click="filterOption.updateQuery">
+            <template #icon>
+              <NIcon>
+                <svg viewBox="0 0 32 32">
+                  <path
+                    d="M29 27.586l-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29zM4 13a9 9 0 1 1 9 9a9.01 9.01 0 0 1-9-9z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </NIcon>
+            </template>
+          </NButton>
         </NInputGroup>
         <template v-if="checkedRowKeys.length">
           <NPopover>
@@ -330,28 +316,6 @@ const batchShareZipUrl = useTask(async () => {
       </NSpace>
       <div flex-1></div>
       <NSpace>
-        <a
-          href="https://github.com/gkd-kit/inspect"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <NButton>
-            <template #icon>
-              <NIcon>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                  viewBox="0 0 496 512"
-                >
-                  <path
-                    d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6c-3.3.3-5.6-1.3-5.6-3.6c0-2 2.3-3.6 5.2-3.6c3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9c2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9c.3 2 2.9 3.3 5.9 2.6c2.9-.7 4.9-2.6 4.6-4.6c-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2c12.8 2.3 17.3-5.6 17.3-12.1c0-6.2-.3-40.4-.3-61.4c0 0-70 15-84.7-29.8c0 0-11.4-29.1-27.8-36.6c0 0-22.9-15.7 1.6-15.4c0 0 24.9 2 38.6 25.8c21.9 38.6 58.6 27.5 72.9 20.9c2.3-16 8.8-27.1 16-33.7c-55.9-6.2-112.3-14.3-112.3-110.5c0-27.5 7.6-41.3 23.6-58.9c-2.6-6.5-11.1-33.3 2.6-67.9c20.9-6.5 69 27 69 27c20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27c13.7 34.7 5.2 61.4 2.6 67.9c16 17.7 25.8 31.5 25.8 58.9c0 96.5-58.9 104.2-114.8 110.5c9.2 7.9 17 22.9 17 46.4c0 33.7-.3 75.4-.3 83.6c0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252C496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2c1.6 1.6 3.9 2.3 5.2 1c1.3-1 1-3.3-.7-5.2c-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9c1.6 1 3.6.7 4.3-.7c.7-1.3-.3-2.9-2.3-3.9c-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2c2.3 2.3 5.2 2.6 6.5 1c1.3-1.3.7-4.3-1.3-6.2c-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9c1.6 2.3 4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2c-1.4-2.3-4-3.3-5.6-2z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-              </NIcon>
-            </template>
-          </NButton>
-        </a>
         <NPopover>
           <template #trigger>
             <NButton>
@@ -392,7 +356,7 @@ const batchShareZipUrl = useTask(async () => {
             </NButton>
           </NSpace>
         </NPopover>
-        <RouterLink to="/device">
+        <RouterLink to="/device" title="连接设备">
           <NButton>
             <template #icon>
               <NIcon>
@@ -410,6 +374,46 @@ const batchShareZipUrl = useTask(async () => {
             </template>
           </NButton>
         </RouterLink>
+
+        <NButton title="创建分享" @click="shareDlgShow = true">
+          <template #icon>
+            <NIcon>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81c1.66 0 3-1.34 3-3s-1.34-3-3-3s-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65c0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </NIcon>
+          </template>
+        </NButton>
+
+        <a
+          href="https://github.com/gkd-kit/inspect"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <NButton>
+            <template #icon>
+              <NIcon>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                  viewBox="0 0 496 512"
+                >
+                  <path
+                    d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6c-3.3.3-5.6-1.3-5.6-3.6c0-2 2.3-3.6 5.2-3.6c3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9c2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9c.3 2 2.9 3.3 5.9 2.6c2.9-.7 4.9-2.6 4.6-4.6c-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2c12.8 2.3 17.3-5.6 17.3-12.1c0-6.2-.3-40.4-.3-61.4c0 0-70 15-84.7-29.8c0 0-11.4-29.1-27.8-36.6c0 0-22.9-15.7 1.6-15.4c0 0 24.9 2 38.6 25.8c21.9 38.6 58.6 27.5 72.9 20.9c2.3-16 8.8-27.1 16-33.7c-55.9-6.2-112.3-14.3-112.3-110.5c0-27.5 7.6-41.3 23.6-58.9c-2.6-6.5-11.1-33.3 2.6-67.9c20.9-6.5 69 27 69 27c20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27c13.7 34.7 5.2 61.4 2.6 67.9c16 17.7 25.8 31.5 25.8 58.9c0 96.5-58.9 104.2-114.8 110.5c9.2 7.9 17 22.9 17 46.4c0 33.7-.3 75.4-.3 83.6c0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252C496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2c1.6 1.6 3.9 2.3 5.2 1c1.3-1 1-3.3-.7-5.2c-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9c1.6 1 3.6.7 4.3-.7c.7-1.3-.3-2.9-2.3-3.9c-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2c2.3 2.3 5.2 2.6 6.5 1c1.3-1.3.7-4.3-1.3-6.2c-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9c1.6 2.3 4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2c-1.4-2.3-4-3.3-5.6-2z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+              </NIcon>
+            </template>
+          </NButton>
+        </a>
       </NSpace>
     </div>
     <NDataTable
@@ -426,4 +430,35 @@ const batchShareZipUrl = useTask(async () => {
       flexHeight
     />
   </div>
+  <NModal
+    v-model:show="showModal"
+    preset="dialog"
+    title="导入网络文件"
+    :showIcon="false"
+    positiveText="确认"
+    negativeText="取消"
+    style="width: 800px"
+    @positiveClick="importNetwork.invoke"
+    :loading="importNetwork.loading"
+    @afterLeave="text = ``"
+  >
+    <NInput
+      :value="text"
+      @update:value="
+        if (!importNetwork.loading) {
+          text = $event;
+        }
+      "
+      type="textarea"
+      :placeholder="`仅支持ZIP文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
+      :autosize="{
+        minRows: 8,
+        maxRows: 16,
+      }"
+      :inputProps="{
+        style: `white-space: nowrap;`,
+      }"
+    />
+  </NModal>
+  <BuildShareDlg v-model:show="shareDlgShow" />
 </template>

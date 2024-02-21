@@ -92,7 +92,7 @@ const copy = async (content: string) => {
 };
 </script>
 <template>
-  <NSpace>
+  <div flex gap-12px flex-nowrap>
     <a v-if="showPreview" target="_blank" :href="previewUrl">
       <NButton size="small">
         <template #icon>
@@ -219,5 +219,5 @@ const copy = async (content: string) => {
         ></NIcon>
       </template>
     </NButton>
-  </NSpace>
+  </div>
 </template>

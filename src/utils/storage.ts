@@ -75,6 +75,7 @@ snapshotStorage.removeItem = async (key) => {
     snapshotRemoveItem(key),
     shallowSnapshotStorage.removeItem(key),
     screenshotStorage.removeItem(key),
+    importTimeStorage[key] && delete importTimeStorage[key],
   ]);
 };
 
