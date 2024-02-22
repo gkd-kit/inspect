@@ -1,10 +1,11 @@
 import dayjs from 'dayjs';
+import { NEllipsis } from 'naive-ui';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { shallowReactive } from 'vue';
-import { useAutoWrapWidthColumn } from './size';
-import type { Snapshot } from './types';
 import { getDevice } from './node';
+import { useAutoWrapWidthColumn } from './size';
 import { importTimeStorage } from './storage';
+import type { Snapshot } from './types';
 
 export const renderDveice = (row: Snapshot) => {
   return `${getDevice(row).manufacturer} Android${
@@ -73,7 +74,7 @@ export const useSnapshotColumns = () => {
     title: `应用ID`,
     minWidth: 100,
     render(row) {
-      return row.appId;
+      return <NEllipsis>{row.appId}</NEllipsis>;
     },
   });
   const appVersionCodeCol = useAutoWrapWidthColumn<Snapshot>({
@@ -89,7 +90,7 @@ export const useSnapshotColumns = () => {
     title: `版本号`,
     minWidth: 150,
     render(row) {
-      return row.appVersionName;
+      return <NEllipsis>{row.appVersionName}</NEllipsis>;
     },
   });
 
