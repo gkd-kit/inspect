@@ -144,7 +144,7 @@ const renderLabel = (info: {
             @click="copy(snapshot.appId)"
           >
             <NEllipsis>
-              {{ snapshot.appId + snapshot.appId }}
+              {{ snapshot.appId }}
             </NEllipsis>
           </NTd>
           <NTd
