@@ -179,7 +179,7 @@ const _1vw = window.innerWidth / 100;
       b-gray-200
       rounded-4px
       p-8px
-      style="min-width: max(25vw, 480px)"
+      class="min-w-[calc(var(--gkd-width)*0.3)]"
     >
       <div flex m-b-4px>
         <NRadioGroup v-model:value="enableSearchBySelector">

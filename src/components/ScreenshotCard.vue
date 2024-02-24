@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { findNodeByXy } from '@/utils/node';
 import type { RawNode, Snapshot } from '@/utils/types';
+import { useWindowSize, refDebounced } from '@vueuse/core';
 import { computed, shallowRef } from 'vue';
 
 const props = withDefaults(
@@ -14,6 +15,15 @@ const props = withDefaults(
   {
     onUpdateFocusNode: () => () => {},
   },
+);
+const windowSize = useWindowSize();
+const debouncedSize = refDebounced(
+  computed(() => {
+    windowSize.width.value;
+    windowSize.height.value;
+    return Math.random();
+  }),
+  300,
 );
 
 const imgRef = shallowRef<HTMLImageElement>();
@@ -44,6 +54,7 @@ const percent = (n: number) => {
   return `${n * 100}%`;
 };
 const positionStyle = computed(() => {
+  debouncedSize.value;
   const img = imgRef.value;
   const attr = props.focusNode?.attr;
   if (!props.focusNode || !img || !attr) {
@@ -70,6 +81,19 @@ const positionStyle = computed(() => {
 });
 const imgHover = shallowRef(false);
 const hoverPosition = shallowRef({ ox: 0, oy: 0 });
+const boxHoverPosition = computed(() => {
+  const attr = props.focusNode?.attr;
+  if (!attr) {
+    return;
+  }
+  const { ox, oy } = hoverPosition.value;
+  return {
+    left: ox - attr.left,
+    right: attr.right - ox,
+    top: oy - attr.top,
+    bottom: attr.bottom - oy,
+  };
+});
 const imgMove = (ev: MouseEvent) => {
   const img = imgRef.value;
   if (!img) return;
@@ -99,7 +123,7 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
       cursor-crosshair
       h-full
       object-contain
-      style="max-width: max(35vw, 400px)"
+      class="max-w-[calc(var(--gkd-width)*0.35)]"
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
@@ -143,13 +167,38 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
         absolute
         left-2px
         top-2px
-        class="leading-[1]"
-        style="background-color: rgba(256, 256, 256, 0.7)"
+        p-1px
+        z-1
+        text-13px
+        class="leading-[1] bg-[rgba(256,256,256,0.7)]"
       >
         {{ `${hoverPosition.ox.toFixed(0)},${hoverPosition.oy.toFixed(0)}` }}
       </div>
       <div
-        class="top-[calc(50%-1px)]"
+        v-if="boxHoverPosition"
+        absolute
+        left-2px
+        bottom-2px
+        p-1px
+        z-1
+        text-12px
+        class="leading-[1] bg-[rgba(256,256,256,0.7)]"
+        flex
+        flex-col
+        flex-items-center
+      >
+        <div>{{ boxHoverPosition.top.toFixed(0) }}</div>
+        <div>
+          {{
+            boxHoverPosition.left.toFixed(0) +
+            ',' +
+            boxHoverPosition.right.toFixed(0)
+          }}
+        </div>
+        <div>{{ boxHoverPosition.bottom.toFixed(0) }}</div>
+      </div>
+      <div
+        class="top-[calc(50%-1px)] bg-[length:10px_1px]"
         absolute
         left-0
         right-0
@@ -157,19 +206,18 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
         bg-repeat-x
         mix-blend-difference
         style="
-          background: linear-gradient(
+          background-image: linear-gradient(
             to left,
             transparent 0%,
             transparent 50%,
             #fff 50%,
             #fff 100%
           );
-
-          background-size: 10px 1px;
+          background-position-x: 1.5px;
         "
       ></div>
       <div
-        class="left-[calc(50%-1px)]"
+        class="left-[calc(50%-1px)] bg-[length:1px_10px]"
         absolute
         top-0
         bottom-0
@@ -177,14 +225,14 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
         bg-repeat-y
         mix-blend-difference
         style="
-          background: linear-gradient(
+          background-image: linear-gradient(
             to top,
             transparent 0%,
             transparent 50%,
             #fff 50%,
             #fff 100%
           );
-          background-size: 1px 10px;
+          background-position-y: 1.5px;
         "
       ></div>
     </div>

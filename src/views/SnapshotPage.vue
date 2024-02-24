@@ -149,7 +149,7 @@ watchEffect(() => {
       v-model:show="trackVisible"
       preset="dialog"
       title="选择器路径视图"
-      style="width: max(600px, 80vh)"
+      class="w-[max(600px,80vh)]"
       @afterLeave="track = undefined"
     >
       <template #icon>

@@ -129,9 +129,10 @@ const attrs = computed(() => {
           </NTd>
           <NTd>
             <NEllipsis
-              class="w-180px min-w-[max(12vw,180px)]"
+              class="w-[calc(var(--gkd-width)*0.12)]"
               :class="{
-                'text-left direction-rtl': attrx.name == 'id',
+                'text-left direction-rtl':
+                  attrx.name == 'id' || attrx.name == 'name',
               }"
             >
               {{ attrx.desc }}

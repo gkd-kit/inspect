@@ -114,7 +114,7 @@ const updateTarget = (arg: unknown) => {
 };
 </script>
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <div
       fixed
       ref="box"
