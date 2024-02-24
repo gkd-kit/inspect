@@ -27,4 +27,9 @@ import ErrorDlg from './components/ErrorDlg.vue';
 .gkd_code {
   font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace !important;
 }
+
+[direction-rtl],
+.direction-rtl {
+  direction: rtl;
+}
 </style>
