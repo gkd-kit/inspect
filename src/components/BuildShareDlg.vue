@@ -105,6 +105,7 @@ const buildShare = useTask(async () => {
       show = true;
     "
     @afterLeave="shareLink = ''"
+    :maskClosable="false"
   >
     <div>
       <NButton text tag="a" :href="shareLink" target="_blank" type="primary">
