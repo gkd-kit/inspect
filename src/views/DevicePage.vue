@@ -261,7 +261,7 @@ const actionOptions: {
 const clickAction = shallowReactive({
   selector: ``,
   selectorValid: false,
-  action: actionOptions[0].value,
+  action: 'click',
   quickFind: false,
 });
 const checkSelectorValid = useDebounceFn(() => {
