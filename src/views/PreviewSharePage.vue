@@ -98,6 +98,7 @@ const openGkd = () => {
       type="textarea"
       show-count
       :value="dataString"
+      disabled
     >
       <template #suffix>
         <div h-full relative>
