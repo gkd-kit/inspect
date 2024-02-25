@@ -7,6 +7,7 @@ import JSON5 from 'json5';
 import { NButton, NInput, NModal } from 'naive-ui';
 import { shallowRef, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
+import QRCode from 'qrcode';
 
 const router = useRouter();
 
@@ -33,6 +34,16 @@ watchEffect(() => {
 
 const linkDlgShow = shallowRef(false);
 const shareLink = shallowRef('');
+const shareLinkQr = shallowRef('');
+watchEffect(() => {
+  if (shareLink.value) {
+    QRCode.toDataURL(shareLink.value, { width: 256, margin: 2 }).then((url) => {
+      shareLinkQr.value = url;
+    });
+  } else {
+    shareLinkQr.value = '';
+  }
+});
 const copyLink = () => {
   copy(shareLink.value);
   linkDlgShow.value = false;
@@ -95,8 +106,11 @@ const buildShare = useTask(async () => {
     "
     @afterLeave="shareLink = ''"
   >
-    <NButton text tag="a" :href="shareLink" target="_blank" type="primary">
-      {{ shareLink }}
-    </NButton>
+    <div>
+      <NButton text tag="a" :href="shareLink" target="_blank" type="primary">
+        {{ shareLink }}
+      </NButton>
+      <img v-if="shareLinkQr" :src="shareLinkQr" size-200px block />
+    </div>
   </NModal>
 </template>
