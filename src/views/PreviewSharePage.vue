@@ -3,6 +3,7 @@ import { toValidURL } from '@/utils/check';
 import { loadingBar } from '@/utils/discrete';
 import { enhanceFetch } from '@/utils/fetch';
 import { copy, timeAgo, useAdaptMobile } from '@/utils/others';
+import { useTitle } from '@vueuse/core';
 import JSON5 from 'json5';
 import { NButton, NIcon, NInput } from 'naive-ui';
 import { computed, shallowRef, watchEffect } from 'vue';
@@ -10,6 +11,8 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 useAdaptMobile();
+
+useTitle('GKD-规则预览');
 
 const url = computed(() => {
   const u = toValidURL(String(route.query.url));
