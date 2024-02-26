@@ -31,6 +31,7 @@ import {
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import {
   computed,
+  onMounted,
   reactive,
   shallowReactive,
   shallowRef,
@@ -42,11 +43,14 @@ import { RouterLink, useRouter } from 'vue-router';
 const router = useRouter();
 
 const snapshots = shallowRef<Snapshot[]>([]);
+const loading = shallowRef(true);
 const updateSnapshots = async () => {
+  loading.value = true;
   snapshots.value = (await shallowSnapshotStorage.getAllItems()).reverse();
   checkedRowKeys.value = [];
+  loading.value = false;
 };
-updateSnapshots();
+onMounted(updateSnapshots);
 const filterOption = shallowReactive({
   query: ``,
   actualQuery: ``,
@@ -428,6 +432,7 @@ const shareDlgShow = shallowRef(false);
       size="small"
       class="flex-1"
       flexHeight
+      :loading="loading"
     />
   </div>
   <NModal
