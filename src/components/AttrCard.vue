@@ -131,8 +131,7 @@ const attrs = computed(() => {
             <NEllipsis
               class="w-[calc(var(--gkd-width)*0.12)]"
               :class="{
-                'text-left direction-rtl':
-                  attrx.name == 'id' || attrx.name == 'name',
+                'text-left direction-rtl': attrx.name == 'id',
               }"
             >
               {{ attrx.desc }}
