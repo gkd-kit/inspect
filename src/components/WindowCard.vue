@@ -149,7 +149,7 @@ const renderLabel = (info: {
           </NTd>
           <NTd
             @click="copy(snapshot.activityId)"
-            class="break-words max-w-[max(15vw,200px)]"
+            class="break-words max-w-[max(15vw,200px)] text-left direction-rtl"
           >
             <NEllipsis>
               {{ snapshot.activityId }}

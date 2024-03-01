@@ -3,6 +3,7 @@ import { NEllipsis } from 'naive-ui';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { shallowReactive } from 'vue';
 import { getDevice } from './node';
+import { copy } from './others';
 import { useAutoWrapWidthColumn } from './size';
 import { importTimeStorage } from './storage';
 import type { Snapshot } from './types';
@@ -65,6 +66,13 @@ export const useSnapshotColumns = () => {
     filter(value, row) {
       return value.toString() == row.appName;
     },
+    cellProps(row) {
+      return {
+        onClick() {
+          copy(row.appName);
+        },
+      };
+    },
     render(row) {
       return row.appName;
     },
@@ -73,8 +81,15 @@ export const useSnapshotColumns = () => {
     key: `appId`,
     title: `应用ID`,
     minWidth: 100,
+    cellProps(row) {
+      return {
+        onClick() {
+          copy(row.appId);
+        },
+      };
+    },
     render(row) {
-      return <NEllipsis>{row.appId}</NEllipsis>;
+      return row.appId;
     },
   });
   const appVersionCodeCol = useAutoWrapWidthColumn<Snapshot>({
@@ -101,8 +116,19 @@ export const useSnapshotColumns = () => {
     filter(value, row) {
       return value.toString() == row.activityId;
     },
+    cellProps(row) {
+      return {
+        onClick() {
+          copy(row.activityId);
+        },
+      };
+    },
     render(row) {
-      return row.activityId;
+      return (
+        <div class="whitespace-nowrap text-left direction-rtl">
+          <NEllipsis>{row.activityId}</NEllipsis>
+        </div>
+      );
     },
   });
 

@@ -25,7 +25,7 @@ import {
   NModal,
   NPopover,
   NSpace,
-  PaginationProps,
+  type PaginationProps,
   type DataTableColumns,
 } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';

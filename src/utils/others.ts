@@ -48,7 +48,7 @@ export const delay = async (n = 0) => {
 
 export const copy = (() => {
   let lastText: string | void = void 0;
-  return async (text = ``) => {
+  return async (text: string) => {
     if (lastText === text) return;
     lastText = text;
     delay(10_000).then(() => {
