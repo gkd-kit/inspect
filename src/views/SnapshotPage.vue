@@ -149,7 +149,7 @@ watchEffect(() => {
       v-model:show="trackVisible"
       preset="dialog"
       title="选择器路径视图"
-      class="w-[max(600px,80vh)]"
+      class="min-w-[calc(var(--gkd-width)*0.4)]"
       @afterLeave="track = undefined"
     >
       <template #icon>
@@ -162,11 +162,11 @@ watchEffect(() => {
           </svg>
         </NIcon>
       </template>
-      <div v-if="track" class="gkd_code">
+      <div v-if="track" class="gkd_code py-2px px-4px rounded-2px bg-[#eee]">
         {{ track.selector.toString() }}
       </div>
       <TrackGraph v-if="track" :track="track" />
-      <div>*为简化视图已隐藏部分节点</div>
+      <div opacity-75 text-12px>*为简化视图已隐藏部分节点</div>
     </NModal>
   </div>
 </template>
