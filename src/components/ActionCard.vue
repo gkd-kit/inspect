@@ -14,7 +14,7 @@ import {
   snapshotStorage,
 } from '@/utils/storage';
 import { useTask } from '@/utils/task';
-import { Snapshot } from '@/utils/types';
+import type { Snapshot } from '@/utils/types';
 import { githubUrlToSelfUrl } from '@/utils/url';
 import { NButton, NIcon, NPopover, NSpace } from 'naive-ui';
 import { computed } from 'vue';
@@ -97,13 +97,7 @@ const copy = async (content: string) => {
       <NButton size="small">
         <template #icon>
           <NIcon>
-            <svg
-              viewBox="0 0 1024 1024"
-              version="1.1"
-              xmlns="http://www.w3.org/2000/svg"
-              width="200"
-              height="200"
-            >
+            <svg viewBox="0 0 1024 1024" width="200" height="200">
               <path
                 d="M549.973333 128 633.6 145.066667 474.026667 896 390.4 878.933333 549.973333 128M835.84 512 682.666667 358.826667 682.666667 238.08 956.586667 512 682.666667 785.493333 682.666667 664.746667 835.84 512M67.413333 512 341.333333 238.08 341.333333 358.826667 188.16 512 341.333333 664.746667 341.333333 785.493333 67.413333 512Z"
               ></path>

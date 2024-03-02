@@ -5,26 +5,26 @@ import { message } from '@/utils/discrete';
 import { errorWrap } from '@/utils/error';
 import { delay } from '@/utils/others';
 import { checkSelector } from '@/utils/selector';
-import { snapshotStorage, screenshotStorage } from '@/utils/storage';
+import { screenshotStorage, snapshotStorage } from '@/utils/storage';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
-import { useStorage, useTitle, useDebounceFn } from '@vueuse/core';
+import { useDebounceFn, useStorage, useTitle } from '@vueuse/core';
 import JSON5 from 'json5';
 import {
-  DataTableColumns,
   NButton,
+  NCheckbox,
   NDataTable,
+  NIcon,
   NInput,
   NInputGroup,
-  NSpace,
-  PaginationProps,
-  NIcon,
   NModal,
   NSelect,
-  NCheckbox,
+  NSpace,
+  type DataTableColumns,
+  type PaginationProps,
 } from 'naive-ui';
-import { SortState } from 'naive-ui/es/data-table/src/interface';
+import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
 import {
   onMounted,
@@ -152,7 +152,7 @@ const columns: DataTableColumns<Snapshot> = [
   activityIdCol,
   {
     key: `actions`,
-    title: `Action`,
+    title: `操作`,
     fixed: 'right',
     width: `120px`,
     render(row) {
