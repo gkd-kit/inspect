@@ -66,7 +66,15 @@ const searchBySelector = errorTry(() => {
   if (!text) return;
 
   if (enableSearchBySelector.value) {
-    const selector = errorWrap(() => parseSelector(text), `选择器非法`);
+    const selector = errorWrap(
+      () => parseSelector(text),
+      (e) => {
+        if (typeof e == 'string') {
+          return e;
+        }
+        return `非法选择器`;
+      },
+    );
     if (
       selectorResults.find(
         (s) =>

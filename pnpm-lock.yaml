@@ -9,8 +9,8 @@ dependencies:
     specifier: ^4.8.24
     version: 4.8.24
   '@gkd-kit/selector':
-    specifier: 0.0.20
-    version: 0.0.20
+    specifier: 0.0.21
+    version: 0.0.21
   '@rushstack/eslint-patch':
     specifier: ^1.7.2
     version: 1.7.2
@@ -2290,8 +2290,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: false
 
-  /@gkd-kit/selector@0.0.20:
-    resolution: {integrity: sha512-dnuEF8r0GmlC7G3AKYwQp8su0QbStjz2M2j7E/rvZ5IGr+txXxkBe69jezmZeCflRX6S0P3eWJMrZLoJNHNb3g==}
+  /@gkd-kit/selector@0.0.21:
+    resolution: {integrity: sha512-In52kudHjWvsSumj1mnZ99LHqDgSbQiChg6D0OEMWTK00K4loqnUn79zzV+ChGTn20uwfrSDgJYQVUTKY1xbfA==}
     dev: false
 
   /@humanwhocodes/config-array@0.11.14:
@@ -2513,6 +2513,7 @@ packages:
     resolution: {integrity: sha512-pL6QtV26W52aCWTG1IuFV3FMPL1m4wbsRG+qijIvgFO/VBsiXJjDPE/uiMdHBAO6YcpV4KvpKtd0v3WFbaxBtg==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
     requiresBuild: true
     dev: false
     optional: true
@@ -2521,6 +2522,7 @@ packages:
     resolution: {integrity: sha512-On+cc5EpOaTwPSNetHXBuqylDW+765G/oqB9xGmWU3npEhCh8xu0xqHGUA+4xwZLqBbIZNcBlKSIYfkBm6ko7g==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
     requiresBuild: true
     dev: false
     optional: true
@@ -2529,6 +2531,7 @@ packages:
     resolution: {integrity: sha512-Wnx/IVMSZ31D/cO9HSsU46FjrPWHqtdF8+0eyZ1zIB5a6hXaZXghUKpRrC4D5DcRTZOjml2oBhXoqfGYyXKipw==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
     requiresBuild: true
     dev: false
     optional: true
@@ -2537,6 +2540,7 @@ packages:
     resolution: {integrity: sha512-ym5x1cj4mUAMBummxxRkI4pG5Vht1QMsJexwGP8547TZ0sox9fCLDHw9KCH9c1FO5d9GopvkaJsBIOkTKxksdw==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
     requiresBuild: true
     dev: false
     optional: true
@@ -2545,6 +2549,7 @@ packages:
     resolution: {integrity: sha512-m0hYELHGXdYx64D6IDDg/1vOJEaiV8f1G/iO+tejvRCJNSwK4jJ15e38JQy5Q6dGkn1M/9KcyEOwqmlZ2kqaZg==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
     requiresBuild: true
     dev: false
     optional: true
