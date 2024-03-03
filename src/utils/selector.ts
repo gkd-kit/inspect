@@ -40,7 +40,10 @@ export const parseSelector = (source: string): Selector => {
     if (!allowPropertyTypes[name]) {
       throw `未知属性: ${name}`;
     }
-    if (type != 'null' && allowPropertyTypes[name] != type) {
+    if (
+      type != PrimitiveValue.NullValue.type &&
+      allowPropertyTypes[name] != type
+    ) {
       throw `非法类型: ${name}`;
     }
   }
@@ -105,6 +108,7 @@ const PrimitiveValue = {
   StringValue: { type: 'string' },
   IntValue: { type: 'int' },
   BooleanValue: { type: 'boolean' },
+  NullValue: { type: 'null' },
 };
 
 const allowPropertyTypes: Record<string, string> = {
