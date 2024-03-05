@@ -5,7 +5,8 @@ export const _404Page = (): Plugin => {
     enforce: 'post',
     apply: 'build',
     generateBundle(_, bundle) {
-      bundle['404.html'] = { ...bundle[`index.html`], fileName: `404.html` };
+      // https://developers.cloudflare.com/pages/configuration/serving-pages/#single-page-app-spa-rendering
+      // bundle['404.html'] = { ...bundle[`index.html`], fileName: `404.html` };
     },
   };
 };
