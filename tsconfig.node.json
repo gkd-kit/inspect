@@ -5,7 +5,9 @@
     "vitest.config.*",
     "cypress.config.*",
     "nightwatch.conf.*",
-    "playwright.config.*"
+    "playwright.config.*",
+    "plugins",
+    "scripts",
   ],
   "compilerOptions": {
     "composite": true,

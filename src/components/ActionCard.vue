@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { showTextDLg } from '@/utils/dialog';
+import { showTextDLg, waitShareAgree } from '@/utils/dialog';
 import { message } from '@/utils/discrete';
 import {
   exportSnapshotAsJpg,
@@ -55,6 +55,7 @@ const previewUrl = computed(() => {
 });
 
 const exportJpgUrl = useTask(async () => {
+  await waitShareAgree();
   const pngUrl = await exportSnapshotAsJpgUrl(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );
@@ -65,6 +66,7 @@ const exportJpgUrl = useTask(async () => {
 });
 
 const exportZipUrl = useTask(async () => {
+  await waitShareAgree();
   const zipUrl = await exportSnapshotAsZipUrl(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );

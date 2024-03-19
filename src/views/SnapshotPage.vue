@@ -11,6 +11,7 @@ import {
   snapshotStorage,
   screenshotStorage,
   githubZipStorage,
+  settingsStorage,
 } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
 import { computed, shallowRef, watchEffect } from 'vue';
@@ -44,7 +45,7 @@ watchEffect(async () => {
     message.error(`快照数据缺失`);
     return;
   }
-  if (gmOk()) {
+  if (gmOk() && settingsStorage.autoUploadImport) {
     // 静默生成 jpg/zip
     setTimeout(async () => {
       exportSnapshotAsJpgUrl(localSnapshot);

@@ -2,7 +2,7 @@
 import ActionCard from '@/components/ActionCard.vue';
 import BuildShareDlg from '@/components/BuildShareDlg.vue';
 import { toValidURL } from '@/utils/check';
-import { showTextDLg } from '@/utils/dialog';
+import { showTextDLg, waitShareAgree } from '@/utils/dialog';
 import { dialog } from '@/utils/discrete';
 import {
   batchCreateJpgUrl,
@@ -11,7 +11,11 @@ import {
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
-import { shallowSnapshotStorage, snapshotStorage } from '@/utils/storage';
+import {
+  settingsStorage,
+  shallowSnapshotStorage,
+  snapshotStorage,
+} from '@/utils/storage';
 import { renderDveice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
@@ -25,6 +29,8 @@ import {
   NModal,
   NPopover,
   NSpace,
+  NSwitch,
+  NCheckbox,
   type PaginationProps,
   type DataTableColumns,
 } from 'naive-ui';
@@ -231,6 +237,7 @@ const batchDownloadZip = useTask(async () => {
 });
 
 const batchShareJpgUrl = useTask(async () => {
+  await waitShareAgree();
   const pngUrls = await batchCreateJpgUrl(await checkedSnapshots());
   showTextDLg({
     content:
@@ -238,6 +245,7 @@ const batchShareJpgUrl = useTask(async () => {
   });
 });
 const batchShareZipUrl = useTask(async () => {
+  await waitShareAgree();
   const zipUrls = await batchCreateZipUrl(await checkedSnapshots());
   showTextDLg({
     content:
@@ -246,6 +254,7 @@ const batchShareZipUrl = useTask(async () => {
 });
 
 const shareDlgShow = shallowRef(false);
+const settingsDlgShow = shallowRef(false);
 </script>
 <template>
   <div flex flex-col p-10px gap-10px h-full>
@@ -320,6 +329,22 @@ const shareDlgShow = shallowRef(false);
       </NSpace>
       <div flex-1></div>
       <NSpace>
+        <NButton title="设置" @click="settingsDlgShow = true">
+          <template #icon>
+            <NIcon>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19.43 12.98c.04-.32.07-.64.07-.98c0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.488.488 0 0 0 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.566.566 0 0 0-.18-.03c-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98c0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03c.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73c0 .21-.02.43-.05.73l-.14 1.13l.89.7l1.08.84l-.7 1.21l-1.27-.51l-1.04-.42l-.9.68c-.43.32-.84.56-1.25.73l-1.06.43l-.16 1.13l-.2 1.35h-1.4l-.19-1.35l-.16-1.13l-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7l-1.06.43l-1.27.51l-.7-1.21l1.08-.84l.89-.7l-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13l-.89-.7l-1.08-.84l.7-1.21l1.27.51l1.04.42l.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43l.16-1.13l.2-1.35h1.39l.19 1.35l.16 1.13l1.06.43c.43.18.83.41 1.23.71l.91.7l1.06-.43l1.27-.51l.7 1.21l-1.07.85l-.89.7l.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4s4-1.79 4-4s-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </NIcon>
+          </template>
+        </NButton>
         <NPopover>
           <template #trigger>
             <NButton>
@@ -466,4 +491,23 @@ const shareDlgShow = shallowRef(false);
     />
   </NModal>
   <BuildShareDlg v-model:show="shareDlgShow" />
+
+  <NModal
+    v-model:show="settingsDlgShow"
+    preset="dialog"
+    title="设置"
+    :showIcon="false"
+    positiveText="关闭"
+    style="width: 600px"
+    @positiveClick="settingsDlgShow = false"
+  >
+    <NCheckbox v-model:checked="settingsStorage.ignoreUploadWarn">
+      关闭生成分享链接弹窗提醒
+    </NCheckbox>
+    <div h-1px my-10px bg="#eee"></div>
+    <div flex gap-10px>
+      <NSwitch v-model="settingsStorage.autoUploadImport" />
+      <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
+    </div>
+  </NModal>
 </template>

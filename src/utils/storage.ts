@@ -75,6 +75,7 @@ snapshotStorage.removeItem = async (key) => {
     snapshotRemoveItem(key),
     shallowSnapshotStorage.removeItem(key),
     screenshotStorage.removeItem(key),
+    // @ts-ignore
     importTimeStorage[key] && delete importTimeStorage[key],
   ]);
 };
@@ -129,3 +130,11 @@ export const githubZipStorage = useReactiveStorage<Record<number, string>>(
   `githubZip`,
   {},
 );
+
+export const settingsStorage = useReactiveStorage<{
+  autoUploadImport: boolean;
+  ignoreUploadWarn: boolean;
+}>('settings', {
+  autoUploadImport: false,
+  ignoreUploadWarn: false,
+});
