@@ -506,7 +506,7 @@ const settingsDlgShow = shallowRef(false);
     </NCheckbox>
     <div h-1px my-10px bg="#eee"></div>
     <div flex gap-10px>
-      <NSwitch v-model="settingsStorage.autoUploadImport" />
+      <NSwitch v-model:value="settingsStorage.autoUploadImport" />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
     </div>
   </NModal>
