@@ -105,3 +105,6 @@ export const timeAgo = (date: number) => {
 
   return `刚刚`;
 };
+
+const emptyFn = () => {};
+export const buildEmptyFn = () => emptyFn;

@@ -7,7 +7,7 @@ import {
   exportSnapshotAsZip,
   exportSnapshotAsZipUrl,
 } from '@/utils/export';
-import { delay } from '@/utils/others';
+import { buildEmptyFn, delay } from '@/utils/others';
 import {
   githubJpgStorage,
   githubZipStorage,
@@ -34,7 +34,7 @@ const props = withDefaults(
     showExport: true,
     showDelete: true,
     showShare: true,
-    onDelete: () => () => {},
+    onDelete: buildEmptyFn,
   },
 );
 

@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { getDevice, getNodeLabel } from '@/utils/node';
-import { copy, delay } from '@/utils/others';
+import { buildEmptyFn, copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import {
   NEllipsis,
@@ -25,7 +25,7 @@ const props = withDefaults(
     onUpdateFocusNode?: (data: RawNode) => void;
   }>(),
   {
-    onUpdateFocusNode: () => () => {},
+    onUpdateFocusNode: buildEmptyFn,
   },
 );
 

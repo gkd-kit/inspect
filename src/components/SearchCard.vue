@@ -20,7 +20,7 @@ import {
 import { shallowReactive, shallowRef } from 'vue';
 import DraggableCard from './DraggableCard.vue';
 import { getNodeLabel } from '@/utils/node';
-import { copy } from '@/utils/others';
+import { buildEmptyFn, copy } from '@/utils/others';
 import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
 import { githubUrlToSelfUrl } from '@/utils/url';
 import JSON5 from 'json5';
@@ -32,12 +32,13 @@ const props = withDefaults(
   defineProps<{
     snapshot: Snapshot;
     rootNode: RawNode;
+    focusNode?: RawNode;
     onUpdateFocusNode?: (data: RawNode) => void;
     onUpdateTrack?: (track: { selector: Selector; nodes: RawNode[] }) => void;
   }>(),
   {
-    onUpdateFocusNode: () => () => {},
-    onUpdateTrack: () => () => {},
+    onUpdateFocusNode: buildEmptyFn,
+    onUpdateTrack: buildEmptyFn,
   },
 );
 
@@ -177,7 +178,7 @@ const _1vw = window.innerWidth / 100;
   <DraggableCard
     :initialValue="{ top: 75, right: Math.max(315, 12 * _1vw + 135) }"
     v-slot="{ onRef }"
-    class="z-1"
+    class="z-1 box-shadow-dim"
   >
     <div
       w-480px
@@ -302,6 +303,7 @@ const _1vw = window.innerWidth / 100;
                 :key="resultNode.id"
                 @click="onUpdateFocusNode(resultNode)"
                 size="small"
+                :class="{ 'color-[#00F]': resultNode === focusNode }"
               >
                 {{ getNodeLabel(resultNode) }}
               </NButton>
@@ -336,6 +338,10 @@ const _1vw = window.innerWidth / 100;
                     onUpdateFocusNode(trackNodes[result.selector.trackIndex])
                   "
                   size="small"
+                  :class="{
+                    'color-[#00F]':
+                      trackNodes[result.selector.trackIndex] === focusNode,
+                  }"
                 >
                   {{ getNodeLabel(trackNodes[result.selector.trackIndex]) }}
                 </NButton>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { findNodeByXy } from '@/utils/node';
+import { findNodesByXy } from '@/utils/node';
+import { buildEmptyFn } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
-import { useWindowSize, refDebounced } from '@vueuse/core';
+import { refDebounced, useWindowSize } from '@vueuse/core';
 import { computed, shallowRef } from 'vue';
 
 const props = withDefaults(
@@ -11,9 +12,14 @@ const props = withDefaults(
     rootNode?: RawNode;
     focusNode?: RawNode;
     onUpdateFocusNode?: (data: RawNode) => void;
+    onUpdateFocusNodes?: (data: {
+      nodes: RawNode[];
+      position: { x: number; y: number };
+    }) => void;
   }>(),
   {
-    onUpdateFocusNode: () => () => {},
+    onUpdateFocusNode: buildEmptyFn,
+    onUpdateFocusNodes: buildEmptyFn,
   },
 );
 const windowSize = useWindowSize();
@@ -44,9 +50,13 @@ const clickImg = (ev: MouseEvent) => {
   const oy =
     ((ev.clientY - imgRect.top - offsetTop) / innerHeight) * img.naturalHeight;
 
-  const childNode = findNodeByXy(props.snapshot.nodes, ox, oy);
-  if (childNode) {
-    props.onUpdateFocusNode(childNode);
+  const results = findNodesByXy(props.snapshot.nodes, ox, oy);
+  if (results.length === 0) return;
+  if (results.length === 1) {
+    props.onUpdateFocusNode(results[0]);
+  } else {
+    props.onUpdateFocusNode(results[0]);
+    props.onUpdateFocusNodes({ nodes: results, position: { x: ox, y: oy } });
   }
 };
 

@@ -77,7 +77,11 @@ const attrs = computed(() => {
 </script>
 
 <template>
-  <DraggableCard :initialValue="{ top: 75, right: 10 }" v-slot="{ onRef }">
+  <DraggableCard
+    :initialValue="{ top: 75, right: 10 }"
+    v-slot="{ onRef }"
+    class="box-shadow-dim"
+  >
     <NTable
       size="small"
       striped

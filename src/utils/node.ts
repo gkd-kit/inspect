@@ -22,35 +22,95 @@ export const listToTree = (nodes: RawNode[]) => {
   return nodes[0];
 };
 
-export const xyInNode = (node: RawNode, ox: number, oy: number) => {
+const xyInNode = (node: RawNode, ox: number, oy: number) => {
   const attr = node.attr;
   return (
     attr.left <= ox && ox <= attr.right && attr.top <= oy && oy <= attr.bottom
   );
 };
 
-export const inBoxNode = (box: RawNode, child: RawNode) => {
+const includesRectNode = (outer: RawNode, inner: RawNode) => {
   return (
-    box.attr.left <= child.attr.left &&
-    box.attr.top <= child.attr.top &&
-    box.attr.right >= child.attr.right &&
-    box.attr.bottom >= child.attr.bottom
+    outer.attr.left <= inner.attr.left &&
+    outer.attr.top <= inner.attr.top &&
+    outer.attr.right >= inner.attr.right &&
+    outer.attr.bottom >= inner.attr.bottom
   );
 };
-export const findNodeByXy = (nodes: RawNode[], ox: number, oy: number) => {
-  let prevNode: RawNode | undefined = void 0;
-  nodes.forEach((node) => {
-    if (node?.attr?.left === void 0) return;
-    if (!xyInNode(node, ox, oy)) return;
+
+const equalRectNode = (a: RawNode, b: RawNode) => {
+  return (
+    a.attr.left === b.attr.left &&
+    a.attr.top === b.attr.top &&
+    a.attr.right === b.attr.right &&
+    a.attr.bottom === b.attr.bottom
+  );
+};
+
+const isParent = (parent: RawNode, child: RawNode): boolean => {
+  let p = child.parent;
+  while (p) {
+    if (p === parent) return true;
+    p = p.parent;
+  }
+  return false;
+};
+
+export const findNodeByXy = (
+  nodes: RawNode[],
+  ox: number,
+  oy: number,
+): RawNode | undefined => {
+  let prevNode: RawNode | undefined = undefined;
+  for (const node of nodes) {
+    if (node?.attr?.left === undefined) continue;
+    if (!xyInNode(node, ox, oy)) continue;
     if (!prevNode) {
       prevNode = node;
-      return;
+      continue;
     }
-    if (inBoxNode(prevNode, node)) {
+    if (includesRectNode(prevNode, node)) {
       prevNode = node;
     }
+  }
+  return prevNode;
+};
+
+export const findNodesByXy = (
+  nodes: RawNode[],
+  ox: number,
+  oy: number,
+): RawNode[] => {
+  let results: RawNode[] = [];
+  for (const node of nodes) {
+    if (node?.attr?.left === undefined) continue;
+    if (!xyInNode(node, ox, oy)) continue;
+    results.push(node);
+  }
+  if (results.length <= 1) {
+    return results;
+  }
+
+  // remove parent node
+  results = results.filter((node) => {
+    return !results.some(
+      (other) => isParent(node, other) && includesRectNode(node, other),
+    );
   });
-  return prevNode as RawNode | undefined;
+  if (results.length <= 1) {
+    return results;
+  }
+
+  // remove includes node
+  results = results.filter((node) => {
+    return !results.some(
+      (other) =>
+        node != other &&
+        includesRectNode(node, other) &&
+        !equalRectNode(node, other),
+    );
+  });
+  return results;
 };
 
 export function* traverseNode(node: RawNode, skipKeys: number[] = []) {

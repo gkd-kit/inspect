@@ -22,6 +22,8 @@ import { exportSnapshotAsJpgUrl, exportSnapshotAsZipUrl } from '@/utils/export';
 import TrackGraph from '@/components/TrackGraph.vue';
 import type { Selector } from '@/utils/selector';
 import { NModal, NIcon } from 'naive-ui';
+import MultiFocusCard from '@/components/MultiFocusCard.vue';
+import { watch } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -105,6 +107,20 @@ watchEffect(() => {
     trackVisible.value = true;
   }
 });
+const mulitFocus = shallowRef<{
+  nodes: RawNode[];
+  position: { x: number; y: number };
+}>();
+watch(
+  () => focusNode.value,
+  (newNode) => {
+    const nodes = mulitFocus.value?.nodes;
+    if (!nodes) return;
+    if (!newNode || !nodes.includes(newNode)) {
+      mulitFocus.value = undefined;
+    }
+  },
+);
 </script>
 <template>
   <div h-full flex gap-5px p-5px box-border>
@@ -118,6 +134,7 @@ watchEffect(() => {
         focusNode = $event;
         focusCount++;
       "
+      @updateFocusNodes="mulitFocus = $event"
     />
     <WindowCard
       v-if="snapshot && rootNode"
@@ -140,11 +157,22 @@ watchEffect(() => {
       v-if="rootNode && snapshot"
       :snapshot="snapshot"
       :rootNode="rootNode"
+      :focusNode="focusNode"
       @updateFocusNode="
         focusNode = $event;
         focusCount++;
       "
       @updateTrack="track = $event"
+    />
+    <MultiFocusCard
+      v-show="mulitFocus"
+      :focusNode="focusNode"
+      :focusNodes="mulitFocus"
+      @updateFocusNode="
+        focusNode = $event;
+        focusCount++;
+      "
+      @close="mulitFocus = undefined"
     />
     <NModal
       v-model:show="trackVisible"
