@@ -38,8 +38,17 @@ import ErrorDlg from './components/ErrorDlg.vue';
 .box-shadow-dim,
 [box-shadow-dim] {
   box-shadow:
-    rgba(0, 0, 0, 0.2) 0px 11px 15px -7px,
-    rgba(0, 0, 0, 0.14) 0px 24px 38px 3px,
-    rgba(0, 0, 0, 0.12) 0px 9px 46px 8px;
+    0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05);
+}
+@media (prefers-color-scheme: dark) {
+  .box-shadow-dim,
+  [box-shadow-dim] {
+    box-shadow:
+      0 3px 6px -4px rgba(0, 0, 0, 0.24),
+      0 6px 12px 0 rgba(0, 0, 0, 0.16),
+      0 9px 18px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 </style>

@@ -165,7 +165,6 @@ watch(
       @updateTrack="track = $event"
     />
     <MultiFocusCard
-      v-show="mulitFocus"
       :focusNode="focusNode"
       :focusNodes="mulitFocus"
       @updateFocusNode="

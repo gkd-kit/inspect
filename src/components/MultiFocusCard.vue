@@ -29,6 +29,7 @@ const left = _1vw * 25.5;
     :initialValue="{ top: 215, left }"
     v-slot="{ onRef }"
     class="z-2 box-shadow-dim w-420px"
+    :disabled="!focusNodes"
   >
     <NCard v-if="focusNodes" size="small" closable @close="onClose">
       <template #header>

@@ -9,6 +9,7 @@ const props = withDefaults(
       top?: number;
       bottom?: number;
     };
+    disabled?: boolean;
   }>(),
   { initialValue: () => ({}) },
 );
@@ -114,7 +115,7 @@ const updateTarget = (arg: unknown) => {
 };
 </script>
 <template>
-  <Teleport to="#app">
+  <Teleport to="#app" :disabled="disabled">
     <div
       fixed
       ref="box"
