@@ -1,13 +1,13 @@
 # @gkd-kit/inspect
 
-- <https://i.gkd.li> github pages
+- <https://i.gkd.li>
 
 GKD 网页端审查工具,
 
 - 抓取快照
 - 审查快照
 - 分享快照
-- 连接调试 GKD APP 内部 HTTP Server
+- 连接调试 GKD 内部 HTTP Server
 - 实时启用订阅规则, 实时执行点击选择器
 - 选择器路径视图
 
@@ -34,11 +34,11 @@ GKD 网页端审查工具,
 
 ## 快照示例
 
-- <https://i.gkd.li/import/14045424>
-- <https://i.gkd.li/import/14039510>
-- <https://i.gkd.li/import/14035418>
-- <https://i.gkd.li/import/14034770>
-- <https://i.gkd.li/import/14031920>
-- <https://i.gkd.li/import/14018243>
-- <https://i.gkd.li/import/14011298>
-- <https://i.gkd.li/import/13999908>
+- <https://i.gkd.li/i/14045424>
+- <https://i.gkd.li/i/14039510>
+- <https://i.gkd.li/i/14035418>
+- <https://i.gkd.li/i/14034770>
+- <https://i.gkd.li/i/14031920>
+- <https://i.gkd.li/i/14018243>
+- <https://i.gkd.li/i/14011298>
+- <https://i.gkd.li/i/13999908>
