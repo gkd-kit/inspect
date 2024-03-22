@@ -22,10 +22,11 @@ const props = withDefaults(
   },
 );
 const _1vw = document.documentElement.scrollWidth / 100;
+const left = _1vw * 25.5;
 </script>
 <template>
   <DraggableCard
-    :initialValue="{ top: 75, left: _1vw * 25 }"
+    :initialValue="{ top: 215, left }"
     v-slot="{ onRef }"
     class="z-2 box-shadow-dim w-420px"
   >
