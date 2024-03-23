@@ -53,11 +53,12 @@ const lenAttrNames = [`text`, `desc`];
 const attrs = computed(() => {
   return Object.entries(props.focusNode.attr)
     .map(([name, value]) => {
+      const show = attrTip[name]?.show;
       const attr = {
         name,
         value,
         desc: JSON.stringify(value),
-        tip: attrTip[name]?.show?.() ? attrTip[name] : undefined,
+        tip: (show ? show() : true) ? attrTip[name] : undefined,
       };
       if (lenAttrNames.includes(name)) {
         return [
