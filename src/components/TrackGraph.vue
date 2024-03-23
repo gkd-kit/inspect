@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import '@/utils/g6';
 import { getLimitLabel } from '@/utils/node';
-import type { Selector } from '@/utils/selector';
+import type { ConnectKeyType, Selector } from '@/utils/selector';
 import type { RawNode } from '@/utils/types';
 import type { TreeGraph, TreeGraphData } from '@antv/g6';
 import G6 from '@antv/g6';
@@ -223,7 +223,7 @@ watchEffect(() => {
       const tempId = t.id > n.id ? `-${n.id}:${t.id}` : `-${t.id}:${n.id}`;
       edgeCountMap[tempId] = (edgeCountMap[tempId] || 0) + 1;
       const id = `${tempId}/${edgeCountMap[tempId]}`;
-      const key = connectKeys[connectKeys.length - i - 1];
+      const key = connectKeys[connectKeys.length - i - 1] as ConnectKeyType;
       const distance: number =
         {
           '+': () => {

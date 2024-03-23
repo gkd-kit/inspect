@@ -34,6 +34,8 @@ export type Selector = {
   querySelectorTrackAll: (node: RawNode) => RawNode[][];
 };
 
+export type ConnectKeyType = '+' | '-' | '>' | '<' | '<<';
+
 export const parseSelector = (source: string): Selector => {
   const ms = MultiplatformSelector.Companion.parse(source);
   for (const [name, type] of ms.nameToTypeList) {
