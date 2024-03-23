@@ -19,11 +19,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { useTitle } from '@vueuse/core';
 import { gmOk } from '@/utils/gm';
 import { exportSnapshotAsJpgUrl, exportSnapshotAsZipUrl } from '@/utils/export';
-import TrackGraph from '@/components/TrackGraph.vue';
 import type { Selector } from '@/utils/selector';
 import { NModal, NIcon } from 'naive-ui';
 import MultiFocusCard from '@/components/MultiFocusCard.vue';
-import { watch } from 'vue';
+import { watch, defineAsyncComponent } from 'vue';
+const AsyncTrackGraph = defineAsyncComponent(
+  () => import('@/components/TrackGraph.vue'),
+);
 
 const route = useRoute();
 const router = useRouter();
@@ -193,7 +195,7 @@ watch(
       <div v-if="track" class="gkd_code py-2px px-4px rounded-2px bg-[#eee]">
         {{ track.selector.toString() }}
       </div>
-      <TrackGraph v-if="track" :track="track" />
+      <AsyncTrackGraph v-if="track" :track="track" />
       <div opacity-75 text-12px>*为简化视图已隐藏部分节点</div>
     </NModal>
   </div>
