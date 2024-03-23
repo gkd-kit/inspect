@@ -23,9 +23,11 @@ import type { Selector } from '@/utils/selector';
 import { NModal, NIcon } from 'naive-ui';
 import MultiFocusCard from '@/components/MultiFocusCard.vue';
 import { watch, defineAsyncComponent } from 'vue';
-const AsyncTrackGraph = defineAsyncComponent(
-  () => import('@/components/TrackGraph.vue'),
-);
+const AsyncTrackGraph = (() => {
+  const loader = () => import('@/components/TrackGraph.vue');
+  setTimeout(loader, 3000);
+  return defineAsyncComponent(loader);
+})();
 
 const route = useRoute();
 const router = useRouter();
