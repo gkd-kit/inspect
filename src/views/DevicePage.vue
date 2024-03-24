@@ -228,6 +228,7 @@ const actionOptions: {
 }[] = [
   {
     label: '仅查询',
+    value: undefined,
   },
   {
     value: 'click',
