@@ -1,8 +1,26 @@
 import {
   MultiplatformSelector,
   MultiplatformTransform,
+  updateWasmToMatches,
 } from '@gkd-kit/selector';
 import type { RawNode } from './types';
+import matchesInstantiate from '@gkd-kit/wasm_matches';
+import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
+
+matchesInstantiate(fetch(matchesWasmUrl))
+  .then((mod) => {
+    const toMatches = mod.exports.toMatches;
+    updateWasmToMatches(toMatches as any);
+    if (import.meta.env.PROD) {
+      console.log('use wasm matches');
+    }
+  })
+  .catch((e) => {
+    console.error(e);
+    if (import.meta.env.PROD) {
+      console.log('use js matches');
+    }
+  });
 
 const transform = new MultiplatformTransform<RawNode>(
   (node, name) => {
