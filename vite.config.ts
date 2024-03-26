@@ -27,6 +27,10 @@ export default defineConfig(() => {
       host: '127.0.0.1',
       port: 8444,
     },
+    preview: {
+      host: '127.0.0.1',
+      port: 8444,
+    },
     build: {
       target: `chrome70`,
       sourcemap: true,

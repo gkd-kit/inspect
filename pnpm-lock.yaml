@@ -9,8 +9,11 @@ dependencies:
     specifier: ^4.8.24
     version: 4.8.24
   '@gkd-kit/selector':
-    specifier: 0.0.22
-    version: 0.0.22
+    specifier: 0.0.23
+    version: 0.0.23
+  '@gkd-kit/wasm_matches':
+    specifier: 0.0.1
+    version: 0.0.1
   '@rushstack/eslint-patch':
     specifier: ^1.7.2
     version: 1.7.2
@@ -2290,8 +2293,12 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: false
 
-  /@gkd-kit/selector@0.0.22:
-    resolution: {integrity: sha512-ru+QzuraI3ITzeUH9INp8/oNVcyK+WQhlanSu+unspMCeMnXc0cF1uEQtm7utIKNSCOUTfuWlHDxR4rROZKnLw==}
+  /@gkd-kit/selector@0.0.23:
+    resolution: {integrity: sha512-C6y0Um4F26oeebcN4hl0ACzw0nHZQYU0tw5fURY6DK+yZZSGfQ6JyCDY+lRR/koX+mhoK/HM0TV9pZniSBWTHA==}
+    dev: false
+
+  /@gkd-kit/wasm_matches@0.0.1:
+    resolution: {integrity: sha512-PUYa98MXyumiIVuYHozbYThhPnYwrdvEwyL+tBmneonIq1Vm2CmeUfk3FbJXxaMQE2/3JBa7utfk0HAu/03xDQ==}
     dev: false
 
   /@humanwhocodes/config-array@0.11.14:
