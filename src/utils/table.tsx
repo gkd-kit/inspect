@@ -8,7 +8,7 @@ import { useAutoWrapWidthColumn } from './size';
 import { importTimeStorage } from './storage';
 import type { Snapshot } from './types';
 
-export const renderDveice = (row: Snapshot) => {
+export const renderDevice = (row: Snapshot) => {
   return `${getDevice(row).manufacturer} Android${
     getDevice(row).release || `13`
   }`;
@@ -52,10 +52,10 @@ export const useSnapshotColumns = () => {
     filterMultiple: true,
     minWidth: 100,
     filter(value, row) {
-      return renderDveice(row).includes(value.toString());
+      return renderDevice(row).includes(value.toString());
     },
     render(row) {
-      return renderDveice(row);
+      return renderDevice(row);
     },
   });
   const appNameCol = useAutoWrapWidthColumn<Snapshot>({
@@ -132,7 +132,7 @@ export const useSnapshotColumns = () => {
     },
   });
 
-  const reseColWidth = () => {
+  const resetColWidth = () => {
     deviceCol.width = void 0;
     appNameCol.width = void 0;
     appIdCol.width = void 0;
@@ -148,6 +148,6 @@ export const useSnapshotColumns = () => {
     appVersionCodeCol,
     appVersionNameCol,
     activityIdCol,
-    reseColWidth,
+    resetColWidth: resetColWidth,
   };
 };
