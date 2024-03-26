@@ -16,7 +16,7 @@ import {
   shallowSnapshotStorage,
   snapshotStorage,
 } from '@/utils/storage';
-import { renderDveice, useSnapshotColumns } from '@/utils/table';
+import { renderDevice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
 import { githubUrlToSelfUrl } from '@/utils/url';
@@ -77,7 +77,7 @@ const filterSnapshots = computed(() => {
   });
 });
 
-const importLoacl = useTask(async () => {
+const importLocal = useTask(async () => {
   await importFromLocal();
   await updateSnapshots();
 });
@@ -91,12 +91,12 @@ const {
   deviceCol,
   appVersionCodeCol,
   appVersionNameCol,
-  reseColWidth,
+  resetColWidth,
 } = useSnapshotColumns();
 
 watchEffect(() => {
   const set = filterSnapshots.value.reduce(
-    (p, c) => (p.add(renderDveice(c)), p),
+    (p, c) => (p.add(renderDevice(c)), p),
     new Set<string>(),
   );
   if (set.size <= 1) {
@@ -175,7 +175,7 @@ const pagination = shallowReactive<PaginationProps>({
     pagination.page = 1;
   },
 });
-watch(pagination, reseColWidth);
+watch(pagination, resetColWidth);
 
 const handleSorterChange = (sorter: SortState) => {
   [ctimeCol, mtimeCol].forEach((c) => {
@@ -377,7 +377,7 @@ const settingsDlgShow = shallowRef(false);
             </NButton>
           </template>
           <NSpace vertical>
-            <NButton @click="importLoacl.invoke" :loading="importLoacl.loading">
+            <NButton @click="importLocal.invoke" :loading="importLocal.loading">
               导入本地文件
             </NButton>
             <NButton @click="showModal = true" :loading="importNetwork.loading">

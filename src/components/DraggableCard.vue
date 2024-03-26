@@ -91,14 +91,14 @@ onUnmounted(() => {
   endMove();
 });
 
-watch(target, (newValue, oldvalue) => {
+watch(target, (newValue, oldValue) => {
   if (newValue) {
     newValue.addEventListener('pointerdown', startMove);
     newValue.addEventListener('pointerup', endMove);
   }
-  if (oldvalue) {
-    oldvalue.removeEventListener('pointerdown', startMove);
-    oldvalue.removeEventListener('pointerup', endMove);
+  if (oldValue) {
+    oldValue.removeEventListener('pointerdown', startMove);
+    oldValue.removeEventListener('pointerup', endMove);
   }
 });
 onUnmounted(() => {
