@@ -6,11 +6,15 @@ import {
 import type { RawNode } from './types';
 import matchesInstantiate from '@gkd-kit/wasm_matches';
 import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
+import store from './store';
+import { settingsStorage } from './storage';
 
+let wasmSupported = false;
 matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
     const toMatches = mod.exports.toMatches;
     updateWasmToMatches(toMatches as any);
+    wasmSupported = true;
     if (import.meta.env.PROD) {
       console.log('use wasm matches');
     }
@@ -56,7 +60,12 @@ export type ConnectKeyType = '+' | '-' | '>' | '<' | '<<';
 
 export const parseSelector = (source: string): Selector => {
   const ms = MultiplatformSelector.Companion.parse(source);
-  for (const [name, type] of ms.nameToTypeList) {
+  for (const [name, operator, type] of ms.binaryExpressions) {
+    if (operator == '~=' && !wasmSupported) {
+      if (!settingsStorage.ignoreWasmWarn) {
+        store.wasmErrorDlgVisible = true;
+      }
+    }
     if (!allowPropertyTypes[name]) {
       throw `未知属性: ${name}`;
     }

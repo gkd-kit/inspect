@@ -134,7 +134,9 @@ export const githubZipStorage = useReactiveStorage<Record<number, string>>(
 export const settingsStorage = useReactiveStorage<{
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;
+  ignoreWasmWarn: boolean;
 }>('settings', {
   autoUploadImport: false,
   ignoreUploadWarn: false,
+  ignoreWasmWarn: false,
 });

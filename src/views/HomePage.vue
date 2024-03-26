@@ -505,6 +505,10 @@ const settingsDlgShow = shallowRef(false);
       关闭生成分享链接弹窗提醒
     </NCheckbox>
     <div h-1px my-10px bg="#eee"></div>
+    <NCheckbox v-model:checked="settingsStorage.ignoreWasmWarn">
+      关闭浏览器版本正则表达式 WASM(GC) 提醒
+    </NCheckbox>
+    <div h-1px my-10px bg="#eee"></div>
     <div flex gap-10px>
       <NSwitch v-model:value="settingsStorage.autoUploadImport" />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
