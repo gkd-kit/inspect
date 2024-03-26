@@ -148,6 +148,6 @@ export const useSnapshotColumns = () => {
     appVersionCodeCol,
     appVersionNameCol,
     activityIdCol,
-    resetColWidth: resetColWidth,
+    resetColWidth,
   };
 };
