@@ -111,17 +111,17 @@ watchEffect(() => {
     trackVisible.value = true;
   }
 });
-const mulitFocus = shallowRef<{
+const multiFocus = shallowRef<{
   nodes: RawNode[];
   position: { x: number; y: number };
 }>();
 watch(
   () => focusNode.value,
   (newNode) => {
-    const nodes = mulitFocus.value?.nodes;
+    const nodes = multiFocus.value?.nodes;
     if (!nodes) return;
     if (!newNode || !nodes.includes(newNode)) {
-      mulitFocus.value = undefined;
+      multiFocus.value = undefined;
     }
   },
 );
@@ -138,7 +138,7 @@ watch(
         focusNode = $event;
         focusCount++;
       "
-      @updateFocusNodes="mulitFocus = $event"
+      @updateFocusNodes="multiFocus = $event"
     />
     <WindowCard
       v-if="snapshot && rootNode"
@@ -170,12 +170,12 @@ watch(
     />
     <MultiFocusCard
       :focusNode="focusNode"
-      :focusNodes="mulitFocus"
+      :focusNodes="multiFocus"
       @updateFocusNode="
         focusNode = $event;
         focusCount++;
       "
-      @close="mulitFocus = undefined"
+      @close="multiFocus = undefined"
     />
     <NModal
       v-model:show="trackVisible"
