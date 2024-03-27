@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { toValidURL } from '@/utils/check';
 import { loadingBar, message } from '@/utils/discrete';
+import { gmOk } from '@/utils/gm';
 import { importFromNetwork } from '@/utils/import';
 import { delay } from '@/utils/others';
 import { githubZipStorage } from '@/utils/storage';
@@ -78,11 +79,22 @@ onMounted(async () => {
     class="h-[calc(100%-10px)]"
     flex
     gap-5px
-    p-5px
+    pt-40px
     flex-col
     flex-items-center
   >
-    <div v-show="loading" mt-40px>
+    <div v-if="!gmOk()" mb-20px>
+      建议安装并启用
+      <a
+        href="https://github.com/gkd-kit/network-extension"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        油猴脚本
+      </a>
+      获取更快加载速度
+    </div>
+    <div v-show="loading">
       {{ tip }}
     </div>
   </div>
