@@ -404,7 +404,7 @@ const settingsDlgShow = shallowRef(false);
           </NButton>
         </RouterLink>
 
-        <NButton title="创建分享" @click="shareDlgShow = true">
+        <NButton v-if="0" title="创建分享" @click="shareDlgShow = true">
           <template #icon>
             <NIcon>
               <svg
