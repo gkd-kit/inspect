@@ -480,7 +480,7 @@ const settingsDlgShow = shallowRef(false);
         }
       "
       type="textarea"
-      :placeholder="`仅支持ZIP文件链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
+      :placeholder="`1.支持ZIP文件链接\n2.支持快照链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
       :autosize="{
         minRows: 8,
         maxRows: 16,

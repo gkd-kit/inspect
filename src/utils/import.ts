@@ -58,6 +58,7 @@ export const importFromLocal = async () => {
   }
 };
 
+const importReg = /^\/(i|(import))\/[0-9]+$/;
 export const importFromNetwork = async (urls: string[] | string = []) => {
   if (typeof urls == 'string') {
     urls = [urls];
@@ -65,6 +66,19 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   if (urls.length == 0) {
     return;
   }
+  urls = urls.map((url) => {
+    if (
+      url.startsWith(location.origin) ||
+      url.startsWith('https://i.gkd.li/')
+    ) {
+      const pathname = new URL(url).pathname;
+      if (importReg.test(pathname)) {
+        const github_asset_id = pathname.split('/').at(-1)!;
+        return `https://github.com/gkd-kit/inspect/files/${github_asset_id}/file.zip`;
+      }
+    }
+    return url;
+  });
   urls = [...new Set(urls)];
   const limit = pLimit(2);
   let importNum = 0;
