@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted } from 'vue';
 import { message } from './discrete';
 import root from './root';
+import type { LocationQuery } from 'vue-router';
 
 export const obj2form = (...objs: Record<string, unknown>[]) => {
   const fd = new FormData();
@@ -108,3 +109,17 @@ export const timeAgo = (date: number) => {
 
 const emptyFn = () => {};
 export const buildEmptyFn = () => emptyFn;
+
+export const filterQuery = (
+  obj: LocationQuery,
+  keys: string[],
+): LocationQuery => {
+  const newObj: LocationQuery = {};
+  keys.forEach((k) => {
+    const value = obj[k];
+    if (value !== undefined) {
+      newObj[k] = value;
+    }
+  });
+  return newObj;
+};

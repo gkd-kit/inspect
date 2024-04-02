@@ -24,9 +24,11 @@ import { buildEmptyFn, copy } from '@/utils/others';
 import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
 import { githubUrlToSelfUrl } from '@/utils/url';
 import JSON5 from 'json5';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { onMounted } from 'vue';
 
 const router = useRouter();
+const route = useRoute();
 
 const props = withDefaults(
   defineProps<{
@@ -58,76 +60,102 @@ const selectorResults = shallowReactive<
   )[]
 >([]);
 const expandedKeys = shallowRef<number[]>([]);
-const searchBySelector = errorTry(() => {
-  if (!props.rootNode) {
-    message.error(`根节点不存在`);
+const searchSelector = (text: string) => {
+  const selector = errorWrap(
+    () => parseSelector(text),
+    (e) => {
+      if (typeof e == 'string') {
+        return e;
+      }
+      return `非法选择器`;
+    },
+  );
+  if (
+    selectorResults.find(
+      (s) =>
+        typeof s.selector == 'object' &&
+        s.selector.toString() == selector.toString(),
+    )
+  ) {
+    message.warning(`不可重复选择`);
     return;
   }
-  const text = selectorText.value.trim();
-  if (!text) return;
 
-  if (enableSearchBySelector.value) {
-    const selector = errorWrap(
-      () => parseSelector(text),
-      (e) => {
-        if (typeof e == 'string') {
-          return e;
-        }
-        return `非法选择器`;
-      },
-    );
-    if (
-      selectorResults.find(
-        (s) =>
-          typeof s.selector == 'object' &&
-          s.selector.toString() == selector.toString(),
-      )
-    ) {
-      message.warning(`不可重复选择`);
-      return;
+  const results = selector.querySelectorTrackAll(props.rootNode);
+  if (results.length == 0) {
+    message.success(`没有选择到节点`);
+    return;
+  }
+  message.success(`选择到 ${results.length} 个节点`);
+  selectorResults.unshift({ selector, nodes: results, key: Date.now() });
+  return results.length;
+};
+const searchString = (text: string) => {
+  if (
+    selectorResults.find(
+      (s) => typeof s.selector == 'string' && s.selector.toString() == text,
+    )
+  ) {
+    message.warning(`不可重复搜索`);
+    return;
+  }
+  const results: RawNode[] = [];
+  const stack: RawNode[] = [props.rootNode];
+  while (stack.length > 0) {
+    const n = stack.pop()!;
+    if (getNodeLabel(n).includes(text)) {
+      results.push(n);
     }
-
-    const results = selector.querySelectorTrackAll(props.rootNode);
-    if (results.length == 0) {
-      message.success(`没有选择到节点`);
-      return;
-    }
-    message.success(`选择到 ${results.length} 个节点`);
-    selectorResults.unshift({ selector, nodes: results, key: Date.now() });
+    stack.push(...[...n.children].reverse());
+  }
+  if (results.length == 0) {
+    message.success(`没有搜索到节点`);
+    return;
+  }
+  message.success(`搜索到 ${results.length} 个节点`);
+  selectorResults.unshift({
+    selector: text,
+    nodes: results,
+    key: Date.now(),
+  });
+  return results.length;
+};
+const refreshExpandedKeys = () => {
+  const newNode = selectorResults[0].nodes[0];
+  if (Array.isArray(newNode)) {
+    props.onUpdateFocusNode(newNode[0]);
   } else {
-    if (
-      selectorResults.find(
-        (s) => typeof s.selector == 'string' && s.selector.toString() == text,
-      )
-    ) {
-      message.warning(`不可重复选择`);
-      return;
-    }
-    const results: RawNode[] = [];
-    const stack: RawNode[] = [props.rootNode];
-    while (stack.length > 0) {
-      const n = stack.pop()!;
-      if (getNodeLabel(n).includes(text)) {
-        results.push(n);
-      }
-      stack.push(...[...n.children].reverse());
-    }
-    if (results.length == 0) {
-      message.success(`没有搜索到节点`);
-      return;
-    }
-    message.success(`搜索到 ${results.length} 个节点`);
-    selectorResults.unshift({
-      selector: text,
-      nodes: results,
-      key: Date.now(),
-    });
+    props.onUpdateFocusNode(newNode);
   }
   const allKeys = new Set(selectorResults.map((s) => s.key));
   const newKeys = expandedKeys.value.filter((k) => allKeys.has(k));
   newKeys.push(selectorResults[0].key);
   expandedKeys.value = newKeys;
+};
+const searchBySelector = errorTry(() => {
+  const text = selectorText.value.trim();
+  if (!text) return;
+  if (enableSearchBySelector.value) {
+    if (!searchSelector(text)) return;
+  } else {
+    if (!searchString(text)) return;
+  }
+  refreshExpandedKeys();
 });
+
+onMounted(async () => {
+  let count = 0;
+  if (route.query.gkd) {
+    count += searchSelector(route.query.gkd as string) || 0;
+  }
+  if (route.query.str) {
+    count += searchString(route.query.str as string) || 0;
+  }
+  if (count > 0) {
+    refreshExpandedKeys();
+  }
+});
+
 const generateRules = errorTry(
   async (result: { key: number; selector: Selector; nodes: RawNode[][] }) => {
     let jpgUrl = githubJpgStorage[props.snapshot.id];

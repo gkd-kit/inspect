@@ -33,6 +33,7 @@ const debouncedSize = refDebounced(
 );
 
 const imgRef = shallowRef<HTMLImageElement>();
+const imgLoadTime = shallowRef(0);
 
 const clickImg = (ev: MouseEvent) => {
   if (!props.rootNode) return;
@@ -64,7 +65,8 @@ const percent = (n: number) => {
   return `${n * 100}%`;
 };
 const positionStyle = computed(() => {
-  debouncedSize.value;
+  debouncedSize.value; // 在窗口大小变化后触发更新
+  imgLoadTime.value; // 在图片加载完成后触发更新
   const img = imgRef.value;
   const attr = props.focusNode?.attr;
   if (!props.focusNode || !img || !attr) {
@@ -137,6 +139,7 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
+      @load="imgLoadTime = Date.now()"
     />
     <div
       :style="positionStyle"

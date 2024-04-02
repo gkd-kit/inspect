@@ -11,6 +11,7 @@ const redirectImport: RouteRecordRedirectOption = (to) => {
   return {
     path: '/i',
     query: {
+      ...to.query,
       url,
     },
   };
