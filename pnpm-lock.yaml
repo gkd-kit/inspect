@@ -137,9 +137,12 @@ dependencies:
   typescript:
     specifier: 5.4.3
     version: 5.4.3
+  universal-base64url:
+    specifier: 1.1.0
+    version: 1.1.0
   unocss:
     specifier: 0.58.6
-    version: 0.58.6(postcss@8.4.35)(vite@5.2.6)
+    version: 0.58.6(postcss@8.4.38)(vite@5.2.6)
   vite:
     specifier: 5.2.6
     version: 5.2.6(@types/node@20.11.30)(sass@1.72.0)(terser@5.26.0)
@@ -2423,8 +2426,8 @@ packages:
   /@jridgewell/source-map@0.3.5:
     resolution: {integrity: sha512-UTYAUj/wviwdsMfzoSJspJxbkH5o1snzwX0//0ENX1u/55kkZZkcTZP6u9bwKGkv+dkk9at4m1Cpt0uY80kcpQ==}
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.20
+      '@jridgewell/gen-mapping': 0.3.5
+      '@jridgewell/trace-mapping': 0.3.25
     dev: false
 
   /@jridgewell/sourcemap-codec@1.4.15:
@@ -2900,7 +2903,7 @@ packages:
       sirv: 2.0.4
     dev: false
 
-  /@unocss/postcss@0.58.6(postcss@8.4.35):
+  /@unocss/postcss@0.58.6(postcss@8.4.38):
     resolution: {integrity: sha512-jTwu7llhRm7luscsk0JekCeo6RS2W98CXiCJRE1H6IDQnjGQQ/9uRAqW4wuLsv7OQ1ThF8m9NKEj0wFJv7ePNg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -2912,7 +2915,7 @@ packages:
       css-tree: 2.3.1
       fast-glob: 3.3.2
       magic-string: 0.30.8
-      postcss: 8.4.35
+      postcss: 8.4.38
     dev: false
 
   /@unocss/preset-attributify@0.58.6:
@@ -6485,12 +6488,22 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
+  /universal-base64@2.1.0:
+    resolution: {integrity: sha512-WeOkACVnIXJZr/qlv7++Rl1zuZOHN96v2yS5oleUuv8eJOs5j9M5U3xQEIoWqn1OzIuIcgw0fswxWnUVGDfW6g==}
+    dev: false
+
+  /universal-base64url@1.1.0:
+    resolution: {integrity: sha512-qWv2+8KCaAWdpqqXwU8W0Yj9pflYDXP37/a3kec6Y4Je7bYzgIfxEVRjZWeLR67be7iot1lGCy5Nuo+xB0fojA==}
+    dependencies:
+      universal-base64: 2.1.0
+    dev: false
+
   /universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /unocss@0.58.6(postcss@8.4.35)(vite@5.2.6):
+  /unocss@0.58.6(postcss@8.4.38)(vite@5.2.6):
     resolution: {integrity: sha512-HBstDtC6KKD5yCYh5hHpPdHGZai0B/iLlDwkOIK+xfQYrvl8tNBvKfRz3xgiaI5MJ+fLmEOxbfXQIjleU1A0iA==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -6506,7 +6519,7 @@ packages:
       '@unocss/cli': 0.58.6
       '@unocss/core': 0.58.6
       '@unocss/extractor-arbitrary-variants': 0.58.6
-      '@unocss/postcss': 0.58.6(postcss@8.4.35)
+      '@unocss/postcss': 0.58.6(postcss@8.4.38)
       '@unocss/preset-attributify': 0.58.6
       '@unocss/preset-icons': 0.58.6
       '@unocss/preset-mini': 0.58.6

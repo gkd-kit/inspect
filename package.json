@@ -65,6 +65,7 @@
     "simple-git-hooks": "2.11.1",
     "tsx": "4.7.1",
     "typescript": "5.4.3",
+    "universal-base64url": "1.1.0",
     "unocss": "0.58.6",
     "vite": "5.2.6",
     "vite-plugin-monkey": "3.5.2",

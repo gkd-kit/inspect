@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import dayjs from 'dayjs';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
-import { parseSelector } from '@/utils/selector';
+import { getNodeLabel } from '@/utils/node';
+import { buildEmptyFn, copy } from '@/utils/others';
 import type { Selector } from '@/utils/selector';
+import { parseSelector } from '@/utils/selector';
+import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
+import { githubUrlToSelfUrl } from '@/utils/url';
+import dayjs from 'dayjs';
+import JSON5 from 'json5';
 import {
   NButton,
   NButtonGroup,
   NCollapse,
   NCollapseItem,
+  NIcon,
   NInput,
   NInputGroup,
   NRadio,
   NRadioGroup,
   NSpace,
-  NIcon,
 } from 'naive-ui';
-import { shallowReactive, shallowRef } from 'vue';
+import * as base64url from 'universal-base64url';
+import { computed, onMounted, shallowReactive, shallowRef } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import DraggableCard from './DraggableCard.vue';
-import { getNodeLabel } from '@/utils/node';
-import { buildEmptyFn, copy } from '@/utils/others';
-import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
-import { githubUrlToSelfUrl } from '@/utils/url';
-import JSON5 from 'json5';
-import { useRouter, useRoute } from 'vue-router';
-import { onMounted } from 'vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -45,20 +45,18 @@ const props = withDefaults(
 );
 
 const selectorText = shallowRef(``);
-const selectorResults = shallowReactive<
-  (
-    | {
-        key: number;
-        selector: string;
-        nodes: RawNode[];
-      }
-    | {
-        key: number;
-        selector: Selector;
-        nodes: RawNode[][];
-      }
-  )[]
->([]);
+type SearchResult =
+  | {
+      key: number;
+      selector: string;
+      nodes: RawNode[];
+    }
+  | {
+      key: number;
+      selector: Selector;
+      nodes: RawNode[][];
+    };
+const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
 const searchSelector = (text: string) => {
   const selector = errorWrap(
@@ -146,7 +144,7 @@ const searchBySelector = errorTry(() => {
 onMounted(async () => {
   let count = 0;
   if (route.query.gkd) {
-    count += searchSelector(route.query.gkd as string) || 0;
+    count += searchSelector(base64url.decode(route.query.gkd as string)) || 0;
   }
   if (route.query.str) {
     count += searchString(route.query.str as string) || 0;
@@ -201,6 +199,24 @@ const generateRules = errorTry(
 );
 const enableSearchBySelector = shallowRef(true);
 const _1vw = window.innerWidth / 100;
+const hasZipId = computed(() => {
+  return githubZipStorage[props.snapshot.id];
+});
+const shareResult = (result: SearchResult) => {
+  if (!hasZipId.value) return;
+  const importUrl = new URL(
+    githubUrlToSelfUrl(router, githubZipStorage[props.snapshot.id]),
+  );
+  if (typeof result.selector == 'object') {
+    importUrl.searchParams.set(
+      'gkd',
+      base64url.encode(result.selector.toString()),
+    );
+  } else {
+    importUrl.searchParams.set('str', result.selector.toString());
+  }
+  copy(importUrl.toString());
+};
 </script>
 <template>
   <DraggableCard
@@ -296,7 +312,33 @@ const _1vw = window.innerWidth / 100;
                 </NIcon>
               </template>
             </NButton>
-            <div p-l-8px></div>
+            <div p-l-4px></div>
+            <NButton
+              v-if="hasZipId"
+              size="small"
+              :title="
+                typeof result.selector == 'object'
+                  ? `复制查询链接`
+                  : `复制搜索链接`
+              "
+              @click.stop="shareResult(result)"
+            >
+              <template #icon>
+                <NIcon>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81c1.66 0 3-1.34 3-3s-1.34-3-3-3s-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65c0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                </NIcon>
+              </template>
+            </NButton>
+            <div p-l-4px></div>
             <NButton
               size="small"
               @click.stop="selectorResults.splice(index, 1)"
