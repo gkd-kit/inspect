@@ -9,17 +9,17 @@ import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
 import store from './store';
 import { settingsStorage } from './storage';
 
-let wasmSupported = false;
-matchesInstantiate(fetch(matchesWasmUrl))
+export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
     const toMatches = mod.exports.toMatches;
     updateWasmToMatches(toMatches as any);
-    wasmSupported = true;
+    store.wasmSupported = true;
     if (import.meta.env.PROD) {
       console.log('use wasm matches');
     }
   })
   .catch((e) => {
+    store.wasmSupported = false;
     console.error(e);
     if (import.meta.env.PROD) {
       console.log('use js matches');
@@ -61,7 +61,7 @@ export type ConnectKeyType = '+' | '-' | '>' | '<' | '<<';
 export const parseSelector = (source: string): Selector => {
   const ms = MultiplatformSelector.Companion.parse(source);
   for (const [name, operator, type] of ms.binaryExpressions) {
-    if (operator == '~=' && !wasmSupported) {
+    if (operator == '~=' && !store.wasmSupported) {
       if (!settingsStorage.ignoreWasmWarn) {
         store.wasmErrorDlgVisible = true;
       }

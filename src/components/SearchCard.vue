@@ -4,7 +4,7 @@ import { errorTry, errorWrap } from '@/utils/error';
 import { getNodeLabel } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import type { Selector } from '@/utils/selector';
-import { parseSelector } from '@/utils/selector';
+import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
 import { githubUrlToSelfUrl } from '@/utils/url';
@@ -142,6 +142,7 @@ const searchBySelector = errorTry(() => {
 });
 
 onMounted(async () => {
+  await wasmLoadTask;
   let count = 0;
   if (route.query.gkd) {
     count += searchSelector(base64url.decode(route.query.gkd as string)) || 0;
