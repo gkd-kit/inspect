@@ -119,15 +119,17 @@ const searchString = (text: string) => {
   return results.length;
 };
 const refreshExpandedKeys = () => {
-  const newNode = selectorResults[0].nodes[0];
-  if (Array.isArray(newNode)) {
-    props.onUpdateFocusNode(newNode[0]);
-  } else {
+  const newResult = selectorResults[0];
+
+  const newNode = newResult.nodes[0];
+  if (!Array.isArray(newNode)) {
     props.onUpdateFocusNode(newNode);
+  } else if (typeof newResult.selector == 'object' && Array.isArray(newNode)) {
+    props.onUpdateFocusNode(newNode[newResult.selector.trackIndex]);
   }
   const allKeys = new Set(selectorResults.map((s) => s.key));
   const newKeys = expandedKeys.value.filter((k) => allKeys.has(k));
-  newKeys.push(selectorResults[0].key);
+  newKeys.push(newResult.key);
   expandedKeys.value = newKeys;
 };
 const searchBySelector = errorTry(() => {
