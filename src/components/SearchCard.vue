@@ -26,6 +26,7 @@ import * as base64url from 'universal-base64url';
 import { computed, onMounted, shallowReactive, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import DraggableCard from './DraggableCard.vue';
+import { gkdWidth, vw } from '@/utils/size';
 
 const router = useRouter();
 const route = useRoute();
@@ -201,7 +202,6 @@ const generateRules = errorTry(
   },
 );
 const enableSearchBySelector = shallowRef(true);
-const _1vw = window.innerWidth / 100;
 const hasZipId = computed(() => {
   return githubZipStorage[props.snapshot.id];
 });
@@ -223,20 +223,17 @@ const shareResult = (result: SearchResult) => {
 </script>
 <template>
   <DraggableCard
-    :initialValue="{ top: 75, right: Math.max(315, 12 * _1vw + 135) }"
+    :initialValue="{
+      top: 75,
+      right: Math.max(315, 12 * vw + 135),
+      width: Math.max(480, gkdWidth * 0.3),
+    }"
+    :minWidth="300"
+    sizeDraggable
     v-slot="{ onRef }"
     class="z-1 box-shadow-dim"
   >
-    <div
-      w-480px
-      bg-white
-      b-1px
-      b-solid
-      b-gray-200
-      rounded-4px
-      p-8px
-      class="min-w-[calc(var(--gkd-width)*0.3)]"
-    >
+    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
       <div flex m-b-4px>
         <NRadioGroup v-model:value="enableSearchBySelector">
           <NSpace>
