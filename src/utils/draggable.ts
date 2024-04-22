@@ -40,7 +40,7 @@ export const useDragMove = (xFilter: (x: number) => boolean) => {
     prevEv = undefined;
   };
   const windowEndMove = () => {
-    if (!target.value) return;
+    if (!target.value || !prevEv) return;
     endMove();
     const { top, bottom, left, right } = target.value.getBoundingClientRect();
     if (
@@ -52,15 +52,6 @@ export const useDragMove = (xFilter: (x: number) => boolean) => {
       // isOutsideViewport
       offset.x = prevOffset.x;
       offset.y = prevOffset.y;
-
-      // TODO add transitions
-      // const boxDiv = box.value;
-      // if (boxDiv) {
-      //   boxDiv.classList.add(...transitions);
-      //   setTimeout(() => {
-      //     boxDiv.classList.remove(...transitions);
-      //   }, 550);
-      // }
     }
   };
   onMounted(() => {
