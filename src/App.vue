@@ -51,4 +51,16 @@ import ErrorDlg from './components/ErrorDlg.vue';
       0 9px 18px 8px rgba(0, 0, 0, 0.1);
   }
 }
+
+// 移除 inline 元素的空白间隙
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+}
 </style>
