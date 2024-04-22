@@ -75,7 +75,7 @@
   "volta": {
     "node": "20.12.2"
   },
-  "packageManager": "pnpm@9.0.1",
+  "packageManager": "pnpm@9.0.4",
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"
   },
