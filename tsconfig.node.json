@@ -7,7 +7,7 @@
     "nightwatch.conf.*",
     "playwright.config.*",
     "plugins",
-    "scripts",
+    "scripts"
   ],
   "compilerOptions": {
     "composite": true,

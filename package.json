@@ -75,7 +75,7 @@
   "volta": {
     "node": "20.12.2"
   },
-  "packageManager": "pnpm@9.0.4",
+  "packageManager": "pnpm@9.1.2",
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"
   },
@@ -83,6 +83,9 @@
     "*.{vue,js,jsx,cjs,mjs,ts,tsx}": [
       "prettier --cache --write",
       "eslint --cache --fix"
+    ],
+    "*.{json,yml,html}": [
+      "prettier --cache --write"
     ]
   }
 }
