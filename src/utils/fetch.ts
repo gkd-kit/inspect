@@ -16,6 +16,10 @@ export const enhanceFetch = async (
     // export snapshot need
     return GM_fetch(input, init);
   } else if (options?.proxy) {
+    if (!u.href.startsWith('https://github.com/')) {
+      store.networkErrorDlgVisible = true;
+      throw new Error(`proxy is not supported`);
+    }
     const proxyUrl = new URL(`https://proxy.gkd.li`);
     proxyUrl.searchParams.set(`proxyUrl`, u.href);
     const request = new Request(input, init);
