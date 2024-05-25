@@ -131,6 +131,10 @@ export const githubZipStorage = useReactiveStorage<Record<number, string>>(
   {},
 );
 
+export const syncImportStorage = useReactiveStorage<
+  Record<number | string, boolean>
+>(`syncImport`, {});
+
 export const settingsStorage = useReactiveStorage<{
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;

@@ -16,7 +16,7 @@ export const enhanceFetch = async (
     // export snapshot need
     return GM_fetch(input, init);
   } else if (options?.proxy) {
-    const proxyUrl = new URL(`https://proxy-workers.lisonge.workers.dev/`);
+    const proxyUrl = new URL(`https://proxy.gkd.li`);
     proxyUrl.searchParams.set(`proxyUrl`, u.href);
     const request = new Request(input, init);
     return fetch(proxyUrl, {

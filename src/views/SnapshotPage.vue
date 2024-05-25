@@ -5,7 +5,7 @@ import ScreenshotCard from '@/components/ScreenshotCard.vue';
 import SearchCard from '@/components/SearchCard.vue';
 import WindowCard from '@/components/WindowCard.vue';
 import { listToTree } from '@/utils/node';
-import { message } from '@/utils/discrete';
+import { loadingBar, message } from '@/utils/discrete';
 import { delay } from '@/utils/others';
 import {
   snapshotStorage,
@@ -18,11 +18,16 @@ import { computed, shallowRef, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTitle } from '@vueuse/core';
 import { gmOk } from '@/utils/gm';
-import { exportSnapshotAsJpgUrl, exportSnapshotAsZipUrl } from '@/utils/export';
+import {
+  detectSnapshot,
+  exportSnapshotAsJpgUrl,
+  exportSnapshotAsZipUrl,
+} from '@/utils/export';
 import type { Selector } from '@/utils/selector';
 import { NModal, NIcon } from 'naive-ui';
 import MultiFocusCard from '@/components/MultiFocusCard.vue';
 import { watch, defineAsyncComponent } from 'vue';
+import { onMounted } from 'vue';
 const AsyncTrackGraph = (() => {
   const loader = () => import('@/components/TrackGraph.vue');
   setTimeout(loader, 3000);
@@ -45,12 +50,34 @@ const showSize = computed(() => {
 const screenshotUrl = shallowRef(``);
 const snapshot = shallowRef<Snapshot>();
 
-watchEffect(async () => {
-  const localSnapshot = await snapshotStorage.getItem(snapshotId.value);
-  if (!localSnapshot) {
-    message.error(`快照数据缺失`);
+onMounted(async () => {
+  if (!Number.isSafeInteger(+snapshotId.value)) {
+    message.error('非法快照ID');
     return;
   }
+  const localSnapshot = await snapshotStorage.getItem(snapshotId.value);
+  if (!localSnapshot) {
+    loadingBar.start();
+    try {
+      const importId: number | null = await fetch(
+        'https://detect.gkd.li/api/getImportId?id=' + snapshotId.value,
+      ).then((r) => r.json());
+      if (importId) {
+        router.replace('/i/' + importId);
+        return;
+      }
+      message.error(`快照数据缺失`);
+    } finally {
+      loadingBar.finish();
+    }
+    return;
+  }
+  setTimeout(() => {
+    const importId = githubZipStorage[localSnapshot.id]?.substring(41, 49);
+    if (importId) {
+      detectSnapshot(importId);
+    }
+  }, 1000);
   if (gmOk() && settingsStorage.autoUploadImport) {
     // 静默生成 jpg/zip
     setTimeout(async () => {
