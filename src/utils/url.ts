@@ -9,6 +9,7 @@ const corsOkOrigins = new Set([
   `https://raw.githubusercontents.com`,
   `https://raw.gitmirror.com`,
   `https://registry.npmmirror.com`,
+  'https://detect.gkd.li',
 ]);
 
 export const isAllowCorsUrl = (targetUrl: string | URL) => {
