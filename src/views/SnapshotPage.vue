@@ -63,7 +63,10 @@ onMounted(async () => {
         'https://detect.gkd.li/api/getImportId?id=' + snapshotId.value,
       ).then((r) => r.json());
       if (importId) {
-        router.replace('/i/' + importId);
+        router.replace({
+          path: '/i/' + importId,
+          query: route.query,
+        });
         return;
       }
       message.error(`快照数据缺失`);
