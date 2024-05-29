@@ -62,17 +62,17 @@ onMounted(async () => {
       const importId: number | null = await fetch(
         'https://detect.gkd.li/api/getImportId?id=' + snapshotId.value,
       ).then((r) => r.json());
-      if (importId) {
+      if (importId && Number.isSafeInteger(importId)) {
         router.replace({
           path: '/i/' + importId,
           query: route.query,
         });
         return;
       }
-      message.error(`快照数据缺失`);
     } finally {
       loadingBar.finish();
     }
+    message.error(`快照数据缺失`);
     return;
   }
   setTimeout(() => {
