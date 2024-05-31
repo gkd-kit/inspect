@@ -1,6 +1,7 @@
 import localforage from 'localforage';
 import { reactive, toRaw, watch } from 'vue';
 import type { Snapshot } from './types';
+import { getImportId } from './url';
 
 const useStorage = <T>(options: LocalForageOptions = {}) => {
   options.driver ??= localforage.INDEXEDDB;
@@ -40,18 +41,22 @@ const useStorage = <T>(options: LocalForageOptions = {}) => {
 
 const useReactiveStorage = <T extends object>(
   key: string,
-  initialValue: (() => T) | T,
+  initialValue: T,
+  transform?: (v: T) => T,
 ) => {
-  const store = reactive<T>(
-    typeof initialValue == 'function' ? initialValue() : initialValue,
-  );
+  const store = reactive(initialValue);
   let storeInited = false;
   watch(store, async () => {
     if (!storeInited) return;
     await localforage.setItem(key, toRaw(store));
   });
   localforage.getItem(key).then((r) => {
-    r && Object.assign(store, r);
+    if (r) {
+      if (transform) {
+        r = transform(r as T);
+      }
+      Object.assign(store, r);
+    }
     storeInited = true;
   });
   return store;
@@ -99,8 +104,8 @@ export const setSnapshot = async (snapshot: Snapshot, bf: ArrayBuffer) => {
   if (githubJpgStorage[snapshot.id]) {
     delete githubJpgStorage[snapshot.id];
   }
-  if (githubZipStorage[snapshot.id]) {
-    delete githubZipStorage[snapshot.id];
+  if (importStorage[snapshot.id]) {
+    delete importStorage[snapshot.id];
   }
   importTimeStorage[snapshot.id] = Date.now();
   await Promise.all([
@@ -114,7 +119,30 @@ export const cacheStorage = useStorage({
   version: 1,
 });
 
-export const urlStorage = useReactiveStorage<Record<string, number>>(`url`, {});
+const isIntString = (v: string | number) => {
+  if (typeof v === 'number') return true;
+  if (!v) return false;
+  return Array.prototype.every.call(v, (c) => '0' <= c && c <= '9');
+};
+
+export const urlStorage = useReactiveStorage<Record<string, number>>(
+  `url`,
+  {},
+  (obj) => {
+    // 转换旧数据
+    Object.keys(obj).forEach((url) => {
+      if (isIntString(url)) {
+        return;
+      }
+      const importId = getImportId(url);
+      if (importId) {
+        obj[importId] = obj[url];
+      }
+      delete obj[url];
+    });
+    return obj;
+  },
+);
 
 export const importTimeStorage = useReactiveStorage<Record<number, number>>(
   'importTime',
@@ -126,10 +154,24 @@ export const githubJpgStorage = useReactiveStorage<Record<number, string>>(
   {},
 );
 
-export const githubZipStorage = useReactiveStorage<Record<number, string>>(
-  `githubZip`,
-  {},
-);
+export const importStorage = useReactiveStorage<
+  Record<number | string, number>
+>(`githubZip`, {}, (obj) => {
+  // 转换旧数据
+  Object.entries(obj).forEach(([k, _v]) => {
+    const v = _v as unknown as string;
+    if (isIntString(v)) {
+      return;
+    }
+    const n1 = getImportId(v);
+    if (n1) {
+      obj[k] = +n1;
+    } else {
+      delete obj[k];
+    }
+  });
+  return obj;
+});
 
 export const syncImportStorage = useReactiveStorage<
   Record<number | string, boolean>

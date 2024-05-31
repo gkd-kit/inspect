@@ -6,6 +6,7 @@ import { enhanceFetch } from './fetch';
 import { isZipBf } from './file_type';
 import { setSnapshot, snapshotStorage, urlStorage } from './storage';
 import type { Snapshot } from './types';
+import { getImportFileUrl, getImportId } from './url';
 
 const parseZip = async (zip: JSZip) => {
   const snapshotFile = zip.filter((s) => s.endsWith(`.json`))[0];
@@ -58,7 +59,6 @@ export const importFromLocal = async () => {
   }
 };
 
-const importReg = /^\/(i|(import))\/[0-9]+$/;
 export const importFromNetwork = async (urls: string[] | string = []) => {
   if (typeof urls == 'string') {
     urls = [urls];
@@ -67,15 +67,9 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
     return;
   }
   urls = urls.map((url) => {
-    if (
-      url.startsWith(location.origin) ||
-      url.startsWith('https://i.gkd.li/')
-    ) {
-      const pathname = new URL(url).pathname;
-      if (importReg.test(pathname)) {
-        const github_asset_id = pathname.split('/').at(-1)!;
-        return `https://github.com/gkd-kit/inspect/files/${github_asset_id}/file.zip`;
-      }
+    const importId = getImportId(url);
+    if (importId) {
+      return getImportFileUrl(importId);
     }
     return url;
   });
@@ -85,7 +79,7 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   const result = await Promise.allSettled(
     urls.map((url) => {
       return limit(async () => {
-        const snapshotId = urlStorage[url];
+        const snapshotId = urlStorage[getImportId(url) || ''];
         if (snapshotId) {
           const snapshot = await snapshotStorage.getItem(snapshotId);
           if (snapshot) {

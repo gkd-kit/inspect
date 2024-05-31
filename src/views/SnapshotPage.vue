@@ -10,7 +10,7 @@ import { delay } from '@/utils/others';
 import {
   snapshotStorage,
   screenshotStorage,
-  githubZipStorage,
+  importStorage,
   settingsStorage,
 } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
@@ -21,7 +21,7 @@ import { gmOk } from '@/utils/gm';
 import {
   detectSnapshot,
   exportSnapshotAsJpgUrl,
-  exportSnapshotAsZipUrl,
+  exportSnapshotAsImportId,
 } from '@/utils/export';
 import type { Selector } from '@/utils/selector';
 import { NModal, NIcon } from 'naive-ui';
@@ -76,7 +76,7 @@ onMounted(async () => {
     return;
   }
   setTimeout(() => {
-    const importId = githubZipStorage[localSnapshot.id]?.substring(41, 49);
+    const importId = importStorage[localSnapshot.id];
     if (importId) {
       detectSnapshot(importId);
     }
@@ -85,8 +85,8 @@ onMounted(async () => {
     // 静默生成 jpg/zip
     setTimeout(async () => {
       exportSnapshotAsJpgUrl(localSnapshot);
-      if (!githubZipStorage[localSnapshot.id]) {
-        exportSnapshotAsZipUrl(
+      if (!importStorage[localSnapshot.id]) {
+        exportSnapshotAsImportId(
           (await snapshotStorage.getItem(snapshotId.value))!,
         );
       }

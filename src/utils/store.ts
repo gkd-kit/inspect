@@ -1,6 +1,6 @@
-import { reactive } from 'vue';
+import { shallowReactive } from 'vue';
 
-const store = reactive({
+const store = shallowReactive({
   networkErrorDlgVisible: false,
   githubErrorDlgVisible: false,
   wasmErrorDlgVisible: false,

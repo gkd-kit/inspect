@@ -1,4 +1,5 @@
 import { toValidURL } from '@/utils/check';
+import { getImportFileUrl } from '@/utils/url';
 import type { RouteRecordRedirectOption } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -7,12 +8,11 @@ const redirectImport: RouteRecordRedirectOption = (to) => {
   if (!github_asset_id) {
     return { path: '/404' };
   }
-  const url = `https://github.com/user-attachments/files/${github_asset_id}/file.zip`;
   return {
     path: '/i',
     query: {
       ...to.query,
-      url,
+      url: getImportFileUrl(github_asset_id),
     },
   };
 };

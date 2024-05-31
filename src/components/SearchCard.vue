@@ -5,9 +5,9 @@ import { getNodeLabel } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import type { Selector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
-import { githubJpgStorage, githubZipStorage } from '@/utils/storage';
+import { githubJpgStorage, importStorage } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
-import { githubUrlToSelfUrl } from '@/utils/url';
+import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
 import dayjs from 'dayjs';
 import JSON5 from 'json5';
 import {
@@ -162,12 +162,10 @@ const generateRules = errorTry(
   async (result: { key: number; selector: Selector; nodes: RawNode[][] }) => {
     let jpgUrl = githubJpgStorage[props.snapshot.id];
     if (jpgUrl) {
-      jpgUrl = githubUrlToSelfUrl(router, jpgUrl);
+      jpgUrl = githubUrlToSelfUrl(jpgUrl);
     }
-    let zipUrl = githubZipStorage[props.snapshot.id];
-    if (zipUrl) {
-      zipUrl = githubUrlToSelfUrl(router, zipUrl);
-    }
+    const importId = importStorage[props.snapshot.id];
+    const zipUrl = importId ? getImportUrl(importId) : undefined;
 
     const s = result.selector;
     const t = result.nodes[0][0];
@@ -203,13 +201,11 @@ const generateRules = errorTry(
 );
 const enableSearchBySelector = shallowRef(true);
 const hasZipId = computed(() => {
-  return githubZipStorage[props.snapshot.id];
+  return importStorage[props.snapshot.id];
 });
 const shareResult = (result: SearchResult) => {
   if (!hasZipId.value) return;
-  const importUrl = new URL(
-    githubUrlToSelfUrl(router, githubZipStorage[props.snapshot.id]),
-  );
+  const importUrl = new URL(getImportUrl(importStorage[props.snapshot.id]));
   if (typeof result.selector == 'object') {
     importUrl.searchParams.set(
       'gkd',

@@ -2,20 +2,20 @@
 import { showTextDLg, waitShareAgree } from '@/utils/dialog';
 import { message } from '@/utils/discrete';
 import {
+  exportSnapshotAsImportId,
   exportSnapshotAsJpg,
   exportSnapshotAsJpgUrl,
   exportSnapshotAsZip,
-  exportSnapshotAsZipUrl,
 } from '@/utils/export';
 import { buildEmptyFn, delay } from '@/utils/others';
 import {
   githubJpgStorage,
-  githubZipStorage,
+  importStorage,
   snapshotStorage,
 } from '@/utils/storage';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
-import { githubUrlToSelfUrl } from '@/utils/url';
+import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
 import { NButton, NIcon, NPopover, NSpace } from 'naive-ui';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
@@ -61,18 +61,18 @@ const exportJpgUrl = useTask(async () => {
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(router, pngUrl),
+    content: githubUrlToSelfUrl(pngUrl),
   });
 });
 
 const exportZipUrl = useTask(async () => {
   await waitShareAgree();
-  const zipUrl = await exportSnapshotAsZipUrl(
+  const importId = await exportSnapshotAsImportId(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(router, zipUrl),
+    content: location.origin + `/i/${importId}`,
   });
 });
 
@@ -166,10 +166,8 @@ const copy = async (content: string) => {
       </template>
       <NSpace vertical>
         <NButton
-          v-if="githubZipStorage[snapshot.id]"
-          @click="
-            copy(githubUrlToSelfUrl($router, githubZipStorage[snapshot.id]))
-          "
+          v-if="importStorage[snapshot.id]"
+          @click="copy(getImportUrl(importStorage[snapshot.id]))"
         >
           复制链接-快照
         </NButton>
@@ -182,9 +180,7 @@ const copy = async (content: string) => {
         </NButton>
         <NButton
           v-if="githubJpgStorage[snapshot.id]"
-          @click="
-            copy(githubUrlToSelfUrl($router, githubJpgStorage[snapshot.id]))
-          "
+          @click="copy(githubUrlToSelfUrl(githubJpgStorage[snapshot.id]))"
         >
           复制链接-图片
         </NButton>
