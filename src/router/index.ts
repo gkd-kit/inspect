@@ -7,7 +7,7 @@ const redirectImport: RouteRecordRedirectOption = (to) => {
   if (!github_asset_id) {
     return { path: '/404' };
   }
-  const url = `https://github.com/gkd-kit/inspect/files/${github_asset_id}/file.zip`;
+  const url = `https://github.com/user-attachments/files/${github_asset_id}/file.zip`;
   return {
     path: '/i',
     query: {
