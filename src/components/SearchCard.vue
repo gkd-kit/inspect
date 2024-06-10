@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
-import { getNodeLabel } from '@/utils/node';
+import { getAppInfo, getNodeLabel } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import type { Selector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
@@ -177,7 +177,7 @@ const generateRules = errorTry(
     ].some(Boolean);
     const rule = {
       id: props.snapshot.appId,
-      name: props.snapshot.appName,
+      name: getAppInfo(props.snapshot).name,
       groups: [
         {
           key: 1,

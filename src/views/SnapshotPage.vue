@@ -4,7 +4,7 @@ import AttrCard from '@/components/AttrCard.vue';
 import ScreenshotCard from '@/components/ScreenshotCard.vue';
 import SearchCard from '@/components/SearchCard.vue';
 import WindowCard from '@/components/WindowCard.vue';
-import { listToTree } from '@/utils/node';
+import { getAppInfo, listToTree } from '@/utils/node';
 import { loadingBar, message } from '@/utils/discrete';
 import { delay } from '@/utils/others';
 import {
@@ -112,7 +112,7 @@ onMounted(async () => {
   );
   snapshot.value = localSnapshot;
   rootNode.value = listToTree(localSnapshot.nodes);
-  title.value = '快照-' + localSnapshot.appName || localSnapshot.appId;
+  title.value = '快照-' + getAppInfo(localSnapshot).name || localSnapshot.appId;
   if (!focusNode.value) {
     focusNode.value = rootNode.value;
   }

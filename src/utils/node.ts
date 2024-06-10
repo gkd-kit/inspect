@@ -1,4 +1,4 @@
-import type { Device, RawNode, SizeExt, Snapshot } from './types';
+import type { AppInfo, Device, RawNode, SizeExt, Snapshot } from './types';
 
 export const listToTree = (nodes: RawNode[]) => {
   // nodes = structuredClone(nodes);
@@ -177,9 +177,38 @@ export const getLimitLabel = (node: RawNode, limit = 15): string => {
   return label;
 };
 
-export const getDevice = (snapshot: Snapshot) => {
+export const getDevice = (snapshot: Snapshot): Device => {
   if (typeof snapshot.device == 'object' && snapshot.device) {
     return snapshot.device;
   }
   return snapshot as unknown as Device;
+};
+
+export const getAppInfo = (snapshot: Snapshot): AppInfo => {
+  return (
+    snapshot.appInInfo || {
+      id: snapshot.appId,
+      name: snapshot.appName,
+      versionCode: snapshot.appVersionCode,
+      versionName: snapshot.appVersionName,
+      hidden: false,
+      isSystem: false,
+      mtime: Date.now(),
+    }
+  );
+};
+
+export const getGkdAppInfo = (snapshot: Snapshot): AppInfo => {
+  const device = getDevice(snapshot);
+  return (
+    snapshot.gkdAppInfo || {
+      id: 'li.songe.gkd',
+      name: 'GKD',
+      versionCode: device.gkdVersionCode,
+      versionName: device.gkdVersionName,
+      hidden: false,
+      isSystem: false,
+      mtime: Date.now(),
+    }
+  );
 };

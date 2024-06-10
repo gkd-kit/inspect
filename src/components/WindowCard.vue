@@ -1,5 +1,10 @@
 <script setup lang="tsx">
-import { getDevice, getNodeLabel } from '@/utils/node';
+import {
+  getAppInfo,
+  getDevice,
+  getGkdAppInfo,
+  getNodeLabel,
+} from '@/utils/node';
 import { buildEmptyFn, copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import {
@@ -93,8 +98,8 @@ const renderLabel = (info: {
       striped
       :singleLine="false"
       :themeOverrides="{
-        thPaddingSmall: '2px 4px',
-        tdPaddingSmall: '2px 4px',
+        thPaddingSmall: '2px 6px',
+        tdPaddingSmall: '2px 6px',
       }"
     >
       <NThead>
@@ -104,6 +109,7 @@ const renderLabel = (info: {
           <NTh> 应用名称 </NTh>
           <NTh> 版本名称 </NTh>
           <NTh> 版本代码 </NTh>
+          <NTh> 系统应用 </NTh>
           <NTh> 应用ID </NTh>
           <NTh> 界面ID </NTh>
           <NTh> 操作 </NTh>
@@ -119,25 +125,34 @@ const renderLabel = (info: {
             }}
           </NTd>
           <NTd class="whitespace-nowrap">
-            {{ getDevice(snapshot).gkdVersionName || '1.6.4' }}
+            {{ getGkdAppInfo(snapshot).versionName }}
           </NTd>
-          <NTd class="whitespace-nowrap" @click="copy(snapshot.appName)">
+          <NTd
+            class="whitespace-nowrap"
+            @click="copy(getAppInfo(snapshot).name)"
+          >
             <NEllipsis>
-              {{ snapshot.appName }}
-            </NEllipsis>
-          </NTd>
-          <NTd class="whitespace-nowrap" @click="copy(snapshot.appVersionName)">
-            <NEllipsis>
-              {{ snapshot.appVersionName }}
+              {{ getAppInfo(snapshot).name }}
             </NEllipsis>
           </NTd>
           <NTd
             class="whitespace-nowrap"
-            @click="copy(snapshot.appVersionCode.toString())"
+            @click="copy(getAppInfo(snapshot).versionName)"
           >
             <NEllipsis>
-              {{ snapshot.appVersionCode }}
+              {{ getAppInfo(snapshot).versionName }}
             </NEllipsis>
+          </NTd>
+          <NTd
+            class="whitespace-nowrap"
+            @click="copy(getAppInfo(snapshot).versionCode.toString())"
+          >
+            <NEllipsis>
+              {{ getAppInfo(snapshot).versionCode }}
+            </NEllipsis>
+          </NTd>
+          <NTd class="whitespace-nowrap">
+            {{ getAppInfo(snapshot).isSystem ? `是` : `否` }}
           </NTd>
           <NTd
             class="whitespace-nowrap max-w-[max(12vw,180px)]"

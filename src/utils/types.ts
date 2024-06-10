@@ -13,8 +13,15 @@ export type Device = {
   brand: string;
   sdkInt: number;
   release: string;
-  gkdVersionCode: number;
-  gkdVersionName: string;
+
+  /**
+   * @deprecated use gkdAppInfo instead
+   */
+  gkdVersionCode?: number;
+  /**
+   * @deprecated use gkdAppInfo instead
+   */
+  gkdVersionName?: string;
 };
 
 export type RawNode = {
@@ -53,14 +60,29 @@ export type RawAttr = {
 
 export type Overview = {
   id: number;
+
+  appId: string;
+  activityId: string;
+
   screenWidth: number;
   screenHeight: number;
-  appId: string;
-  appName: string;
-  appVersionName: string;
-  appVersionCode: number;
-  activityId: string;
   isLandscape: boolean;
+
+  appInInfo: AppInfo;
+  gkdAppInfo: AppInfo;
+
+  /**
+   * @deprecated use appInfo instead
+   */
+  appName?: string;
+  /**
+   * @deprecated use appInfo instead
+   */
+  appVersionName?: string;
+  /**
+   * @deprecated use appInfo instead
+   */
+  appVersionCode?: number;
 };
 
 export type Snapshot = Overview & {
@@ -68,19 +90,15 @@ export type Snapshot = Overview & {
   nodes: RawNode[];
 };
 
-// export type SnapshotExt = Snapshot & {
-//   node: NaiveNode;
-// };
-
-// export type NaiveNode = {
-//   value: RawNode;
-//   children: NaiveNode[];
-//   parent?: NaiveNode;
-//   key: number;
-//   label: string;
-//   isLeaf?: boolean;
-//   prefix?: () => VNode;
-// };
+export type AppInfo = {
+  id: string;
+  name: string;
+  versionCode: number;
+  versionName?: string;
+  isSystem: boolean;
+  mtime: number;
+  hidden: boolean;
+};
 
 export type RectX = {
   bottom: number;

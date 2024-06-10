@@ -11,6 +11,7 @@ import {
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
+import { getAppInfo } from '@/utils/node';
 import {
   settingsStorage,
   shallowSnapshotStorage,
@@ -70,7 +71,7 @@ const filterSnapshots = computed(() => {
   if (!actualQuery) return snapshots.value;
   return snapshots.value.filter((s) => {
     return (
-      (s.appName || ``).includes(actualQuery) ||
+      (getAppInfo(s).name || ``).includes(actualQuery) ||
       (s.appId || ``).includes(actualQuery) ||
       (s.activityId || ``).includes(actualQuery)
     );
@@ -111,7 +112,7 @@ watchEffect(() => {
 
 watchEffect(() => {
   const set = filterSnapshots.value.reduce(
-    (p, c) => (p.add(c.appName), p),
+    (p, c) => (p.add(getAppInfo(c).name), p),
     new Set<string>(),
   );
   if (set.size <= 1) {
@@ -240,16 +241,14 @@ const batchShareJpgUrl = useTask(async () => {
   await waitShareAgree();
   const pngUrls = await batchCreateJpgUrl(await checkedSnapshots());
   showTextDLg({
-    content:
-      pngUrls.map((s) => githubUrlToSelfUrl(router, s)).join(`\n`) + `\n`,
+    content: pngUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
   await waitShareAgree();
   const zipUrls = await batchCreateZipUrl(await checkedSnapshots());
   showTextDLg({
-    content:
-      zipUrls.map((s) => githubUrlToSelfUrl(router, s)).join(`\n`) + `\n`,
+    content: zipUrls.map((s) => location.origin + '/i/' + s).join(`\n`) + `\n`,
   });
 });
 

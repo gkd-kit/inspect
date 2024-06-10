@@ -191,31 +191,27 @@ const subsText = shallowRef(``);
 const updateSubs = useTask(async () => {
   const data = errorWrap(() => JSON5.parse(subsText.value.trim()));
   if (!data) return;
-  if (device.value?.gkdVersionCode) {
-    if (data.categories || data.globalGroups || data.apps) {
-      await api.updateSubscription(data);
-    } else if (typeof data.id == 'string') {
-      await api.updateSubscription({
-        apps: [data],
-      });
-    } else if (Array.isArray(data) && typeof data[0].id == 'string') {
-      await api.updateSubscription({
-        apps: data,
-      });
-    } else if (typeof data.key == 'number') {
-      await api.updateSubscription({
-        globalGroups: [data],
-      });
-    } else if (Array.isArray(data) && typeof data[0].key == 'number') {
-      await api.updateSubscription({
-        globalGroups: data,
-      });
-    } else {
-      message.error(`无法识别的订阅文本`);
-      return;
-    }
+  if (data.categories || data.globalGroups || data.apps) {
+    await api.updateSubscription(data);
+  } else if (typeof data.id == 'string') {
+    await api.updateSubscription({
+      apps: [data],
+    });
+  } else if (Array.isArray(data) && typeof data[0].id == 'string') {
+    await api.updateSubscription({
+      apps: data,
+    });
+  } else if (typeof data.key == 'number') {
+    await api.updateSubscription({
+      globalGroups: [data],
+    });
+  } else if (Array.isArray(data) && typeof data[0].key == 'number') {
+    await api.updateSubscription({
+      globalGroups: data,
+    });
   } else {
-    await api.updateSubsApps([].concat(data));
+    message.error(`无法识别的订阅文本`);
+    return;
   }
   message.success(`修改成功`);
 });

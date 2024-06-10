@@ -3,7 +3,7 @@ import { NEllipsis } from 'naive-ui';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { shallowReactive, withDirectives } from 'vue';
 import { rect } from './directives';
-import { getDevice } from './node';
+import { getAppInfo, getDevice } from './node';
 import { copy } from './others';
 import { importTimeStorage } from './storage';
 import type { Snapshot } from './types';
@@ -90,17 +90,17 @@ export const useSnapshotColumns = () => {
     title: `应用名称`,
     filterMultiple: true,
     filter(value, row) {
-      return value.toString() == row.appName;
+      return value.toString() == getAppInfo(row).name;
     },
     cellProps(row) {
       return {
         onClick() {
-          copy(row.appName);
+          copy(getAppInfo(row).name);
         },
       };
     },
     render(row) {
-      return row.appName;
+      return getAppInfo(row).name;
     },
   });
   const appIdCol = useAutoWrapWidthColumn<Snapshot>({
@@ -123,7 +123,7 @@ export const useSnapshotColumns = () => {
     title: `版本代码`,
     minWidth: 150,
     render(row) {
-      return row.appVersionCode;
+      return getAppInfo(row).versionCode;
     },
   });
   const appVersionNameCol = useAutoWrapWidthColumn<Snapshot>({
@@ -131,7 +131,7 @@ export const useSnapshotColumns = () => {
     title: `版本号`,
     minWidth: 150,
     render(row) {
-      return <NEllipsis>{row.appVersionName}</NEllipsis>;
+      return <NEllipsis>{getAppInfo(row).versionName}</NEllipsis>;
     },
   });
 
