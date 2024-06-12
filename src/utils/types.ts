@@ -68,7 +68,7 @@ export type Overview = {
   screenHeight: number;
   isLandscape: boolean;
 
-  appInInfo: AppInfo;
+  appInfo: AppInfo;
   gkdAppInfo: AppInfo;
 
   /**

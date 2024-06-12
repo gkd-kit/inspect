@@ -186,7 +186,7 @@ export const getDevice = (snapshot: Snapshot): Device => {
 
 export const getAppInfo = (snapshot: Snapshot): AppInfo => {
   return (
-    snapshot.appInInfo || {
+    snapshot.appInfo || {
       id: snapshot.appId,
       name: snapshot.appName,
       versionCode: snapshot.appVersionCode,
