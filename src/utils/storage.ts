@@ -39,6 +39,8 @@ const useStorage = <T>(options: LocalForageOptions = {}) => {
   };
 };
 
+export const dataInitTasks: Promise<void>[] = [];
+
 const useReactiveStorage = <T extends object>(
   key: string,
   initialValue: T,
@@ -50,7 +52,7 @@ const useReactiveStorage = <T extends object>(
     if (!storeInited) return;
     await localforage.setItem(key, toRaw(store));
   });
-  localforage.getItem(key).then((r) => {
+  const task = localforage.getItem(key).then((r) => {
     if (r) {
       if (transform) {
         r = transform(r as T);
@@ -59,6 +61,7 @@ const useReactiveStorage = <T extends object>(
     }
     storeInited = true;
   });
+  dataInitTasks.push(task);
   return store;
 };
 
@@ -125,6 +128,11 @@ const isIntString = (v: string | number) => {
   return Array.prototype.every.call(v, (c) => '0' <= c && c <= '9');
 };
 
+/**
+ * key: import id
+ *
+ * value: snapshot id
+ */
 export const urlStorage = useReactiveStorage<Record<string, number>>(
   `url`,
   {},
@@ -154,6 +162,11 @@ export const githubJpgStorage = useReactiveStorage<Record<number, string>>(
   {},
 );
 
+/**
+ * key: snapshot id
+ *
+ * value: import id
+ */
 export const importStorage = useReactiveStorage<
   Record<number | string, number>
 >(`githubZip`, {}, (obj) => {
@@ -173,10 +186,6 @@ export const importStorage = useReactiveStorage<
   return obj;
 });
 
-export const syncImportStorage = useReactiveStorage<
-  Record<number | string, boolean>
->(`syncImport`, {});
-
 export const settingsStorage = useReactiveStorage<{
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;
@@ -186,3 +195,23 @@ export const settingsStorage = useReactiveStorage<{
   ignoreUploadWarn: false,
   ignoreWasmWarn: false,
 });
+
+const snapshotsKey = 'snapshots-cache-version';
+const snapshotsVersion = 'v1';
+if (localStorage.getItem(snapshotsKey) !== snapshotsVersion) {
+  localStorage.setItem(snapshotsKey, snapshotsVersion);
+  Promise.all(dataInitTasks).then(async () => {
+    const r = await fetch(
+      `https://registry.npmmirror.com/@gkd-kit/assets/latest/files/assets/snapshots-${snapshotsVersion}.json`,
+    );
+    const list: { id: number; import_id: number }[] = await r.json();
+    list.forEach((item) => {
+      if (!importStorage[item.id]) {
+        importStorage[item.id] = item.import_id;
+      }
+      if (!urlStorage[item.import_id]) {
+        urlStorage[item.import_id] = item.id;
+      }
+    });
+  });
+}

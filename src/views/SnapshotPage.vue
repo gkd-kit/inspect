@@ -59,9 +59,11 @@ onMounted(async () => {
   if (!localSnapshot) {
     loadingBar.start();
     try {
-      const importId: number | null = await fetch(
-        'https://detect.gkd.li/api/getImportId?id=' + snapshotId.value,
-      ).then((r) => r.json());
+      const importId: number | null =
+        importStorage[snapshotId.value] ||
+        (await fetch(
+          'https://detect.gkd.li/api/getImportId?id=' + snapshotId.value,
+        ).then((r) => r.json()));
       if (importId && Number.isSafeInteger(importId)) {
         router.replace({
           path: '/i/' + importId,

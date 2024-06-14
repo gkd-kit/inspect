@@ -7,7 +7,6 @@ import {
   githubJpgStorage,
   importStorage,
   screenshotStorage,
-  syncImportStorage,
   urlStorage,
 } from './storage';
 import Compressor from 'compressorjs';
@@ -103,7 +102,6 @@ export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
     ).then((r) => {
       importStorage[snapshot.id] = r.id;
       urlStorage[r.id] = snapshot.id;
-      detectSnapshot(r.id);
       return r.id;
     })
   );
@@ -136,18 +134,11 @@ export const batchCreateZipUrl = async (snapshots: Snapshot[]) => {
   }, []);
 };
 
-export const detectSnapshot = async (
-  importId: number | string,
-  noFetch = false,
-) => {
+export const detectSnapshot = async (importId: number | string) => {
   if (!Number.isSafeInteger(+importId)) {
     return;
   }
-  if (syncImportStorage[importId]) {
-    return;
-  }
-  syncImportStorage[importId] = true;
-  if (noFetch) {
+  if (urlStorage[importId]) {
     return;
   }
   await fetch(`https://detect.gkd.li/api/detectSnapshot?importId=` + importId);
