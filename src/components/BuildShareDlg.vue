@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { uploadPoliciesAssets } from '@/utils/github';
+import { uploadAsset } from '@/utils/github';
 import { copy } from '@/utils/others';
 import { useTask } from '@/utils/task';
 import { useDebounceFn } from '@vueuse/core';
@@ -51,7 +51,7 @@ const copyLink = () => {
 
 const buildShare = useTask(async () => {
   const data = JSON5.parse(text.value);
-  const asset = await uploadPoliciesAssets(
+  const asset = await uploadAsset(
     new TextEncoder().encode(
       JSON5.stringify({
         data,
@@ -60,7 +60,6 @@ const buildShare = useTask(async () => {
       }),
     ),
     'file.txt',
-    'text/plain',
   );
   const link = location.origin + router.resolve(`/s/${asset.id}`).href;
   shareLink.value = link;

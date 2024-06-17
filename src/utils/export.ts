@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import pLimit from 'p-limit';
-import { uploadPoliciesAssets } from './github';
+import { uploadAsset } from './github';
 import { delay } from './others';
 import {
   githubJpgStorage,
@@ -81,10 +81,9 @@ export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
 export const exportSnapshotAsJpgUrl = async (snapshot: Snapshot) => {
   return (
     githubJpgStorage[snapshot.id] ??
-    uploadPoliciesAssets(
+    uploadAsset(
       await snapshotAsJpg(snapshot).then((r) => r.arrayBuffer()),
       'file.jpg',
-      'image/jpeg',
     ).then((r) => {
       githubJpgStorage[snapshot.id] = r.href;
       return r.href;
@@ -95,10 +94,9 @@ export const exportSnapshotAsJpgUrl = async (snapshot: Snapshot) => {
 export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
   return (
     importStorage[snapshot.id] ||
-    uploadPoliciesAssets(
+    uploadAsset(
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
       'file.zip',
-      'application/x-zip-compressed',
     ).then((r) => {
       importStorage[snapshot.id] = r.id;
       urlStorage[r.id] = snapshot.id;

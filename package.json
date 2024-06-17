@@ -65,6 +65,7 @@
     "typescript": "5.4.5",
     "universal-base64url": "1.1.0",
     "unocss": "0.59.3",
+    "user-attachments": "1.1.1",
     "vite": "5.2.9",
     "vite-plugin-monkey": "3.5.2",
     "vue": "3.4.23",
