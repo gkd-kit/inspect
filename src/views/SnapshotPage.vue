@@ -19,6 +19,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useTitle } from '@vueuse/core';
 import { gmOk } from '@/utils/gm';
 import {
+  detectSnapshot,
   exportSnapshotAsJpgUrl,
   exportSnapshotAsImportId,
 } from '@/utils/export';
@@ -76,6 +77,12 @@ onMounted(async () => {
     message.error(`快照数据缺失`);
     return;
   }
+  setTimeout(() => {
+    const importId = importStorage[localSnapshot.id];
+    if (importId) {
+      detectSnapshot(importId);
+    }
+  }, 1000);
   if (gmOk() && settingsStorage.autoUploadImport) {
     // 静默生成 jpg/zip
     setTimeout(async () => {
