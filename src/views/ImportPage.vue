@@ -1,5 +1,6 @@
 <script setup lang="tsx">
 import { loadingBar, message } from '@/utils/discrete';
+import { detectSnapshot } from '@/utils/export';
 import { gmOk } from '@/utils/gm';
 import { importFromNetwork } from '@/utils/import';
 import { delay, filterQuery } from '@/utils/others';
@@ -52,10 +53,9 @@ onMounted(async () => {
       loadingBar.finish();
       const snapshot = result.value;
       if (snapshot?.id) {
-        if (importId) {
-          urlStorage[importId] = snapshot.id;
-          importStorage[snapshot.id] = importId;
-        }
+        detectSnapshot(importId);
+        urlStorage[importId] = snapshot.id;
+        importStorage[snapshot.id] = importId;
         loading.value = false;
         await delay(500);
         goToSnapshot(snapshot.id);
