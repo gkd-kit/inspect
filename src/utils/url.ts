@@ -71,3 +71,9 @@ export const githubUrlToSelfUrl = (u: string): string => {
     );
   }
 };
+
+export const isValidUrl = (url: string): URL | undefined => {
+  try {
+    return new URL(url);
+  } catch {}
+};
