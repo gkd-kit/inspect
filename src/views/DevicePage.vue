@@ -4,12 +4,11 @@ import { toValidURL } from '@/utils/check';
 import { message } from '@/utils/discrete';
 import { errorWrap } from '@/utils/error';
 import { delay } from '@/utils/others';
-import { checkSelector } from '@/utils/selector';
 import { screenshotStorage, snapshotStorage } from '@/utils/storage';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
-import { useDebounceFn, useStorage, useTitle } from '@vueuse/core';
+import { useStorage, useTitle } from '@vueuse/core';
 import JSON5 from 'json5';
 import {
   NButton,
@@ -257,14 +256,9 @@ const actionOptions: {
 ];
 const clickAction = shallowReactive({
   selector: ``,
-  selectorValid: false,
   action: 'click',
   quickFind: false,
 });
-const checkSelectorValid = useDebounceFn(() => {
-  clickAction.selectorValid = checkSelector(clickAction.selector);
-}, 500);
-watch(() => clickAction.selector.trim(), checkSelectorValid);
 const execSelector = useTask(async () => {
   const result = await api.execSelector({ ...clickAction });
   if (result.message) {
@@ -361,7 +355,6 @@ const placeholder = `
     positive-text="确认"
     :positiveButtonProps="{
       loading: execSelector.loading,
-      disabled: !clickAction.selectorValid,
       onClick() {
         execSelector.invoke();
       },
