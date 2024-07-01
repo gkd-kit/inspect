@@ -138,6 +138,7 @@ export const parseSelector = (source: string): Selector => {
       });
     }
   }
+
   const selector: Selector = {
     tracks: ms.tracks,
     trackIndex: ms.trackIndex,
@@ -146,7 +147,9 @@ export const parseSelector = (source: string): Selector => {
     qfIdValue: ms.qfIdValue,
     qfVidValue: ms.qfVidValue,
     qfTextValue: ms.qfTextValue,
-    canCopy: true, // TODO check copy
+    canCopy: !ms.binaryExpressions.some((b) =>
+      b.properties.some((p) => p.startsWith('_')),
+    ),
     toString: () => ms.toString(),
     match: (node) => {
       return ms.match(node, transform) ?? undefined;
