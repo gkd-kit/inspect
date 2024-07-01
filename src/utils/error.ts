@@ -29,7 +29,7 @@ export const errorTry = <T extends (...args: any[]) => any>(fn: T) => {
     try {
       fn(...args);
     } catch (e) {
-      console.error(e);
+      console.log({ error: e });
     }
   };
 };

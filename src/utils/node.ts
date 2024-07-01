@@ -212,3 +212,15 @@ export const getGkdAppInfo = (snapshot: Snapshot): AppInfo => {
     }
   );
 };
+
+export const isRawNode = (node: any): node is RawNode => {
+  if (
+    node &&
+    typeof node === 'object' &&
+    typeof node.id === 'number' &&
+    node.attr
+  ) {
+    return true;
+  }
+  return false;
+};

@@ -2,12 +2,24 @@ import {
   MultiplatformSelector,
   MultiplatformTransform,
   updateWasmToMatches,
+  getStringInvoke,
+  getIntInvoke,
+  getStringAttr,
+  initDefaultTypeInfo,
+  MismatchExpressionTypeException,
+  MismatchOperatorTypeException,
+  MismatchParamTypeException,
+  UnknownIdentifierException,
+  UnknownIdentifierMethodException,
+  UnknownMemberException,
+  UnknownMemberMethodException,
 } from '@gkd-kit/selector';
 import type { RawNode } from './types';
 import matchesInstantiate from '@gkd-kit/wasm_matches';
 import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
 import store from './store';
 import { settingsStorage } from './storage';
+import { isRawNode } from './node';
 
 export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
@@ -27,14 +39,32 @@ export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   });
 
 const transform = new MultiplatformTransform<RawNode>(
-  (node, name) => {
-    const [key, subKey] = name.split('.');
-    if (subKey) {
-      // @ts-ignore
-      return node.attr[key]?.[subKey];
+  (target, name) => {
+    if (typeof target === 'string') {
+      return getStringAttr(target, name);
     }
-    // @ts-ignore
-    return node.attr[key];
+    if (isRawNode(target)) {
+      if (name == '_id') return target.id;
+      if (name == '_pid') return target.pid;
+      if (name == 'parent') return target.parent ?? null;
+      return Reflect.get(target.attr, name) ?? null;
+    }
+    return null;
+  },
+  (target, name, args) => {
+    if (typeof target === 'string') {
+      return getStringInvoke(target, name, args);
+    }
+    if (typeof target === 'number') {
+      return getIntInvoke(target, name, args);
+    }
+    if (isRawNode(target)) {
+      if (name === 'getChild') {
+        const i = args.asJsReadonlyArrayView()[0];
+        return target.children[i] ?? null;
+      }
+    }
+    return null;
   },
   (node) => node.attr.name,
   (node) => node.children,
@@ -58,22 +88,54 @@ export type Selector = {
 
 export type ConnectKeyType = '+' | '-' | '>' | '<' | '<<';
 
+const typeInfo = initDefaultTypeInfo();
+
 export const parseSelector = (source: string): Selector => {
   const ms = MultiplatformSelector.Companion.parse(source);
-  for (const [name, operator, type] of ms.binaryExpressions) {
-    if (operator == '~=' && !store.wasmSupported) {
+  for (const exp of ms.binaryExpressions) {
+    if (exp.operator.value.key == '~=' && !store.wasmSupported) {
       if (!settingsStorage.ignoreWasmWarn) {
         store.wasmErrorDlgVisible = true;
+        break;
       }
     }
-    if (!allowPropertyTypes[name]) {
-      throw `未知属性: ${name}`;
+  }
+  const error = ms.checkType(typeInfo.contextType);
+  if (error != null) {
+    if (error instanceof MismatchExpressionTypeException) {
+      throw new Error('不匹配表达式类型:' + error.exception.stringify(), {
+        cause: error,
+      });
     }
-    if (
-      type != PrimitiveValue.NullValue.type &&
-      allowPropertyTypes[name] != type
-    ) {
-      throw `非法类型: ${name}`;
+    if (error instanceof MismatchOperatorTypeException) {
+      throw new Error('不匹配操作符类型:' + error.exception.stringify(), {
+        cause: error,
+      });
+    }
+    if (error instanceof MismatchParamTypeException) {
+      throw new Error('不匹配参数类型:' + error.call.stringify(), {
+        cause: error,
+      });
+    }
+    if (error instanceof UnknownIdentifierException) {
+      throw new Error('未知属性:' + error.value.value, {
+        cause: error,
+      });
+    }
+    if (error instanceof UnknownIdentifierMethodException) {
+      throw new Error('未知方法:' + error.value.value, {
+        cause: error,
+      });
+    }
+    if (error instanceof UnknownMemberException) {
+      throw new Error('未知属性:' + error.value.property, {
+        cause: error,
+      });
+    }
+    if (error instanceof UnknownMemberMethodException) {
+      throw new Error('未知方法:' + error.value.property, {
+        cause: error,
+      });
     }
   }
   const selector: Selector = {
@@ -84,10 +146,10 @@ export const parseSelector = (source: string): Selector => {
     qfIdValue: ms.qfIdValue,
     qfVidValue: ms.qfVidValue,
     qfTextValue: ms.qfTextValue,
-    canCopy: ms.propertyNames.every((name) => allowPropertyNames.has(name)),
+    canCopy: true, // TODO check copy
     toString: () => ms.toString(),
     match: (node) => {
-      return ms.match(node, transform) ?? void 0;
+      return ms.match(node, transform) ?? undefined;
     },
     querySelectorAll: (node) => {
       return transform.querySelectorAll(node, ms);
@@ -101,74 +163,4 @@ export const parseSelector = (source: string): Selector => {
 
 export const checkSelector = (source: string) => {
   return MultiplatformSelector.Companion.parseOrNull(source) != null;
-};
-
-const allowPropertyNames = new Set([
-  'id',
-  'vid',
-
-  'name',
-  'text',
-  'text.length',
-  'desc',
-  'desc.length',
-
-  'clickable',
-  'focusable',
-  'checkable',
-  'checked',
-  'editable',
-  'longClickable',
-  'visibleToUser',
-
-  'left',
-  'top',
-  'right',
-  'bottom',
-  'width',
-  'height',
-
-  'index',
-  'depth',
-  'childCount',
-]);
-
-const PrimitiveValue = {
-  StringValue: { type: 'string' },
-  IntValue: { type: 'int' },
-  BooleanValue: { type: 'boolean' },
-  NullValue: { type: 'null' },
-};
-
-const allowPropertyTypes: Record<string, string> = {
-  id: PrimitiveValue.StringValue.type,
-  vid: PrimitiveValue.StringValue.type,
-
-  name: PrimitiveValue.StringValue.type,
-  text: PrimitiveValue.StringValue.type,
-  'text.length': PrimitiveValue.IntValue.type,
-  desc: PrimitiveValue.StringValue.type,
-  'desc.length': PrimitiveValue.IntValue.type,
-
-  clickable: PrimitiveValue.BooleanValue.type,
-  focusable: PrimitiveValue.BooleanValue.type,
-  checkable: PrimitiveValue.BooleanValue.type,
-  checked: PrimitiveValue.BooleanValue.type,
-  editable: PrimitiveValue.BooleanValue.type,
-  longClickable: PrimitiveValue.BooleanValue.type,
-  visibleToUser: PrimitiveValue.BooleanValue.type,
-
-  left: PrimitiveValue.IntValue.type,
-  top: PrimitiveValue.IntValue.type,
-  right: PrimitiveValue.IntValue.type,
-  bottom: PrimitiveValue.IntValue.type,
-  width: PrimitiveValue.IntValue.type,
-  height: PrimitiveValue.IntValue.type,
-
-  index: PrimitiveValue.IntValue.type,
-  depth: PrimitiveValue.IntValue.type,
-  childCount: PrimitiveValue.IntValue.type,
-
-  _id: PrimitiveValue.IntValue.type,
-  _pid: PrimitiveValue.IntValue.type,
 };

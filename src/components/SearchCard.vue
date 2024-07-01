@@ -27,6 +27,7 @@ import { computed, onMounted, shallowReactive, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import DraggableCard from './DraggableCard.vue';
 import { gkdWidth, vw } from '@/utils/size';
+import { SelectorCheckException } from '@gkd-kit/selector';
 
 const router = useRouter();
 const route = useRoute();
@@ -65,6 +66,9 @@ const searchSelector = (text: string) => {
     (e) => {
       if (typeof e == 'string') {
         return e;
+      }
+      if (e instanceof Error && e.cause instanceof SelectorCheckException) {
+        return e.message;
       }
       return `非法选择器`;
     },
