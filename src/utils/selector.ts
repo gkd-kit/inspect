@@ -5,6 +5,7 @@ import {
   getStringInvoke,
   getIntInvoke,
   getStringAttr,
+  getBooleanInvoke,
   initDefaultTypeInfo,
   MismatchExpressionTypeException,
   MismatchOperatorTypeException,
@@ -52,11 +53,14 @@ const transform = new MultiplatformTransform<RawNode>(
     return null;
   },
   (target, name, args) => {
-    if (typeof target === 'string') {
-      return getStringInvoke(target, name, args);
-    }
     if (typeof target === 'number') {
       return getIntInvoke(target, name, args);
+    }
+    if (typeof target === 'boolean') {
+      return getBooleanInvoke(target, name, args);
+    }
+    if (typeof target === 'string') {
+      return getStringInvoke(target, name, args);
     }
     if (isRawNode(target)) {
       if (name === 'getChild') {
