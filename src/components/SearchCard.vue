@@ -3,7 +3,7 @@ import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
-import type { Selector } from '@/utils/selector';
+import type { GkdSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { githubJpgStorage, importStorage } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
@@ -38,7 +38,10 @@ const props = withDefaults(
     rootNode: RawNode;
     focusNode?: RawNode;
     onUpdateFocusNode?: (data: RawNode) => void;
-    onUpdateTrack?: (track: { selector: Selector; nodes: RawNode[] }) => void;
+    onUpdateTrack?: (track: {
+      selector: GkdSelector;
+      nodes: RawNode[];
+    }) => void;
   }>(),
   {
     onUpdateFocusNode: buildEmptyFn,
@@ -55,7 +58,7 @@ type SearchResult =
     }
   | {
       key: number;
-      selector: Selector;
+      selector: GkdSelector;
       nodes: RawNode[][];
     };
 const selectorResults = shallowReactive<SearchResult[]>([]);
@@ -130,7 +133,7 @@ const refreshExpandedKeys = () => {
   if (!Array.isArray(newNode)) {
     props.onUpdateFocusNode(newNode);
   } else if (typeof newResult.selector == 'object' && Array.isArray(newNode)) {
-    props.onUpdateFocusNode(newNode[newResult.selector.trackIndex]);
+    props.onUpdateFocusNode(newNode[newResult.selector.targetIndex]);
   }
   const allKeys = new Set(selectorResults.map((s) => s.key));
   const newKeys = expandedKeys.value.filter((k) => allKeys.has(k));
@@ -163,7 +166,11 @@ onMounted(async () => {
 });
 
 const generateRules = errorTry(
-  async (result: { key: number; selector: Selector; nodes: RawNode[][] }) => {
+  async (result: {
+    key: number;
+    selector: GkdSelector;
+    nodes: RawNode[][];
+  }) => {
     let jpgUrl = githubJpgStorage[props.snapshot.id];
     if (jpgUrl) {
       jpgUrl = githubUrlToSelfUrl(jpgUrl);
@@ -363,7 +370,7 @@ const shareResult = (result: SearchResult) => {
             <template
               v-if="
                 typeof result.selector == 'string' ||
-                result.selector.tracks.length <= 1
+                result.selector.connectKeys.length === 0
               "
             >
               <NButton
@@ -405,15 +412,15 @@ const shareResult = (result: SearchResult) => {
                 </NButton>
                 <NButton
                   @click="
-                    onUpdateFocusNode(trackNodes[result.selector.trackIndex])
+                    onUpdateFocusNode(trackNodes[result.selector.targetIndex])
                   "
                   size="small"
                   :class="{
                     'color-[#00F]':
-                      trackNodes[result.selector.trackIndex] === focusNode,
+                      trackNodes[result.selector.targetIndex] === focusNode,
                   }"
                 >
-                  {{ getNodeLabel(trackNodes[result.selector.trackIndex]) }}
+                  {{ getNodeLabel(trackNodes[result.selector.targetIndex]) }}
                 </NButton>
               </NButtonGroup>
             </template>

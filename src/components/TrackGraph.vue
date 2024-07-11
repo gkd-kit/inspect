@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import '@/utils/g6';
 import { getLimitLabel } from '@/utils/node';
-import type { ConnectKeyType, Selector } from '@/utils/selector';
+import type { ConnectKeyType, GkdSelector } from '@/utils/selector';
 import type { RawNode } from '@/utils/types';
 import type { TreeGraph, TreeGraphData } from '@antv/g6';
 import G6 from '@antv/g6';
@@ -10,7 +10,7 @@ import { computed, onUnmounted, shallowRef, watchEffect } from 'vue';
 const props = withDefaults(
   defineProps<{
     track: {
-      selector: Selector;
+      selector: GkdSelector;
       nodes: RawNode[];
     };
   }>(),
@@ -18,8 +18,8 @@ const props = withDefaults(
 );
 
 const visibleNodes = computed(() => {
-  const nodes = props.track.nodes;
-  const trackId = props.track.nodes[props.track.selector.trackIndex]?.id;
+  const nodes = Array.from(props.track.nodes).reverse();
+  const trackId = props.track.nodes[props.track.selector.targetIndex]?.id;
   const topNode = (() => {
     const tempNode = nodes.reduce((p, c) => {
       return c.id < p.id ? c : p;
@@ -165,9 +165,7 @@ watchEffect(() => {
       const count = Number(config.count);
       let curveOffset = 40;
       if (connect.startsWith('<<')) {
-        const c = props.track.nodes.find(
-          (n) => n.id.toString() == config.source,
-        )!;
+        const c = nodes.find((n) => n.id.toString() == config.source)!;
         let p = c.parent;
         let i = 1;
         while (p) {
@@ -214,7 +212,7 @@ watchEffect(() => {
     ...visibleNodes.value[0],
   });
   graph.render();
-  const nodes = Array.from(props.track.nodes).reverse();
+  const nodes = Array.from(props.track.nodes);
   const connectKeys = props.track.selector.connectKeys;
   const edgeCountMap: Record<string, number> = {};
   nodes.forEach((n, i) => {

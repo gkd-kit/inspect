@@ -23,7 +23,7 @@ import {
   exportSnapshotAsJpgUrl,
   exportSnapshotAsImportId,
 } from '@/utils/export';
-import type { Selector } from '@/utils/selector';
+import type { GkdSelector } from '@/utils/selector';
 import { NModal, NIcon } from 'naive-ui';
 import MultiFocusCard from '@/components/MultiFocusCard.vue';
 import { watch, defineAsyncComponent } from 'vue';
@@ -133,7 +133,7 @@ const onDelete = async () => {
 };
 
 const track = shallowRef<{
-  selector: Selector;
+  selector: GkdSelector;
   nodes: RawNode[];
 }>();
 const trackVisible = shallowRef(false);
