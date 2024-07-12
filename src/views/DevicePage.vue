@@ -399,11 +399,11 @@ const placeholder = `
     </div>
   </NModal>
   <div flex flex-col p-10px gap-10px h-full>
-    <NSpace>
-      <RouterLink to="/">
-        <NButton>
+    <div flex items-center gap-24px>
+      <a href="/" flex ml-12px title="首页">
+        <NButton text>
           <template #icon>
-            <NIcon>
+            <NIcon :size="24">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -417,12 +417,12 @@ const placeholder = `
             </NIcon>
           </template>
         </NButton>
-      </RouterLink>
+      </a>
       <NInputGroup>
         <NInput
           v-model:value="link"
           placeholder="请输入设备地址"
-          :style="{ minWidth: `250px` }"
+          :style="{ width: `200px` }"
           @keyup.enter="connect.invoke"
         ></NInput>
         <NButton @click="connect.invoke" :loading="connect.loading">
@@ -448,7 +448,7 @@ const placeholder = `
         <NButton @click="showSubsModel = true"> 修改内存订阅 </NButton>
         <NButton @click="showSelectorModel = true"> 执行选择器 </NButton>
       </template>
-    </NSpace>
+    </div>
     <NDataTable
       striped
       flexHeight

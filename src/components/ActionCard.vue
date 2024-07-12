@@ -95,7 +95,7 @@ const copy = async (content: string) => {
 </script>
 <template>
   <div flex gap-12px flex-nowrap>
-    <a v-if="showPreview" target="_blank" :href="previewUrl">
+    <a v-if="showPreview" flex target="_blank" :href="previewUrl">
       <NButton size="small">
         <template #icon>
           <NIcon>

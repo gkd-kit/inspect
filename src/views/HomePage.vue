@@ -23,6 +23,7 @@ import type { Snapshot } from '@/utils/types';
 import { githubUrlToSelfUrl } from '@/utils/url';
 import {
   NButton,
+  NCheckbox,
   NDataTable,
   NIcon,
   NInput,
@@ -31,9 +32,8 @@ import {
   NPopover,
   NSpace,
   NSwitch,
-  NCheckbox,
-  type PaginationProps,
   type DataTableColumns,
+  type PaginationProps,
 } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import {
@@ -45,7 +45,7 @@ import {
   watch,
   watchEffect,
 } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
@@ -327,10 +327,10 @@ const settingsDlgShow = shallowRef(false);
         </template>
       </NSpace>
       <div flex-1></div>
-      <NSpace>
-        <NButton title="设置" @click="settingsDlgShow = true">
+      <div flex gap-24px items-center pr-8px>
+        <NButton text title="设置" @click="settingsDlgShow = true">
           <template #icon>
-            <NIcon>
+            <NIcon :size="24">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -346,30 +346,19 @@ const settingsDlgShow = shallowRef(false);
         </NButton>
         <NPopover>
           <template #trigger>
-            <NButton>
+            <NButton text>
               <template #icon>
-                <NIcon>
+                <NIcon :size="24">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    viewBox="0 0 512 512"
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
                   >
                     <path
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="32"
-                      d="M256 112v288"
-                    ></path>
-                    <path
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="32"
-                      d="M400 256H112"
-                    ></path>
+                      fill="currentColor"
+                      d="m14 12l-4-4v3H2v2h8v3m10 2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3h2V6h12v12H6v-3H4v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"
+                    />
                   </svg>
                 </NIcon>
               </template>
@@ -384,10 +373,10 @@ const settingsDlgShow = shallowRef(false);
             </NButton>
           </NSpace>
         </NPopover>
-        <RouterLink to="/device" title="连接设备">
-          <NButton>
+        <a flex href="/device" title="连接设备">
+          <NButton text>
             <template #icon>
-              <NIcon>
+              <NIcon :size="24">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -401,33 +390,16 @@ const settingsDlgShow = shallowRef(false);
               </NIcon>
             </template>
           </NButton>
-        </RouterLink>
-
-        <NButton v-if="0" title="创建分享" @click="shareDlgShow = true">
-          <template #icon>
-            <NIcon>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81c1.66 0 3-1.34 3-3s-1.34-3-3-3s-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65c0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
-                  fill="currentColor"
-                ></path>
-              </svg>
-            </NIcon>
-          </template>
-        </NButton>
-
+        </a>
         <a
+          flex
           href="https://github.com/gkd-kit/inspect"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <NButton>
+          <NButton text>
             <template #icon>
-              <NIcon>
+              <NIcon :size="24">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -442,7 +414,7 @@ const settingsDlgShow = shallowRef(false);
             </template>
           </NButton>
         </a>
-      </NSpace>
+      </div>
     </div>
     <NDataTable
       striped
