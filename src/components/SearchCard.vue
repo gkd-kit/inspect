@@ -179,7 +179,7 @@ const generateRules = errorTry(
     const zipUrl = importId ? getImportUrl(importId) : undefined;
 
     const s = result.selector;
-    const t = result.nodes[0][0];
+    const t = result.nodes[0].at(-1)!;
 
     const quickFind = [
       (t.quickFind ?? t.idQf) && t.attr.id && s.qfIdValue,
