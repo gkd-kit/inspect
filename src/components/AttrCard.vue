@@ -79,7 +79,7 @@ const attrs = computed(() => {
 
 <template>
   <DraggableCard
-    :initialValue="{ top: 75, right: 10 }"
+    :initialValue="{ top: 40, right: 10 }"
     v-slot="{ onRef }"
     class="box-shadow-dim"
   >

@@ -26,7 +26,8 @@ import ErrorDlg from './components/ErrorDlg.vue';
     min-width: auto;
   }
 }
-.gkd_code {
+.gkd_code,
+[gkd_code] {
   font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace !important;
 }
 

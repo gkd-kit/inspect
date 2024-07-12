@@ -156,7 +156,7 @@ const columns: DataTableColumns<Snapshot> = reactive([
     key: `actions`,
     title: `操作`,
     fixed: 'right',
-    width: `255px`,
+    width: `160px`,
     render(row) {
       return <ActionCard snapshot={row} onDelete={updateSnapshots} />;
     },

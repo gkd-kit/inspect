@@ -231,7 +231,7 @@ const shareResult = (result: SearchResult) => {
 <template>
   <DraggableCard
     :initialValue="{
-      top: 75,
+      top: 40,
       right: Math.max(315, 12 * vw + 135),
       width: Math.max(480, gkdWidth * 0.3),
     }"
