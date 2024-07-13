@@ -260,7 +260,10 @@ const clickAction = shallowReactive({
   quickFind: false,
 });
 const execSelector = useTask(async () => {
-  const result = await api.execSelector({ ...clickAction });
+  const result = await api.execSelector({
+    ...clickAction,
+    fastQuery: clickAction.quickFind,
+  });
   if (result.message) {
     message.success(`操作成功:` + result.message);
     return;
@@ -430,7 +433,7 @@ const placeholder = `
         </NButton>
       </NInputGroup>
       <template v-if="device">
-        <div class="h-full" flex flex-items-center>
+        <div whitespace-nowrap>
           {{ `已连接 ${device.manufacturer} Android ${device.release}` }}
         </div>
         <NButton
