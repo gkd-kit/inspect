@@ -171,7 +171,6 @@ watch(
       "
       @updateFocusNodes="multiFocus = $event"
     />
-
     <WindowCard
       v-if="snapshot && rootNode"
       :rootNode="rootNode"

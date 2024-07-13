@@ -1,5 +1,10 @@
 <script setup lang="tsx">
-import { getAppInfo, getDevice, getNodeLabel } from '@/utils/node';
+import {
+  getAppInfo,
+  getDevice,
+  getNodeLabel,
+  getGkdAppInfo,
+} from '@/utils/node';
 import { buildEmptyFn, copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import type { TreeInst } from 'naive-ui';
@@ -84,6 +89,7 @@ const isSystem = computed(() => {
   return getAppInfo(props.snapshot).isSystem;
 });
 const activityId = computed(() => {
+  if (!props.snapshot.activityId || !props.snapshot.appId) return '';
   if (
     props.snapshot.activityId.startsWith(props.snapshot.appId) &&
     props.snapshot.activityId.length > props.snapshot.appId.length
@@ -123,6 +129,19 @@ const activityId = computed(() => {
             </div>
           </template>
           设备名称
+        </NTooltip>
+        <div w-1px bg-gray h-12px></div>
+        <NTooltip>
+          <template #trigger>
+            <div
+              :class="{
+                'opacity-50': !getGkdAppInfo(snapshot).versionName,
+              }"
+            >
+              {{ getGkdAppInfo(snapshot).versionName || 'null' }}
+            </div>
+          </template>
+          GKD 版本
         </NTooltip>
         <div w-1px bg-gray h-12px></div>
         <div flex items-center gap-2px max-w-120px>
@@ -182,8 +201,13 @@ const activityId = computed(() => {
         <div w-1px bg-gray h-12px></div>
         <NTooltip>
           <template #trigger>
-            <div @click="copy(activityId)">
-              {{ activityId }}
+            <div
+              @click="copy(activityId)"
+              :class="{
+                'opacity-50': !activityId,
+              }"
+            >
+              {{ activityId || 'null' }}
             </div>
           </template>
           界面ID
@@ -206,6 +230,5 @@ const activityId = computed(() => {
       :nodeProps="(treeNodeProps as any)"
       :renderLabel="(renderLabel as any)"
     />
-    <div h-20px></div>
   </div>
 </template>
