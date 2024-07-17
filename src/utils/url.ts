@@ -58,18 +58,24 @@ export const getImportFileUrl = (importId: number | string) => {
   return `https://github.com/user-attachments/files/${importId}/file.zip`;
 };
 
-export const githubImageUrlReg =
+const githubImageUrlReg =
   /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/([0-9]+)\/([0-9a-z-]+)$/;
 
+const assetBaseUrl = `https://github.com/user-attachments/assets/`;
+
 export const githubUrlToSelfUrl = (u: string): string => {
+  if (u.startsWith(assetBaseUrl)) {
+    return `https://e.gkd.li/` + u.substring(assetBaseUrl.length);
+  }
   const { 1: userId, 2: imgAssetId } = u.match(githubImageUrlReg) || [];
   if (userId && imgAssetId) {
     return `https://m.gkd.li/${userId}/${imgAssetId}`;
   } else {
-    throw new Error(
+    console.error(
       `github url ${u} should come from gkd-kit/inspect files/assets`,
     );
   }
+  return u;
 };
 
 export const isValidUrl = (url: string): URL | undefined => {
