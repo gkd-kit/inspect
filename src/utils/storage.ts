@@ -197,7 +197,7 @@ export const settingsStorage = useReactiveStorage<{
 });
 
 const snapshotsKey = 'snapshots-cache-version';
-const snapshotsVersion = 'v1';
+const snapshotsVersion = 'v2';
 if (localStorage.getItem(snapshotsKey) !== snapshotsVersion) {
   localStorage.setItem(snapshotsKey, snapshotsVersion);
   Promise.all(dataInitTasks).then(async () => {
