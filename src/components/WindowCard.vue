@@ -11,6 +11,7 @@ import type { TreeInst } from 'naive-ui';
 import { NTooltip, NTree, NIcon, NButton } from 'naive-ui';
 import type { HTMLAttributes } from 'vue';
 import { computed, nextTick, shallowRef, watch } from 'vue';
+import GapList from '@/components/GapList';
 
 const props = withDefaults(
   defineProps<{
@@ -103,7 +104,10 @@ const activityId = computed(() => {
 <template>
   <div flex flex-col>
     <div flex items-center px-8px>
-      <div flex flex-wrap items-center gap-8px gkd_code>
+      <GapList flex flex-wrap items-center gap-8px gkd_code>
+        <template #gap="{ index }">
+          <div w-1px bg-gray h-12px v-if="index > 0"></div>
+        </template>
         <a href="/" flex title="首页" mr-4px>
           <NButton text>
             <template #icon>
@@ -130,7 +134,7 @@ const activityId = computed(() => {
           </template>
           设备名称
         </NTooltip>
-        <div w-1px bg-gray h-12px></div>
+
         <NTooltip>
           <template #trigger>
             <div
@@ -143,7 +147,7 @@ const activityId = computed(() => {
           </template>
           GKD 版本
         </NTooltip>
-        <div w-1px bg-gray h-12px></div>
+
         <div flex items-center gap-2px max-w-120px>
           <NTooltip v-if="isSystem">
             <template #trigger>
@@ -171,7 +175,7 @@ const activityId = computed(() => {
             应用名称
           </NTooltip>
         </div>
-        <div w-1px bg-gray h-12px></div>
+
         <NTooltip>
           <template #trigger>
             <div @click="copy(getAppInfo(snapshot).versionName)">
@@ -180,7 +184,7 @@ const activityId = computed(() => {
           </template>
           版本名称
         </NTooltip>
-        <div w-1px bg-gray h-12px></div>
+
         <NTooltip>
           <template #trigger>
             <div @click="copy(getAppInfo(snapshot).versionCode.toString())">
@@ -189,7 +193,7 @@ const activityId = computed(() => {
           </template>
           版本代码
         </NTooltip>
-        <div w-1px bg-gray h-12px></div>
+
         <NTooltip>
           <template #trigger>
             <div @click="copy(snapshot.appId)">
@@ -198,7 +202,7 @@ const activityId = computed(() => {
           </template>
           应用ID
         </NTooltip>
-        <div w-1px bg-gray h-12px></div>
+
         <NTooltip>
           <template #trigger>
             <div
@@ -212,7 +216,7 @@ const activityId = computed(() => {
           </template>
           界面ID
         </NTooltip>
-      </div>
+      </GapList>
       <div flex-1></div>
       <div ml-8px>
         <slot></slot>
