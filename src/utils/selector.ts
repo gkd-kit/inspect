@@ -15,6 +15,8 @@ import {
   UnknownMemberException,
   UnknownMemberMethodException,
   Context,
+  MatchOption,
+  FastQuery,
 } from '@gkd-kit/selector';
 import type { RawNode } from './types';
 import matchesInstantiate from '@gkd-kit/wasm_matches';
@@ -63,6 +65,9 @@ const transform = Transform.Companion.multiplatformBuild<RawNode>(
     if (target instanceof Context) {
       if (name === 'prev') {
         return target.prev;
+      }
+      if (name === 'current') {
+        return target.current;
       }
       return getNodeAttr(target.current, name);
     }
@@ -118,7 +123,8 @@ export type GkdSelector = {
 
 export type ConnectKeyType = '+' | '-' | '>' | '<' | '<<';
 
-const typeInfo = initDefaultTypeInfo();
+const typeInfo = initDefaultTypeInfo(true).globalType;
+const matchOption = new MatchOption(false, false);
 
 export const parseSelector = (source: string): GkdSelector => {
   const s = Selector.Companion.parse(source);
@@ -134,17 +140,22 @@ export const parseSelector = (source: string): GkdSelector => {
   const selector: GkdSelector = {
     s,
     targetIndex: s.targetIndex,
-    connectKeys: s.connectKeys,
-    canQf: s.quickFindValue.canQf,
-    qfIdValue: s.quickFindValue.id,
-    qfVidValue: s.quickFindValue.vid,
-    qfTextValue: s.quickFindValue.text,
+    connectKeys: s.connectWrappers.map((c) => c.segment.operator.key),
+    canQf: !!s.quickFindValue?.value,
+    qfIdValue:
+      s.quickFindValue instanceof FastQuery.Id ? s.quickFindValue.value : null,
+    qfVidValue:
+      s.quickFindValue instanceof FastQuery.Vid ? s.quickFindValue.value : null,
+    qfTextValue:
+      s.quickFindValue instanceof FastQuery.Text
+        ? s.quickFindValue.value
+        : null,
     canCopy: !s.binaryExpressions.some((b) =>
       b.properties.some((p) => p.startsWith('_')),
     ),
     toString: () => s.stringify(),
     match: (node) => {
-      return s.match(node, transform) ?? undefined;
+      return s.match(node, transform, matchOption) ?? undefined;
     },
     querySelectorAll: (node) => {
       return transform.querySelectorAllArray(node, s);
@@ -163,7 +174,7 @@ export const checkSelector = (source: string) => {
 };
 
 const checkError = (s: Selector) => {
-  const error = s.checkType(typeInfo.contextType);
+  const error = s.checkType(typeInfo);
   if (error != null) {
     if (error instanceof MismatchExpressionTypeException) {
       throw new Error('不匹配表达式类型:' + error.exception.stringify(), {

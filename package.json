@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "@antv/g6": "4.8.24",
-    "@gkd-kit/selector": "0.3.3",
+    "@gkd-kit/selector": "0.4.1",
     "@gkd-kit/wasm_matches": "0.0.1",
     "@rushstack/eslint-patch": "1.10.3",
     "@tsconfig/node20": "20.1.4",
