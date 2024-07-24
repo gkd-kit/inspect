@@ -14,6 +14,8 @@ import {
   UnknownIdentifierMethodException,
   UnknownMemberException,
   UnknownMemberMethodException,
+  UnknownIdentifierMethodParamsException,
+  UnknownMemberMethodParamsException,
   Context,
   MatchOption,
   FastQuery,
@@ -192,17 +194,17 @@ const checkError = (s: Selector) => {
       });
     }
     if (error instanceof UnknownIdentifierException) {
-      throw new Error('未知属性:' + error.value.value, {
+      throw new Error('未知属性:' + error.value.stringify(), {
         cause: error,
       });
     }
     if (error instanceof UnknownIdentifierMethodException) {
-      throw new Error('未知方法:' + error.value.value, {
+      throw new Error('未知方法:' + error.value.stringify(), {
         cause: error,
       });
     }
     if (error instanceof UnknownMemberException) {
-      throw new Error('未知属性:' + error.value.property, {
+      throw new Error('未知属性:' + error.value.stringify(), {
         cause: error,
       });
     }
@@ -211,5 +213,17 @@ const checkError = (s: Selector) => {
         cause: error,
       });
     }
+    if (error instanceof UnknownIdentifierMethodParamsException) {
+      throw new Error('未知方法参数:' + error.value.stringify(), {
+        cause: error,
+      });
+    }
+    if (error instanceof UnknownMemberMethodParamsException) {
+      throw new Error('未知方法参数:' + error.value.stringify(), {
+        cause: error,
+      });
+    }
+    // @ts-ignore
+    throw new Error('未知错误:' + error.message, { cause: error });
   }
 };
