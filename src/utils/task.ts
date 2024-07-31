@@ -1,4 +1,3 @@
-import { customRef, shallowReactive, toRaw } from 'vue';
 import { delay } from './others';
 import type { PrimitiveType } from './types';
 

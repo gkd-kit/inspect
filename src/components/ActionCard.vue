@@ -17,8 +17,6 @@ import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
 import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
 import { NButton, NIcon, NPopconfirm, NPopover, NSpace } from 'naive-ui';
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
 
 const props = withDefaults(
   defineProps<{

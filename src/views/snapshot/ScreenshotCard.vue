@@ -2,8 +2,6 @@
 import { findNodesByXy } from '@/utils/node';
 import { buildEmptyFn } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
-import { refDebounced, useWindowSize } from '@vueuse/core';
-import { computed, shallowRef } from 'vue';
 
 const props = withDefaults(
   defineProps<{

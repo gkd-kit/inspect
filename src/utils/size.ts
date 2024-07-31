@@ -1,6 +1,3 @@
-import { useWindowSize } from '@vueuse/core';
-import { computed } from 'vue';
-
 const windowSize = useWindowSize();
 export const vw = computed(() => windowSize.width.value / 100);
 // const vh = computed(() => windowSize.width.value / 100);

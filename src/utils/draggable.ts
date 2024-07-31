@@ -1,11 +1,3 @@
-import {
-  shallowRef,
-  shallowReactive,
-  onMounted,
-  onUnmounted,
-  watch,
-} from 'vue';
-
 export const useDragMove = (xFilter: (x: number) => boolean) => {
   const target = shallowRef<HTMLElement>();
   const prevOffset = {

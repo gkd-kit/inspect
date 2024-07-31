@@ -5,6 +5,8 @@ import { fileURLToPath, URL } from 'node:url';
 import unocss from 'unocss/vite';
 import { defineConfig } from 'vite';
 import { _404Page, commit, mirror } from './plugins';
+import components from 'unplugin-vue-components/vite';
+import autoImport from 'unplugin-auto-import/vite';
 
 export default defineConfig(() => {
   const useMirror = process.env.MIRROR == `ON`;
@@ -13,6 +15,20 @@ export default defineConfig(() => {
       vue(),
       vueJsx(),
       unocss(),
+      autoImport({
+        dts: 'auto-import.d.ts',
+        imports: ['vue', 'vue-router', '@vueuse/core'],
+        eslintrc: {
+          enabled: true,
+          globalsPropValue: 'readonly',
+          filepath: '.eslintrc-auto-import.json',
+        },
+        dirs: [],
+      }),
+      components({
+        dts: 'auto-import-components.d.ts',
+        dirs: [],
+      }),
       legacy({ renderLegacyChunks: false, modernPolyfills: true }),
       commit(),
       useMirror ? mirror() : undefined,

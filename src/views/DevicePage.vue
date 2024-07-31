@@ -8,7 +8,6 @@ import { screenshotStorage, snapshotStorage } from '@/utils/storage';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
-import { useStorage, useTitle } from '@vueuse/core';
 import JSON5 from 'json5';
 import {
   NButton,
@@ -25,14 +24,6 @@ import {
 } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
-import {
-  onMounted,
-  shallowReactive,
-  shallowRef,
-  watch,
-  watchEffect,
-} from 'vue';
-import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const title = useTitle(`新设备`);

@@ -1,4 +1,4 @@
-import { defineComponent, h, computed, type SlotsType, type VNode } from 'vue';
+import type { SlotsType } from 'vue';
 
 const emptyArray = [] as [];
 const GapList = defineComponent<

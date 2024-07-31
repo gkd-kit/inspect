@@ -23,9 +23,7 @@ import {
   NSpace,
 } from 'naive-ui';
 import * as base64url from 'universal-base64url';
-import { computed, onMounted, shallowReactive, shallowRef } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import DraggableCard from './DraggableCard.vue';
+import DraggableCard from '@/components/DraggableCard.vue';
 import { gkdWidth, vw } from '@/utils/size';
 import { SelectorCheckException } from '@gkd-kit/selector';
 

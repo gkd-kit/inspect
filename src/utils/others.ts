@@ -1,7 +1,6 @@
-import { onMounted, onUnmounted } from 'vue';
+import type { LocationQuery } from 'vue-router';
 import { message } from './discrete';
 import root from './root';
-import type { LocationQuery } from 'vue-router';
 
 export const obj2form = (...objs: Record<string, unknown>[]) => {
   const fd = new FormData();

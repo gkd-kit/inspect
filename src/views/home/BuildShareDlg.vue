@@ -2,11 +2,8 @@
 import { uploadAsset } from '@/utils/github';
 import { copy } from '@/utils/others';
 import { useTask } from '@/utils/task';
-import { useDebounceFn } from '@vueuse/core';
 import JSON5 from 'json5';
 import { NButton, NInput, NModal } from 'naive-ui';
-import { shallowRef, watchEffect } from 'vue';
-import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
 
 const router = useRouter();

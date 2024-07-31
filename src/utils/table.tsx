@@ -1,12 +1,12 @@
 import dayjs from 'dayjs';
 import { NEllipsis } from 'naive-ui';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
-import { shallowReactive, withDirectives } from 'vue';
-import { rect } from './directives';
+import { vRect } from './directives';
 import { getAppInfo, getDevice } from './node';
 import { copy } from './others';
 import { importTimeStorage } from './storage';
 import type { Snapshot } from './types';
+import { withDirectives } from 'vue';
 
 const useAutoWrapWidthColumn = <T,>(data: TableBaseColumn<T>) => {
   const currentCol = shallowReactive<TableBaseColumn<T>>({
@@ -18,7 +18,7 @@ const useAutoWrapWidthColumn = <T,>(data: TableBaseColumn<T>) => {
         </span>,
         [
           [
-            rect,
+            vRect,
             (size: DOMRect) => {
               currentCol.width = Math.max(
                 Math.ceil(size.width + 16), // 16 是 n-data-table-td 的 左右内边距

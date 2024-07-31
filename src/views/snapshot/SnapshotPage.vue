@@ -1,33 +1,29 @@
 <script lang="ts" setup>
 import ActionCard from '@/components/ActionCard.vue';
-import AttrCard from '@/components/AttrCard.vue';
-import ScreenshotCard from '@/components/ScreenshotCard.vue';
-import SearchCard from '@/components/SearchCard.vue';
-import WindowCard from '@/components/WindowCard.vue';
-import { getAppInfo, listToTree } from '@/utils/node';
 import { loadingBar, message } from '@/utils/discrete';
-import { delay } from '@/utils/others';
-import {
-  snapshotStorage,
-  screenshotStorage,
-  importStorage,
-  settingsStorage,
-} from '@/utils/storage';
-import type { RawNode, Snapshot } from '@/utils/types';
-import { computed, shallowRef, watchEffect } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useTitle } from '@vueuse/core';
-import { gmOk } from '@/utils/gm';
 import {
   detectSnapshot,
-  exportSnapshotAsJpgUrl,
   exportSnapshotAsImportId,
+  exportSnapshotAsJpgUrl,
 } from '@/utils/export';
+import { gmOk } from '@/utils/gm';
+import { getAppInfo, listToTree } from '@/utils/node';
+import { delay } from '@/utils/others';
 import type { GkdSelector } from '@/utils/selector';
-import { NModal, NIcon } from 'naive-ui';
-import MultiFocusCard from '@/components/MultiFocusCard.vue';
-import { watch, defineAsyncComponent } from 'vue';
-import { onMounted } from 'vue';
+import {
+  importStorage,
+  screenshotStorage,
+  settingsStorage,
+  snapshotStorage,
+} from '@/utils/storage';
+import type { RawNode, Snapshot } from '@/utils/types';
+import { NIcon, NModal } from 'naive-ui';
+import AttrCard from './AttrCard.vue';
+import MultiFocusCard from './MultiFocusCard.vue';
+import ScreenshotCard from './ScreenshotCard.vue';
+import SearchCard from './SearchCard.vue';
+import WindowCard from './WindowCard.vue';
+
 const AsyncTrackGraph = (() => {
   const loader = () => import('@/components/TrackGraph.vue');
   setTimeout(loader, 3000);

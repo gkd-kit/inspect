@@ -1,6 +1,5 @@
 <script lang="tsx" setup>
 import ActionCard from '@/components/ActionCard.vue';
-import BuildShareDlg from '@/components/BuildShareDlg.vue';
 import { toValidURL } from '@/utils/check';
 import { showTextDLg, waitShareAgree } from '@/utils/dialog';
 import { dialog } from '@/utils/discrete';
@@ -36,18 +35,7 @@ import {
   type PaginationProps,
 } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
-import {
-  computed,
-  onMounted,
-  reactive,
-  shallowReactive,
-  shallowRef,
-  watch,
-  watchEffect,
-} from 'vue';
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
+import BuildShareDlg from './BuildShareDlg.vue';
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const loading = shallowRef(true);

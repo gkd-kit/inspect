@@ -22,12 +22,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('@/views/HomePage.vue'),
+      component: () => import('@/views/home/HomePage.vue'),
     },
     {
       path: '/snapshot/:snapshotId',
       name: 'snapshot',
-      component: () => import('@/views/SnapshotPage.vue'),
+      component: () => import('@/views/snapshot/SnapshotPage.vue'),
     },
     {
       path: '/i',
@@ -95,12 +95,12 @@ const router = createRouter({
       },
     },
     {
-      path: '/404',
-      component: () => import('@/views/_404Page.vue'),
+      path: '/selector',
+      component: () => import('@/views/SelectorPage.vue'),
     },
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/404',
+      component: () => import('@/views/_404Page.vue'),
     },
   ],
 });

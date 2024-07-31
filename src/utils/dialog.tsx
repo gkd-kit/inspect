@@ -1,6 +1,5 @@
 import { NCheckbox, NInput } from 'naive-ui';
 import { dialog, message } from './discrete';
-import { defineComponent } from 'vue';
 import { settingsStorage } from './storage';
 
 export const showTextDLg = ({ title = `批量分享链接`, content = '' }) => {

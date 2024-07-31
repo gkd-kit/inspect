@@ -1,5 +1,4 @@
 import localforage from 'localforage';
-import { reactive, toRaw, watch } from 'vue';
 import type { Snapshot } from './types';
 import { getImportId } from './url';
 

@@ -1,5 +1,3 @@
-import { shallowReactive } from 'vue';
-
 const store = shallowReactive({
   networkErrorDlgVisible: false,
   githubErrorDlgVisible: false,

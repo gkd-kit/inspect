@@ -1,4 +1,3 @@
-import { shallowRef } from 'vue';
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
 import type { Device, RpcError, Snapshot } from './types';

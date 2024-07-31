@@ -1,13 +1,5 @@
 <script setup lang="ts">
 import { useDragMove } from '@/utils/draggable';
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  shallowReactive,
-  shallowRef,
-  watch,
-} from 'vue';
 
 const props = withDefaults(
   defineProps<{

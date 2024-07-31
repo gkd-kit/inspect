@@ -34,3 +34,7 @@ vite.config.{js,ts}.timestamp-*.mjs
 /public/service-worker.js.map
 
 /.eslintcache
+
+.eslintrc-auto-import.json
+auto-import.d.ts
+auto-import-components.d.ts

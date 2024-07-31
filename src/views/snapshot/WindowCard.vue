@@ -10,7 +10,6 @@ import type { RawNode, Snapshot } from '@/utils/types';
 import type { TreeInst } from 'naive-ui';
 import { NTooltip, NTree, NIcon, NButton } from 'naive-ui';
 import type { HTMLAttributes } from 'vue';
-import { computed, nextTick, shallowRef, watch } from 'vue';
 import GapList from '@/components/GapList';
 
 const props = withDefaults(

@@ -6,8 +6,6 @@ import { importFromNetwork } from '@/utils/import';
 import { delay, filterQuery } from '@/utils/others';
 import { importStorage, snapshotStorage, urlStorage } from '@/utils/storage';
 import { getImportFileUrl, getImportId, isValidUrl } from '@/utils/url';
-import { onMounted, shallowRef } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();

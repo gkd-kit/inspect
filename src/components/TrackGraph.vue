@@ -5,7 +5,6 @@ import type { ConnectKeyType, GkdSelector } from '@/utils/selector';
 import type { RawNode } from '@/utils/types';
 import type { TreeGraph, TreeGraphData } from '@antv/g6';
 import G6 from '@antv/g6';
-import { computed, onUnmounted, shallowRef, watchEffect } from 'vue';
 
 const props = withDefaults(
   defineProps<{

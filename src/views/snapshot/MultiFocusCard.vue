@@ -3,7 +3,7 @@ import { getNodeLabel } from '@/utils/node';
 import { buildEmptyFn } from '@/utils/others';
 import type { RawNode } from '@/utils/types';
 import { NCard, NSpace, NButton } from 'naive-ui';
-import DraggableCard from './DraggableCard.vue';
+import DraggableCard from '@/components/DraggableCard.vue';
 
 const props = withDefaults(
   defineProps<{
