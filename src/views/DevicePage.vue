@@ -9,19 +9,7 @@ import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
 import JSON5 from 'json5';
-import {
-  NButton,
-  NCheckbox,
-  NDataTable,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NModal,
-  NSelect,
-  NSpace,
-  type DataTableColumns,
-  type PaginationProps,
-} from 'naive-ui';
+import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
 

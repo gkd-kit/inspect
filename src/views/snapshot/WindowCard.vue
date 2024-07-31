@@ -8,7 +8,6 @@ import {
 import { buildEmptyFn, copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import type { TreeInst } from 'naive-ui';
-import { NTooltip, NTree, NIcon, NButton } from 'naive-ui';
 import type { HTMLAttributes } from 'vue';
 import GapList from '@/components/GapList';
 

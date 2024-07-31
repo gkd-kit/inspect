@@ -16,7 +16,6 @@ import {
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
 import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
-import { NButton, NIcon, NPopconfirm, NPopover, NSpace } from 'naive-ui';
 
 const props = withDefaults(
   defineProps<{

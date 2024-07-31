@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NConfigProvider, dateZhCN, zhCN } from 'naive-ui';
+import { dateZhCN, zhCN } from 'naive-ui';
 import { RouterView } from 'vue-router';
 import ErrorDlg from './components/ErrorDlg.vue';
 </script>

@@ -1,4 +1,3 @@
-import { NCheckbox, NInput } from 'naive-ui';
 import { dialog, message } from './discrete';
 import { settingsStorage } from './storage';
 

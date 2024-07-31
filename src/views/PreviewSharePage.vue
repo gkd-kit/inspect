@@ -4,7 +4,6 @@ import { loadingBar } from '@/utils/discrete';
 import { enhanceFetch } from '@/utils/fetch';
 import { copy, timeAgo, useAdaptMobile } from '@/utils/others';
 import JSON5 from 'json5';
-import { NButton, NIcon, NInput } from 'naive-ui';
 
 const route = useRoute();
 useAdaptMobile();

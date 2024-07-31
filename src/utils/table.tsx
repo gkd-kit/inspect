@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { NEllipsis } from 'naive-ui';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { vRect } from './directives';
 import { getAppInfo, getDevice } from './node';

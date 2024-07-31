@@ -14,13 +14,15 @@ export const mirror = (): Plugin => {
     apply: 'build',
     enforce: 'post',
     config() {
-      return {
-        experimental: {
-          renderBuiltUrl(filename) {
-            return mirrorBaseUrl + '/' + filename;
+      if (process.env.MIRROR == `ON`) {
+        return {
+          experimental: {
+            renderBuiltUrl(filename) {
+              return mirrorBaseUrl + '/' + filename;
+            },
           },
-        },
-      };
+        };
+      }
     },
   };
 };

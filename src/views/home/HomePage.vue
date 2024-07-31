@@ -20,20 +20,7 @@ import { renderDevice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
 import { githubUrlToSelfUrl } from '@/utils/url';
-import {
-  NButton,
-  NCheckbox,
-  NDataTable,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NModal,
-  NPopover,
-  NSpace,
-  NSwitch,
-  type DataTableColumns,
-  type PaginationProps,
-} from 'naive-ui';
+import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import BuildShareDlg from './BuildShareDlg.vue';
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { copy } from '@/utils/others';
 import type { RawNode } from '@/utils/types';
-import { NEllipsis, NIcon, NTable, NTbody, NTd, NTooltip, NTr } from 'naive-ui';
 import DraggableCard from '@/components/DraggableCard.vue';
 
 const props = withDefaults(defineProps<{ focusNode: RawNode }>(), {});

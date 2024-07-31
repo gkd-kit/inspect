@@ -17,7 +17,6 @@ import {
   snapshotStorage,
 } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
-import { NIcon, NModal } from 'naive-ui';
 import AttrCard from './AttrCard.vue';
 import MultiFocusCard from './MultiFocusCard.vue';
 import ScreenshotCard from './ScreenshotCard.vue';

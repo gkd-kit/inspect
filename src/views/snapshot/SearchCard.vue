@@ -10,18 +10,6 @@ import type { RawNode, Snapshot } from '@/utils/types';
 import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
 import dayjs from 'dayjs';
 import JSON5 from 'json5';
-import {
-  NButton,
-  NButtonGroup,
-  NCollapse,
-  NCollapseItem,
-  NIcon,
-  NInput,
-  NInputGroup,
-  NRadio,
-  NRadioGroup,
-  NSpace,
-} from 'naive-ui';
 import * as base64url from 'universal-base64url';
 import DraggableCard from '@/components/DraggableCard.vue';
 import { gkdWidth, vw } from '@/utils/size';
