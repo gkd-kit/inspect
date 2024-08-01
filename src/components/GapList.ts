@@ -13,7 +13,9 @@ const GapList = defineComponent<
   (props, ctx) => {
     const tag = computed(() => props.tag || 'div');
     return () => {
-      const defaultNodes = ctx.slots.default?.() || emptyArray;
+      const defaultNodes = (ctx.slots.default?.() || emptyArray).filter((n) => {
+        return typeof n.type !== 'symbol'; // remove comment nodes
+      });
       const nodes: typeof defaultNodes = [];
       if (defaultNodes.length > 0) {
         nodes.push(defaultNodes[0]);
