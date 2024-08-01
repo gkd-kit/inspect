@@ -1,43 +1,43 @@
+import { useGlobalStore } from '@/store';
 import {
-  Transform,
-  Selector,
-  updateWasmToMatches,
-  getStringInvoke,
+  Context,
+  FastQuery,
+  getBooleanInvoke,
   getIntInvoke,
   getStringAttr,
-  getBooleanInvoke,
+  getStringInvoke,
   initDefaultTypeInfo,
+  MatchOption,
   MismatchExpressionTypeException,
   MismatchOperatorTypeException,
   MismatchParamTypeException,
+  Selector,
+  Transform,
   UnknownIdentifierException,
   UnknownIdentifierMethodException,
+  UnknownIdentifierMethodParamsException,
   UnknownMemberException,
   UnknownMemberMethodException,
-  UnknownIdentifierMethodParamsException,
   UnknownMemberMethodParamsException,
-  Context,
-  MatchOption,
-  FastQuery,
+  updateWasmToMatches,
 } from '@gkd-kit/selector';
-import type { RawNode } from './types';
 import matchesInstantiate from '@gkd-kit/wasm_matches';
 import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
-import store from './store';
-import { settingsStorage } from './storage';
 import { isRawNode } from './node';
+import { settingsStorage } from './storage';
+import type { RawNode } from './types';
 
 export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
     const toMatches = mod.exports.toMatches;
     updateWasmToMatches(toMatches as any);
-    store.wasmSupported = true;
+    useGlobalStore().wasmSupported = true;
     if (import.meta.env.PROD) {
       console.log('use wasm matches');
     }
   })
   .catch((e) => {
-    store.wasmSupported = false;
+    useGlobalStore().wasmSupported = false;
     console.error(e);
     if (import.meta.env.PROD) {
       console.log('use js matches');
@@ -129,6 +129,7 @@ const typeInfo = initDefaultTypeInfo(true).globalType;
 const matchOption = new MatchOption(false, false);
 
 export const parseSelector = (source: string): GkdSelector => {
+  const store = useGlobalStore();
   const s = Selector.Companion.parse(source);
   for (const exp of s.binaryExpressions) {
     if (exp.operator.value.key == '~=' && !store.wasmSupported) {

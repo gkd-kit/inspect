@@ -12,6 +12,7 @@ export const unAutoImport = (): Plugin[] => {
         'vue',
         'vue-router',
         '@vueuse/core',
+        'pinia',
         {
           'naive-ui': [
             'useDialog',

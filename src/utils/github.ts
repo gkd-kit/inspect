@@ -1,7 +1,7 @@
-import { enhanceFetch } from './fetch';
-import store from './store';
-import { uploadPoliciesAssets } from 'user-attachments';
+import { useGlobalStore } from '@/store';
 import type { PoliciesAsset } from 'user-attachments';
+import { uploadPoliciesAssets } from 'user-attachments';
+import { enhanceFetch } from './fetch';
 
 export type GithubPoliciesAsset = PoliciesAsset;
 
@@ -9,6 +9,7 @@ export const uploadAsset = async (
   bf: ArrayBuffer,
   name: string,
 ): Promise<PoliciesAsset> => {
+  const store = useGlobalStore();
   return await uploadPoliciesAssets({
     file: new File([bf], name),
     url: 'https://github.com/gkd-kit/inspect/issues/1',
