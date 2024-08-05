@@ -184,12 +184,13 @@ export const importStorage = useReactiveStorage<
   });
   return obj;
 });
-
-export const settingsStorage = useReactiveStorage<{
+export interface SettingsState {
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;
   ignoreWasmWarn: boolean;
-}>('settings', {
+}
+
+export const settingsStorage = useReactiveStorage<SettingsState>('settings', {
   autoUploadImport: false,
   ignoreUploadWarn: false,
   ignoreWasmWarn: false,
