@@ -13,9 +13,9 @@ const props = withDefaults(
     };
     minWidth?: number;
     sizeDraggable?: boolean;
-    disabled?: boolean;
+    show?: boolean;
   }>(),
-  { initialValue: () => ({}) },
+  { initialValue: () => ({}), show: true },
 );
 
 const isLeft = props.initialValue.left !== void 0;
@@ -147,8 +147,9 @@ const updateTarget = (arg: unknown) => {
 };
 </script>
 <template>
-  <Teleport to="#app" :disabled="disabled">
+  <Teleport to="#app">
     <div
+      v-if="show"
       fixed
       ref="box"
       :style="[$attrs.style as string, currentStyle]"
