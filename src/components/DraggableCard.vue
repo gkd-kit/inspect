@@ -61,10 +61,12 @@ const currentStyle = computed(() => {
  * it will be PointerEvent when moving
  */
 let prevEv: PointerEvent | undefined = undefined;
+const moved = shallowRef(false);
 const startMove = (ev: PointerEvent) => {
   prevEv = ev;
   prevOffset.x = offset.x;
   prevOffset.y = offset.y;
+  moved.value = false;
 };
 const move = (ev: PointerEvent) => {
   if (!target.value || !prevEv) return;
@@ -74,6 +76,8 @@ const move = (ev: PointerEvent) => {
 
   offset.x = prevOffset.x + (isLeft ? dx : -dx);
   offset.y = prevOffset.y + (isTop ? dy : -dy);
+
+  moved.value = true;
 };
 const endMove = () => {
   prevEv = undefined;
@@ -155,7 +159,7 @@ const updateTarget = (arg: unknown) => {
       :style="[$attrs.style as string, currentStyle]"
       :class="$attrs.class"
     >
-      <slot :onRef="updateTarget"></slot>
+      <slot :onRef="updateTarget" :moved="moved"></slot>
 
       <template v-if="sizeDraggable">
         <div

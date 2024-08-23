@@ -213,6 +213,8 @@ const shareResult = (result: SearchResult) => {
   }
   copy(importUrl.toString());
 };
+
+const tabShow = shallowRef(true);
 </script>
 <template>
   <DraggableCard
@@ -225,9 +227,10 @@ const shareResult = (result: SearchResult) => {
     sizeDraggable
     v-slot="{ onRef }"
     class="z-1 box-shadow-dim"
+    :show="tabShow"
   >
     <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
-      <div flex m-b-4px>
+      <div flex m-b-4px pr-4px>
         <NRadioGroup v-model:value="enableSearchBySelector">
           <NSpace>
             <NRadio :value="false"> 字符搜索 </NRadio>
@@ -235,6 +238,15 @@ const shareResult = (result: SearchResult) => {
           </NSpace>
         </NRadioGroup>
         <div flex-1 cursor-move :ref="onRef"></div>
+        <NButton @click="tabShow = !tabShow" text title="最小化">
+          <template #icon>
+            <NIcon>
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M6 13v-2h12v2z" />
+              </svg>
+            </NIcon>
+          </template>
+        </NButton>
       </div>
       <NInputGroup>
         <NInput
@@ -413,6 +425,40 @@ const shareResult = (result: SearchResult) => {
           </NSpace>
         </NCollapseItem>
       </NCollapse>
+    </div>
+  </DraggableCard>
+  <DraggableCard
+    :initialValue="{
+      bottom: 32,
+      right: 32,
+    }"
+    :minWidth="300"
+    v-slot="{ onRef, moved }"
+    class="z-1 box-shadow-dim rounded-1/2 bg-white"
+    :show="!tabShow"
+  >
+    <div :ref="onRef">
+      <NButton
+        @click="
+          if (!moved) {
+            tabShow = !tabShow;
+          }
+        "
+        circle
+        size="large"
+        title="搜索面板"
+      >
+        <template #icon>
+          <NIcon>
+            <svg viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M2 19v-2h10v2zm0-5v-2h5v2zm0-5V7h5v2zm18.6 10l-3.85-3.85q-.6.425-1.312.638T14 16q-2.075 0-3.537-1.463T9 11t1.463-3.537T14 6t3.538 1.463T19 11q0 .725-.213 1.438t-.637 1.312L22 17.6zM14 14q1.25 0 2.125-.875T17 11t-.875-2.125T14 8t-2.125.875T11 11t.875 2.125T14 14"
+              />
+            </svg>
+          </NIcon>
+        </template>
+      </NButton>
     </div>
   </DraggableCard>
 </template>
