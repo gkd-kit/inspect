@@ -13,3 +13,10 @@ declare module 'virtual:commit' {
   const latestLog: DefaultLogFields & ListLogLine;
   export default latestLog;
 }
+
+/**
+ * the declaration of JSON5 esm format is not correct
+ *
+ * add this line to fix auto-import.d.ts type error
+ */
+declare const JSON5: typeof import('json5');

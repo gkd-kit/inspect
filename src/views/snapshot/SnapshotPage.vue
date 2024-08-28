@@ -22,6 +22,7 @@ import MultiFocusCard from './MultiFocusCard.vue';
 import ScreenshotCard from './ScreenshotCard.vue';
 import SearchCard from './SearchCard.vue';
 import WindowCard from './WindowCard.vue';
+import RuleCard from './RuleCard.vue';
 
 const AsyncTrackGraph = (() => {
   const loader = () => import('@/components/TrackGraph.vue');
@@ -204,6 +205,15 @@ watch(
       focusCount++;
     "
     @close="multiFocus = undefined"
+  />
+  <RuleCard
+    v-if="rootNode"
+    :root="rootNode"
+    :focusNode="focusNode"
+    @updateFocusNode="
+      focusNode = $event;
+      focusCount++;
+    "
   />
   <NModal
     v-model:show="trackVisible"

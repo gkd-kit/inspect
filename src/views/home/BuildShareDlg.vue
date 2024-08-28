@@ -2,7 +2,6 @@
 import { uploadAsset } from '@/utils/github';
 import { copy } from '@/utils/others';
 import { useTask } from '@/utils/task';
-import JSON5 from 'json5';
 import QRCode from 'qrcode';
 
 const router = useRouter();

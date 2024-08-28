@@ -3,7 +3,6 @@ import { toValidURL } from '@/utils/check';
 import { loadingBar } from '@/utils/discrete';
 import { enhanceFetch } from '@/utils/fetch';
 import { copy, timeAgo, useAdaptMobile } from '@/utils/others';
-import JSON5 from 'json5';
 
 const route = useRoute();
 useAdaptMobile();

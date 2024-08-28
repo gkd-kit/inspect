@@ -21,6 +21,7 @@ export const unAutoImport = (): Plugin[] => {
             'useLoadingBar',
             ...naiveComponents,
           ],
+          json5: [['default', 'JSON5']],
         },
       ],
       eslintrc: {

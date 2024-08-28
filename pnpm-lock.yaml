@@ -11,6 +11,9 @@ importers:
       '@antv/g6':
         specifier: 4.8.24
         version: 4.8.24
+      '@gkd-kit/api':
+        specifier: 0.3.3
+        version: 0.3.3
       '@gkd-kit/selector':
         specifier: 0.4.2
         version: 0.4.2
@@ -1079,6 +1082,9 @@ packages:
   '@eslint/js@8.57.0':
     resolution: {integrity: sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@gkd-kit/api@0.3.3':
+    resolution: {integrity: sha512-oMpNJQg+XZp+VFiXtB+6I/YPCHLF/xLXLnB9FrFhM3yBRNOK8EKN69mXtLx/xCr1SGpZEYqwFLrzH+8KEBIYMw==}
 
   '@gkd-kit/selector@0.4.2':
     resolution: {integrity: sha512-fWVX9de5vLK6hWtti24y0DWUit6ODe0Hvnmak2hv/9CAiBUr3nPBolfzPj0IwJOLSJVhBxgQqqy5U6kACW15Xw==}
@@ -4551,6 +4557,8 @@ snapshots:
       - supports-color
 
   '@eslint/js@8.57.0': {}
+
+  '@gkd-kit/api@0.3.3': {}
 
   '@gkd-kit/selector@0.4.2': {}
 

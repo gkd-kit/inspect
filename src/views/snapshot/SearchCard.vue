@@ -9,13 +9,11 @@ import { githubJpgStorage, importStorage } from '@/utils/storage';
 import type { RawNode, Snapshot } from '@/utils/types';
 import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
 import dayjs from 'dayjs';
-import JSON5 from 'json5';
 import * as base64url from 'universal-base64url';
 import DraggableCard from '@/components/DraggableCard.vue';
 import { gkdWidth, vw } from '@/utils/size';
 import { SelectorCheckException } from '@gkd-kit/selector';
 
-const router = useRouter();
 const route = useRoute();
 
 const props = withDefaults(
@@ -429,8 +427,8 @@ const tabShow = shallowRef(true);
   </DraggableCard>
   <DraggableCard
     :initialValue="{
-      bottom: 32,
-      right: 32,
+      bottom: 8,
+      right: 16,
     }"
     :minWidth="300"
     v-slot="{ onRef, moved }"

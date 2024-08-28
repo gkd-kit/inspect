@@ -1,12 +1,12 @@
 export type PrimitiveType = boolean | string | number | null | undefined;
 
-export type RpcError = {
+export interface RpcError {
   message: string;
   code: number;
   __error: true;
-};
+}
 
-export type Device = {
+export interface Device {
   device: string;
   model: string;
   manufacturer: string;
@@ -22,9 +22,9 @@ export type Device = {
    * @deprecated use gkdAppInfo instead
    */
   gkdVersionName?: string;
-};
+}
 
-export type RawNode = {
+export interface RawNode {
   id: number;
   pid: number;
   quickFind?: boolean;
@@ -35,9 +35,9 @@ export type RawNode = {
   // list to tree
   parent?: RawNode;
   children: RawNode[];
-};
+}
 
-export type RawAttr = {
+export interface RawAttr {
   id?: string;
   vid?: string;
   name: string;
@@ -56,9 +56,9 @@ export type RawAttr = {
   bottom: number;
   _id?: number;
   _pid?: number;
-};
+}
 
-export type Overview = {
+export interface Overview {
   id: number;
 
   appId: string;
@@ -83,14 +83,14 @@ export type Overview = {
    * @deprecated use appInfo instead
    */
   appVersionCode?: number;
-};
+}
 
-export type Snapshot = Overview & {
+export interface Snapshot extends Overview {
   device: Device;
   nodes: RawNode[];
-};
+}
 
-export type AppInfo = {
+export interface AppInfo {
   id: string;
   name: string;
   versionCode: number;
@@ -98,16 +98,16 @@ export type AppInfo = {
   isSystem: boolean;
   mtime: number;
   hidden: boolean;
-};
+}
 
-export type RectX = {
+export interface RectX {
   bottom: number;
   left: number;
   right: number;
   top: number;
-};
+}
 
-export type SizeExt = {
+export interface SizeExt {
   height: number;
   width: number;
-};
+}
