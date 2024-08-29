@@ -1,6 +1,5 @@
 import 'normalize.css';
-import { createPinia } from 'pinia';
-import 'virtual:uno.css';
+import 'uno.css';
 import App from './App.vue';
 import router from './router';
 import { commitLog } from './utils/commit';
@@ -15,10 +14,8 @@ router.beforeEach(async (to, from, next) => {
   }
   next();
 });
-const pinia = createPinia();
 const app = createApp(App);
 app.use(router);
-app.use(pinia);
 app.mount(root);
 
 if (import.meta.env.PROD) {

@@ -1,4 +1,4 @@
-import { useGlobalStore } from '@/store';
+import { store } from '@/store';
 import {
   Context,
   FastQuery,
@@ -31,13 +31,13 @@ export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
     const toMatches = mod.exports.toMatches;
     updateWasmToMatches(toMatches as any);
-    useGlobalStore().wasmSupported = true;
+    store.wasmSupported = true;
     if (import.meta.env.PROD) {
       console.log('use wasm matches');
     }
   })
   .catch((e) => {
-    useGlobalStore().wasmSupported = false;
+    store.wasmSupported = false;
     console.error(e);
     if (import.meta.env.PROD) {
       console.log('use js matches');
@@ -129,7 +129,6 @@ const typeInfo = initDefaultTypeInfo(true).globalType;
 const matchOption = new MatchOption(false, false);
 
 export const parseSelector = (source: string): GkdSelector => {
-  const store = useGlobalStore();
   const s = Selector.Companion.parse(source);
   for (const exp of s.binaryExpressions) {
     if (exp.operator.value.key == '~=' && !store.wasmSupported) {

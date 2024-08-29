@@ -5,13 +5,9 @@ export interface GlobalStoreState {
   wasmSupported?: boolean;
 }
 
-export const useGlobalStore = defineStore('global', {
-  state(): GlobalStoreState {
-    return {
-      networkErrorDlgVisible: false,
-      githubErrorDlgVisible: false,
-      wasmErrorDlgVisible: false,
-      wasmSupported: undefined,
-    };
-  },
+export const store = shallowReactive<GlobalStoreState>({
+  networkErrorDlgVisible: false,
+  githubErrorDlgVisible: false,
+  wasmErrorDlgVisible: false,
+  wasmSupported: undefined,
 });

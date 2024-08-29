@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { settingsStorage } from '@/utils/storage';
-import { useGlobalStore } from '@/store';
-const store = useGlobalStore();
+import { store } from '@/store';
 </script>
 <template>
   <NModal
