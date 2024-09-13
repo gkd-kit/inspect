@@ -32,6 +32,7 @@ export const unAutoImport = (): Plugin[] => {
       dirs: [],
     }),
     components({
+      include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],
       dts: 'auto-import-components.d.ts',
       resolvers: [NaiveUiResolver()],
       dirs: [],
