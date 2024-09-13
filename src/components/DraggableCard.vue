@@ -14,6 +14,7 @@ const props = withDefaults(
     minWidth?: number;
     sizeDraggable?: boolean;
     show?: boolean;
+    class?: string;
   }>(),
   { initialValue: () => ({}), show: true },
 );
@@ -152,13 +153,7 @@ const updateTarget = (arg: unknown) => {
 </script>
 <template>
   <Teleport to="#app">
-    <div
-      v-if="show"
-      fixed
-      ref="box"
-      :style="[$attrs.style as string, currentStyle]"
-      :class="$attrs.class"
-    >
+    <div v-if="show" fixed ref="box" :style="currentStyle" :class="props.class">
       <slot :onRef="updateTarget" :moved="moved"></slot>
 
       <template v-if="sizeDraggable">
