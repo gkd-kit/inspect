@@ -37,7 +37,6 @@ const snapshots = shallowRef<Snapshot[]>([]);
 watchEffect(async () => {
   if (!device.value) return;
   title.value = `已连接 ` + device.value.manufacturer;
-  device.value.release;
   const result = await api.snapshots();
   result.sort((a, b) => b.id - a.id);
   snapshots.value = result;

@@ -26,7 +26,7 @@ import RuleCard from './RuleCard.vue';
 
 const AsyncTrackGraph = (() => {
   const loader = () => import('@/components/TrackGraph.vue');
-  setTimeout(loader, 3000);
+  setTimeout(loader, 1000);
   return defineAsyncComponent(loader);
 })();
 

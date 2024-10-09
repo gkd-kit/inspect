@@ -20,18 +20,9 @@ const props = withDefaults(
     onUpdateFocusNodes: buildEmptyFn,
   },
 );
-const windowSize = useWindowSize();
-const debouncedSize = refDebounced(
-  computed(() => {
-    windowSize.width.value;
-    windowSize.height.value;
-    return Math.random();
-  }),
-  300,
-);
 
 const imgRef = shallowRef<HTMLImageElement>();
-const imgLoadTime = shallowRef(0);
+const imgLoadTime = shallowRef(false);
 
 const clickImg = (ev: MouseEvent) => {
   if (!props.rootNode) return;
@@ -62,16 +53,18 @@ const clickImg = (ev: MouseEvent) => {
 const percent = (n: number) => {
   return `${n * 100}%`;
 };
+
+const imgSize = useElementSize(imgRef);
+
 const positionStyle = computed(() => {
-  debouncedSize.value; // 在窗口大小变化后触发更新
-  imgLoadTime.value; // 在图片加载完成后触发更新
   const img = imgRef.value;
   const attr = props.focusNode?.attr;
-  if (!props.focusNode || !img || !attr) {
+  if (!props.focusNode || !img || !attr || !imgLoadTime.value) {
     return ``;
   }
-  const imgRect = img.getBoundingClientRect();
-  const innerHeight = (imgRect.width / img.naturalWidth) * img.naturalHeight;
+  const imgWidth = imgSize.width.value;
+  const imgHeight = imgSize.height.value;
+  const innerHeight = (imgWidth / img.naturalWidth) * img.naturalHeight;
   return {
     left: `calc(${percent(attr.left / img.naturalWidth)} - 2px)`,
     width: `calc(${percent(
@@ -80,12 +73,12 @@ const positionStyle = computed(() => {
 
     top: `calc(${percent(
       ((attr.top / img.naturalHeight) * innerHeight +
-        (imgRect.height - innerHeight) / 2) /
-        imgRect.height,
+        (imgHeight - innerHeight) / 2) /
+        imgHeight,
     )} - 2px)`,
     height: `calc(${percent(
       (((attr.bottom - attr.top) / img.naturalHeight) * innerHeight) /
-        imgRect.height,
+        imgHeight,
     )} + 2px)`,
   };
 });
@@ -137,7 +130,7 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
-      @load="imgLoadTime = Date.now()"
+      @load="imgLoadTime = true"
     />
     <div
       :style="positionStyle"
