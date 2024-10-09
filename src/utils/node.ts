@@ -143,6 +143,9 @@ const getSafeName = (node: RawNode) => {
   const c = node.attr.childCount;
   return (node.attr.name || `🐔` + (c > 1 ? `` : ` [${c}]`)).split('.').at(-1)!;
 };
+const getLabelSuffix = (node: RawNode) => {
+  return node.attr.text || node.attr.desc || node.attr.vid || node.attr.id;
+};
 const labelKey = Symbol(`labelKey`);
 export const getNodeLabel = (node: RawNode): string => {
   if (Reflect.has(node, labelKey)) {
@@ -153,10 +156,9 @@ export const getNodeLabel = (node: RawNode): string => {
   if (length > 1) {
     label = `${label} [${length}]`;
   }
-  if (node.attr.text) {
-    label = `${label} : ${node.attr.text}`;
-  } else if (node.attr.desc) {
-    label = `${label} : ${node.attr.desc}`;
+  const text = getLabelSuffix(node);
+  if (text) {
+    label = `${label} : ${text}`;
   }
   Reflect.set(node, labelKey, label);
   return label;
@@ -167,7 +169,7 @@ export const getLimitLabel = (node: RawNode, limit = 15): string => {
   if (length > 1) {
     label = `${label} [${length}]`;
   }
-  const text = node.attr.text || node.attr.desc || ``;
+  const text = getLabelSuffix(node);
   if (text) {
     if (text.length > limit) {
       return `${label} : ${text.slice(0, limit)}...`;
