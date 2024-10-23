@@ -42,12 +42,8 @@ const clickImg = (ev: MouseEvent) => {
 
   const results = findNodesByXy(props.snapshot.nodes, ox, oy);
   if (results.length === 0) return;
-  if (results.length === 1) {
-    props.onUpdateFocusNode(results[0]);
-  } else {
-    props.onUpdateFocusNode(results[0]);
-    props.onUpdateFocusNodes({ nodes: results, position: { x: ox, y: oy } });
-  }
+  props.onUpdateFocusNode(results[0]);
+  props.onUpdateFocusNodes({ nodes: results, position: { x: ox, y: oy } });
 };
 
 const percent = (n: number) => {

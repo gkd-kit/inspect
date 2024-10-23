@@ -22,15 +22,18 @@ const props = withDefaults(
 );
 const _1vw = document.documentElement.scrollWidth / 100;
 const left = _1vw * 25.5;
+const show = computed(() => {
+  return (props.focusNodes?.nodes?.length || 0) > 1;
+});
 </script>
 <template>
   <DraggableCard
     :initialValue="{ top: 215, left }"
     v-slot="{ onRef }"
     class="z-2 box-shadow-dim w-420px"
-    :show="!!focusNodes"
+    :show="show"
   >
-    <NCard v-if="focusNodes" size="small" closable @close="onClose">
+    <NCard v-if="show && focusNodes" size="small" closable @close="onClose">
       <template #header>
         <div :ref="onRef" cursor-move>
           位置

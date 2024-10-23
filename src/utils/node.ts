@@ -47,11 +47,12 @@ const equalRectNode = (a: RawNode, b: RawNode) => {
   );
 };
 
-const isParent = (parent: RawNode, child: RawNode): boolean => {
+const isAncestor = (parent: RawNode | undefined, child: RawNode): boolean => {
   let p = child.parent;
-  while (p) {
+  while (true) {
     if (p === parent) return true;
-    p = p.parent;
+    p = p?.parent;
+    if (!p) break;
   }
   return false;
 };
@@ -91,10 +92,10 @@ export const findNodesByXy = (
     return results;
   }
 
-  // remove parent node
+  // remove ancestor node
   results = results.filter((node) => {
     return !results.some(
-      (other) => isParent(node, other) && includesRectNode(node, other),
+      (other) => isAncestor(node, other) && includesRectNode(node, other),
     );
   });
   if (results.length <= 1) {
@@ -106,6 +107,9 @@ export const findNodesByXy = (
     return !results.some(
       (other) =>
         node != other &&
+        // ancestor https://i.gkd.li/i/17451180
+        // uncle https://i.gkd.li/i/14881985
+        (isAncestor(node, other) || isAncestor(node.parent, other)) &&
         includesRectNode(node, other) &&
         !equalRectNode(node, other),
     );
