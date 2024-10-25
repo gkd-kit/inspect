@@ -54,6 +54,8 @@ export interface RawAttr {
   top: number;
   right: number;
   bottom: number;
+  width: number;
+  height: number;
   _id?: number;
   _pid?: number;
 }

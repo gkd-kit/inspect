@@ -114,7 +114,16 @@ export const findNodesByXy = (
         !equalRectNode(node, other),
     );
   });
+  results.sort((a, b) => {
+    return getNodeArea(a) - getNodeArea(b);
+  });
   return results;
+};
+
+const getNodeArea = (node: RawNode) => {
+  const w = node.attr.width ?? node.attr.right - node.attr.left;
+  const h = node.attr.height ?? node.attr.bottom - node.attr.top;
+  return w * h;
 };
 
 export function* traverseNode(node: RawNode, skipKeys: number[] = []) {
