@@ -4,7 +4,7 @@ import { toValidURL } from '@/utils/check';
 import { message } from '@/utils/discrete';
 import { errorWrap } from '@/utils/error';
 import { delay } from '@/utils/others';
-import { screenshotStorage, snapshotStorage } from '@/utils/storage';
+import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
 import type { Device, Snapshot } from '@/utils/types';
