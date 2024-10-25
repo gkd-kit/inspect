@@ -1,4 +1,3 @@
-import { store } from '@/store';
 import type { PoliciesAsset } from 'user-attachments';
 import { uploadPoliciesAssets } from 'user-attachments';
 import { enhanceFetch } from './fetch';
@@ -15,7 +14,7 @@ export const uploadAsset = async (
     fetch: enhanceFetch,
   }).catch((e) => {
     if (e instanceof Error && e.message === 'not found authenticity_token') {
-      store.githubErrorDlgVisible = true;
+      useGlobalStore().githubErrorDlgVisible = true;
     }
     throw e;
   });

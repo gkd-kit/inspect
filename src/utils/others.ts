@@ -123,3 +123,11 @@ export const filterQuery = (
   });
   return newObj;
 };
+
+export const isIntString = (v: string | number | undefined) => {
+  if (typeof v === 'number') return true;
+  return (
+    typeof v === 'string' &&
+    Array.prototype.every.call(v, (c) => '0' <= c && c <= '9')
+  );
+};

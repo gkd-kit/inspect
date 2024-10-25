@@ -3,7 +3,6 @@ import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { vRect } from './directives';
 import { getAppInfo, getDevice } from './node';
 import { copy } from './others';
-import { importTimeStorage } from './storage';
 import type { Snapshot } from './types';
 import { withDirectives } from 'vue';
 
@@ -40,6 +39,7 @@ export const renderDevice = (row: Snapshot) => {
 };
 
 export const useSnapshotColumns = () => {
+  const { snapshotImportTime } = useStorageStore();
   const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `id`,
     title: `创建时间`,
@@ -60,12 +60,12 @@ export const useSnapshotColumns = () => {
     sortOrder: false,
     sorter(rowA, rowB) {
       return (
-        (importTimeStorage[rowA.id] || rowA.id) -
-        (importTimeStorage[rowB.id] || rowB.id)
+        (snapshotImportTime[rowA.id] || rowA.id) -
+        (snapshotImportTime[rowB.id] || rowB.id)
       );
     },
     render(row) {
-      return dayjs(importTimeStorage[row.id] || row.id).format(
+      return dayjs(snapshotImportTime[row.id] || row.id).format(
         'MM-DD HH:mm:ss',
       );
     },

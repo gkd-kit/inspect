@@ -3,6 +3,7 @@ import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
 import components from 'unplugin-vue-components/vite';
 import type { Plugin } from 'vite';
 import naiveComponents from './naive-components.json';
+import process from 'node:process';
 
 export const unAutoImport = (): Plugin[] => {
   return [
@@ -29,7 +30,7 @@ export const unAutoImport = (): Plugin[] => {
         globalsPropValue: 'readonly',
         filepath: '.eslintrc-auto-import.json',
       },
-      dirs: [],
+      dirs: [process.cwd() + '/src/store'],
     }),
     components({
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],

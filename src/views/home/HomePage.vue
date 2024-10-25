@@ -4,25 +4,23 @@ import { toValidURL } from '@/utils/check';
 import { showTextDLg, waitShareAgree } from '@/utils/dialog';
 import { dialog } from '@/utils/discrete';
 import {
-  batchCreateJpgUrl,
+  batchCreateImageId,
   batchCreateZipUrl,
   batchJpgDownloadZip,
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
 import { getAppInfo } from '@/utils/node';
-import {
-  settingsStorage,
-  shallowSnapshotStorage,
-  snapshotStorage,
-} from '@/utils/storage';
+import { shallowSnapshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { renderDevice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
-import { githubUrlToSelfUrl } from '@/utils/url';
+import { getImagUrl } from '@/utils/url';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import BuildShareDlg from './BuildShareDlg.vue';
+
+const settingsStore = useSettingsStore();
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const loading = shallowRef(true);
@@ -214,9 +212,9 @@ const batchDownloadZip = useTask(async () => {
 
 const batchShareJpgUrl = useTask(async () => {
   await waitShareAgree();
-  const pngUrls = await batchCreateJpgUrl(await checkedSnapshots());
+  const imageIds = await batchCreateImageId(await checkedSnapshots());
   showTextDLg({
-    content: pngUrls.map((s) => githubUrlToSelfUrl(s)).join(`\n`) + `\n`,
+    content: imageIds.map((s) => getImagUrl(s)).join(`\n`) + `\n`,
   });
 });
 const batchShareZipUrl = useTask(async () => {
@@ -442,16 +440,16 @@ const settingsDlgShow = shallowRef(false);
     style="width: 600px"
     @positiveClick="settingsDlgShow = false"
   >
-    <NCheckbox v-model:checked="settingsStorage.ignoreUploadWarn">
+    <NCheckbox v-model:checked="settingsStore.ignoreUploadWarn">
       关闭生成分享链接弹窗提醒
     </NCheckbox>
     <div h-1px my-10px bg="#eee"></div>
-    <NCheckbox v-model:checked="settingsStorage.ignoreWasmWarn">
+    <NCheckbox v-model:checked="settingsStore.ignoreWasmWarn">
       关闭浏览器版本正则表达式 WASM(GC) 提醒
     </NCheckbox>
     <div h-1px my-10px bg="#eee"></div>
     <div flex gap-10px>
-      <NSwitch v-model:value="settingsStorage.autoUploadImport" />
+      <NSwitch v-model:value="settingsStore.autoUploadImport" />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
     </div>
   </NModal>

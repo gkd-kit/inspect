@@ -1,5 +1,4 @@
 import { dialog, message } from './discrete';
-import { settingsStorage } from './storage';
 
 export const showTextDLg = ({ title = `批量分享链接`, content = '' }) => {
   dialog.success({
@@ -39,12 +38,13 @@ export const showTextDLg = ({ title = `批量分享链接`, content = '' }) => {
 };
 
 const NoticeCheckbox = defineComponent(() => {
+  const settingsStore = useSettingsStore();
   return () => {
     return (
       <NCheckbox
-        checked={settingsStorage.ignoreUploadWarn}
+        checked={settingsStore.ignoreUploadWarn}
         onUpdateChecked={(value) => {
-          settingsStorage.ignoreUploadWarn = value;
+          settingsStore.ignoreUploadWarn = value;
         }}
         focusable={false}
       >
@@ -55,7 +55,9 @@ const NoticeCheckbox = defineComponent(() => {
 });
 
 export const waitShareAgree = async () => {
-  if (settingsStorage.ignoreUploadWarn) return;
+  const settingsStore = useSettingsStore();
+  await settingsStore.waitInit();
+  if (settingsStore.ignoreUploadWarn) return;
   return new Promise((resolve, reject) => {
     dialog.warning({
       title: '生成分享链接须知',

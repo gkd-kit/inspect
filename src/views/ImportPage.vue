@@ -4,7 +4,7 @@ import { detectSnapshot } from '@/utils/export';
 import { gmOk } from '@/utils/gm';
 import { importFromNetwork } from '@/utils/import';
 import { delay, filterQuery } from '@/utils/others';
-import { importStorage, snapshotStorage, urlStorage } from '@/utils/storage';
+import { snapshotStorage } from '@/utils/snapshot';
 import { getImportFileUrl, getImportId, isValidUrl } from '@/utils/url';
 
 const route = useRoute();
@@ -33,15 +33,17 @@ onMounted(async () => {
     });
     return;
   }
+  const { importSnapshotId, snapshotImportId, waitInit } = useStorageStore();
+  await waitInit();
   if (importId) {
-    const snapshotId = urlStorage[importId];
+    const snapshotId = importSnapshotId[importId];
     if (snapshotId) {
       const snapshot = await snapshotStorage.getItem(snapshotId);
       if (snapshot) {
         goToSnapshot(snapshotId);
         return;
       } else {
-        delete urlStorage[importId];
+        delete importSnapshotId[importId];
       }
     }
   }
@@ -57,8 +59,8 @@ onMounted(async () => {
       if (snapshot?.id) {
         if (importId) {
           detectSnapshot(importId);
-          urlStorage[importId] = snapshot.id;
-          importStorage[snapshot.id] = importId;
+          importSnapshotId[importId] = snapshot.id;
+          snapshotImportId[snapshot.id] = importId;
         }
         loading.value = false;
         await delay(500);

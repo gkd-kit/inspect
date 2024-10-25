@@ -4,18 +4,13 @@ import { loadingBar, message } from '@/utils/discrete';
 import {
   detectSnapshot,
   exportSnapshotAsImportId,
-  exportSnapshotAsJpgUrl,
+  exportSnapshotAsImageId,
 } from '@/utils/export';
 import { gmOk } from '@/utils/gm';
 import { getAppInfo, listToTree } from '@/utils/node';
 import { delay } from '@/utils/others';
 import type { GkdSelector } from '@/utils/selector';
-import {
-  importStorage,
-  screenshotStorage,
-  settingsStorage,
-  snapshotStorage,
-} from '@/utils/storage';
+import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
 import type { RawNode, Snapshot } from '@/utils/types';
 import AttrCard from './AttrCard.vue';
 import MultiFocusCard from './MultiFocusCard.vue';
@@ -33,6 +28,7 @@ const AsyncTrackGraph = (() => {
 const route = useRoute();
 const router = useRouter();
 const title = useTitle();
+const settingsStore = useSettingsStore();
 
 const snapshotId = computed(() => String(route.params.snapshotId || ``));
 const showSize = computed(() => {
@@ -45,18 +41,20 @@ const showSize = computed(() => {
 
 const screenshotUrl = shallowRef(``);
 const snapshot = shallowRef<Snapshot>();
+const { snapshotImportId, waitInit } = useStorageStore();
 
 onMounted(async () => {
   if (!Number.isSafeInteger(+snapshotId.value)) {
     message.error('非法快照ID');
     return;
   }
+  await waitInit();
   const localSnapshot = await snapshotStorage.getItem(snapshotId.value);
   if (!localSnapshot) {
     loadingBar.start();
     try {
       const importId: number | null =
-        importStorage[snapshotId.value] ||
+        snapshotImportId[snapshotId.value] ||
         (await fetch(
           'https://detect.gkd.li/api/getImportId?id=' + snapshotId.value,
         ).then((r) => r.json()));
@@ -74,16 +72,16 @@ onMounted(async () => {
     return;
   }
   setTimeout(() => {
-    const importId = importStorage[localSnapshot.id];
+    const importId = snapshotImportId[localSnapshot.id];
     if (importId) {
       detectSnapshot(importId);
     }
   }, 1000);
-  if (gmOk() && settingsStorage.autoUploadImport) {
+  if (gmOk() && (await settingsStore.waitInit()).autoUploadImport) {
     // 静默生成 jpg/zip
     setTimeout(async () => {
-      exportSnapshotAsJpgUrl(localSnapshot);
-      if (!importStorage[localSnapshot.id]) {
+      exportSnapshotAsImageId(localSnapshot);
+      if (!snapshotImportId[localSnapshot.id]) {
         exportSnapshotAsImportId(
           (await snapshotStorage.getItem(snapshotId.value))!,
         );

@@ -4,7 +4,7 @@ import pLimit from 'p-limit';
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
 import { isZipBf } from './file_type';
-import { setSnapshot, snapshotStorage, urlStorage } from './storage';
+import { setSnapshot, snapshotStorage } from './snapshot';
 import type { Snapshot } from './types';
 import { getImportFileUrl, getImportId } from './url';
 
@@ -76,10 +76,12 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   urls = [...new Set(urls)];
   const limit = pLimit(2);
   let importNum = 0;
+  await useStorageStore().waitInit();
   const result = await Promise.allSettled(
     urls.map((url) => {
       return limit(async () => {
-        const snapshotId = urlStorage[getImportId(url) || ''];
+        const snapshotId =
+          useStorageStore().importSnapshotId[getImportId(url) || ''];
         if (snapshotId) {
           const snapshot = await snapshotStorage.getItem(snapshotId);
           if (snapshot) {

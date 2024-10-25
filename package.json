@@ -56,6 +56,7 @@
     "naive-ui": "2.40.1",
     "normalize.css": "8.0.1",
     "p-limit": "6.1.0",
+    "pinia": "2.2.4",
     "prettier": "3.3.3",
     "qrcode": "1.5.4",
     "sass": "1.79.4",
@@ -74,10 +75,10 @@
     "vue-router": "4.4.5"
   },
   "volta": {
-    "node": "22.7.0",
-    "pnpm": "9.12.1"
+    "node": "22.10.0",
+    "pnpm": "9.12.2"
   },
-  "packageManager": "pnpm@9.12.1",
+  "packageManager": "pnpm@9.12.2",
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"
   },

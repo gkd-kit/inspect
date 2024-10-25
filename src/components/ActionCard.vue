@@ -4,18 +4,14 @@ import { message } from '@/utils/discrete';
 import {
   exportSnapshotAsImportId,
   exportSnapshotAsJpg,
-  exportSnapshotAsJpgUrl,
+  exportSnapshotAsImageId,
   exportSnapshotAsZip,
 } from '@/utils/export';
 import { buildEmptyFn, delay } from '@/utils/others';
-import {
-  githubJpgStorage,
-  importStorage,
-  snapshotStorage,
-} from '@/utils/storage';
+import { snapshotStorage } from '@/utils/snapshot';
 import { useTask } from '@/utils/task';
 import type { Snapshot } from '@/utils/types';
-import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
+import { getImportUrl, getImagUrl } from '@/utils/url';
 
 const props = withDefaults(
   defineProps<{
@@ -36,6 +32,7 @@ const props = withDefaults(
 );
 
 const router = useRouter();
+const { snapshotImportId, snapshotImageId } = useStorageStore();
 
 const exportJpg = useTask(async () =>
   exportSnapshotAsJpg((await snapshotStorage.getItem(props.snapshot.id))!),
@@ -53,12 +50,12 @@ const previewUrl = computed(() => {
 
 const exportJpgUrl = useTask(async () => {
   await waitShareAgree();
-  const pngUrl = await exportSnapshotAsJpgUrl(
+  const imageId = await exportSnapshotAsImageId(
     (await snapshotStorage.getItem(props.snapshot.id))!,
   );
   showTextDLg({
     title: `分享链接`,
-    content: githubUrlToSelfUrl(pngUrl),
+    content: getImagUrl(imageId),
   });
 });
 
@@ -163,8 +160,8 @@ const copy = async (content: string) => {
       </template>
       <NSpace vertical>
         <NButton
-          v-if="importStorage[snapshot.id]"
-          @click="copy(getImportUrl(importStorage[snapshot.id]))"
+          v-if="snapshotImportId[snapshot.id]"
+          @click="copy(getImportUrl(snapshotImportId[snapshot.id]))"
         >
           复制链接-快照
         </NButton>
@@ -176,8 +173,8 @@ const copy = async (content: string) => {
           生成链接-快照
         </NButton>
         <NButton
-          v-if="githubJpgStorage[snapshot.id]"
-          @click="copy(githubUrlToSelfUrl(githubJpgStorage[snapshot.id]))"
+          v-if="snapshotImageId[snapshot.id]"
+          @click="copy(getImagUrl(snapshotImageId[snapshot.id]))"
         >
           复制链接-图片
         </NButton>

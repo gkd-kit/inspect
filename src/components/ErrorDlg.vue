@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { settingsStorage } from '@/utils/storage';
-import { store } from '@/store';
+const globalStore = useGlobalStore();
+const settingsStore = useSettingsStore();
 </script>
 <template>
   <NModal
-    v-model:show="store.githubErrorDlgVisible"
+    v-model:show="globalStore.githubErrorDlgVisible"
     preset="dialog"
     title="生成分享链接失败"
     type="success"
@@ -18,7 +18,7 @@ import { store } from '@/store';
     </div>
   </NModal>
   <NModal
-    v-model:show="store.networkErrorDlgVisible"
+    v-model:show="globalStore.networkErrorDlgVisible"
     preset="dialog"
     title="访问其它域名资源失败"
     type="success"
@@ -53,7 +53,7 @@ import { store } from '@/store';
     </div>
   </NModal>
   <NModal
-    v-model:show="store.wasmErrorDlgVisible"
+    v-model:show="globalStore.wasmErrorDlgVisible"
     preset="dialog"
     title="浏览器不支持或版本过低"
     type="warning"
@@ -69,7 +69,7 @@ import { store } from '@/store';
       >
     </div>
     <div mt-10px>请使用 Chrome119/Edge119/Firefox120 或最新版本</div>
-    <NCheckbox class="mt-10px" v-model:checked="settingsStorage.ignoreWasmWarn">
+    <NCheckbox class="mt-10px" v-model:checked="settingsStore.ignoreWasmWarn">
       不关注一致性, 不再提醒
     </NCheckbox>
   </NModal>

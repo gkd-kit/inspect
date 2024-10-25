@@ -1,3 +1,9 @@
+export const isValidUrl = (url: string): URL | undefined => {
+  try {
+    return new URL(url);
+  } catch {}
+};
+
 const corsOkOrigins = new Set([
   location.origin,
   `https://cdn.jsdelivr.net`,
@@ -50,36 +56,25 @@ export const getImportId = (url: string) => {
   }
 };
 
+const imageUrlReg1 =
+  /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/[0-9]+\/([0-9a-z-]+)$/;
+const imageUrlReg2 =
+  /^https:\/\/github\.com\/user-attachments\/assets\/([0-9a-z-]+)$/;
+export const getImageId = (u: string) => {
+  return u.match(imageUrlReg1)?.[1] || u.match(imageUrlReg2)?.[1];
+};
+
 export const getImportUrl = (importId: number | string) => {
   return location.origin + `/i/${importId}`;
+};
+export const getImagUrl = (imageId: number | string) => {
+  return `https://e.gkd.li/${imageId}`;
 };
 
 export const getImportFileUrl = (importId: number | string) => {
   return `https://github.com/user-attachments/files/${importId}/file.zip`;
 };
 
-const githubImageUrlReg =
-  /^https:\/\/github\.com\/gkd-kit\/inspect\/assets\/([0-9]+)\/([0-9a-z-]+)$/;
-
-const assetBaseUrl = `https://github.com/user-attachments/assets/`;
-
-export const githubUrlToSelfUrl = (u: string): string => {
-  if (u.startsWith(assetBaseUrl)) {
-    return `https://e.gkd.li/` + u.substring(assetBaseUrl.length);
-  }
-  const { 1: userId, 2: imgAssetId } = u.match(githubImageUrlReg) || [];
-  if (userId && imgAssetId) {
-    return `https://m.gkd.li/${userId}/${imgAssetId}`;
-  } else {
-    console.error(
-      `github url ${u} should come from gkd-kit/inspect files/assets`,
-    );
-  }
-  return u;
-};
-
-export const isValidUrl = (url: string): URL | undefined => {
-  try {
-    return new URL(url);
-  } catch {}
+export const getImageFileUrl = (imageId: number | string) => {
+  return `https://github.com/user-attachments/assets/${imageId}`;
 };

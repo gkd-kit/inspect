@@ -1,6 +1,5 @@
 import { GM_fetch, gmOk } from './gm';
 import { isAllowCorsUrl } from './url';
-import { store } from '@/store';
 
 export const enhanceFetch = async (
   input: RequestInfo | URL,
@@ -17,7 +16,7 @@ export const enhanceFetch = async (
     return GM_fetch(input, init);
   } else if (options?.proxy) {
     if (!u.href.startsWith('https://github.com/')) {
-      store.networkErrorDlgVisible = true;
+      useGlobalStore().networkErrorDlgVisible = true;
       throw new Error(`proxy is not supported`);
     }
     const proxyUrl = new URL(`https://proxy.gkd.li`);
@@ -29,7 +28,7 @@ export const enhanceFetch = async (
       body: request.body,
     });
   } else {
-    store.networkErrorDlgVisible = true;
+    useGlobalStore().networkErrorDlgVisible = true;
     throw new Error(`gm is not supported`);
   }
 };

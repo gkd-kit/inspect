@@ -3,14 +3,10 @@ import JSZip from 'jszip';
 import pLimit from 'p-limit';
 import { uploadAsset } from './github';
 import { delay } from './others';
-import {
-  githubJpgStorage,
-  importStorage,
-  screenshotStorage,
-  urlStorage,
-} from './storage';
+import { screenshotStorage } from './snapshot';
 import Compressor from 'compressorjs';
 import type { Snapshot } from './types';
+import { getImageId } from './url';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
   const zip = new JSZip();
@@ -78,38 +74,44 @@ export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
   saveAs(batchZipFile, `batch-zip-${snapshots.length}.zip`);
 };
 
-export const exportSnapshotAsJpgUrl = async (snapshot: Snapshot) => {
+export const exportSnapshotAsImageId = async (snapshot: Snapshot) => {
+  const { snapshotImageId } = useStorageStore();
   return (
-    githubJpgStorage[snapshot.id] ??
+    snapshotImageId[snapshot.id] ??
     uploadAsset(
       await snapshotAsJpg(snapshot).then((r) => r.arrayBuffer()),
       'file.jpg',
     ).then((r) => {
-      githubJpgStorage[snapshot.id] = r.href;
-      return r.href;
+      const imageId = getImageId(r.href);
+      if (!imageId) {
+        throw new Error('imageId not found');
+      }
+      snapshotImageId[snapshot.id] = imageId;
+      return imageId;
     })
   );
 };
 
 export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
+  const { snapshotImportId, importSnapshotId } = useStorageStore();
   return (
-    importStorage[snapshot.id] ||
+    snapshotImportId[snapshot.id] ||
     uploadAsset(
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
       'file.zip',
     ).then((r) => {
-      importStorage[snapshot.id] = r.id;
-      urlStorage[r.id] = snapshot.id;
+      snapshotImportId[snapshot.id] = r.id;
+      importSnapshotId[r.id] = snapshot.id;
       return r.id;
     })
   );
 };
 
-export const batchCreateJpgUrl = async (snapshots: Snapshot[]) => {
+export const batchCreateImageId = async (snapshots: Snapshot[]) => {
   const limit = pLimit(3);
   return (
     await Promise.allSettled(
-      snapshots.map((s) => limit(() => exportSnapshotAsJpgUrl(s))),
+      snapshots.map((s) => limit(() => exportSnapshotAsImageId(s))),
     )
   ).reduce<string[]>((p, c) => {
     if (c.status == 'fulfilled') {
@@ -136,7 +138,9 @@ export const detectSnapshot = async (importId: number | string) => {
   if (!Number.isSafeInteger(+importId)) {
     return;
   }
-  if (urlStorage[importId]) {
+  const { importSnapshotId, waitInit } = useStorageStore();
+  await waitInit();
+  if (importSnapshotId[importId]) {
     return;
   }
   await fetch(`https://detect.gkd.li/api/detectSnapshot?importId=` + importId);

@@ -1,4 +1,3 @@
-import { store } from '@/store';
 import {
   Context,
   FastQuery,
@@ -24,20 +23,19 @@ import {
 import matchesInstantiate from '@gkd-kit/wasm_matches';
 import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
 import { isRawNode } from './node';
-import { settingsStorage } from './storage';
 import type { RawNode } from './types';
 
 export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
     const toMatches = mod.exports.toMatches;
     updateWasmToMatches(toMatches as any);
-    store.wasmSupported = true;
+    useGlobalStore().wasmSupported = true;
     if (import.meta.env.PROD) {
       console.log('use wasm matches');
     }
   })
   .catch((e) => {
-    store.wasmSupported = false;
+    useGlobalStore().wasmSupported = false;
     console.error(e);
     if (import.meta.env.PROD) {
       console.log('use js matches');
@@ -131,9 +129,9 @@ const matchOption = new MatchOption(false, false);
 export const parseSelector = (source: string): GkdSelector => {
   const s = Selector.Companion.parse(source);
   for (const exp of s.binaryExpressions) {
-    if (exp.operator.value.key == '~=' && !store.wasmSupported) {
-      if (!settingsStorage.ignoreWasmWarn) {
-        store.wasmErrorDlgVisible = true;
+    if (exp.operator.value.key == '~=' && !useGlobalStore().wasmSupported) {
+      if (!useSettingsStore().ignoreWasmWarn) {
+        useGlobalStore().wasmErrorDlgVisible = true;
         break;
       }
     }

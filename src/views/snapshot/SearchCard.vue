@@ -1,20 +1,17 @@
 <script setup lang="ts">
+import DraggableCard from '@/components/DraggableCard.vue';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import type { GkdSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
-import { githubJpgStorage, importStorage } from '@/utils/storage';
+import { gkdWidth, vw } from '@/utils/size';
 import type { RawNode, Snapshot } from '@/utils/types';
-import { getImportUrl, githubUrlToSelfUrl } from '@/utils/url';
+import { getImagUrl, getImportUrl } from '@/utils/url';
+import { SelectorCheckException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
 import * as base64url from 'universal-base64url';
-import DraggableCard from '@/components/DraggableCard.vue';
-import { gkdWidth, vw } from '@/utils/size';
-import { SelectorCheckException } from '@gkd-kit/selector';
-
-const route = useRoute();
 
 const props = withDefaults(
   defineProps<{
@@ -32,6 +29,10 @@ const props = withDefaults(
     onUpdateTrack: buildEmptyFn,
   },
 );
+
+const route = useRoute();
+const { snapshotImportTime, snapshotImportId, snapshotImageId } =
+  useStorageStore();
 
 const selectorText = shallowRef(``);
 type SearchResult =
@@ -155,11 +156,8 @@ const generateRules = errorTry(
     selector: GkdSelector;
     nodes: RawNode[][];
   }) => {
-    let jpgUrl = githubJpgStorage[props.snapshot.id];
-    if (jpgUrl) {
-      jpgUrl = githubUrlToSelfUrl(jpgUrl);
-    }
-    const importId = importStorage[props.snapshot.id];
+    const imageId = snapshotImageId[props.snapshot.id];
+    const importId = snapshotImportId[props.snapshot.id];
     const zipUrl = importId ? getImportUrl(importId) : undefined;
 
     const s = result.selector;
@@ -183,7 +181,7 @@ const generateRules = errorTry(
               quickFind: quickFind || undefined,
               activityIds: props.snapshot.activityId,
               matches: s.toString(),
-              exampleUrls: jpgUrl,
+              exampleUrls: getImagUrl(imageId),
               snapshotUrls: zipUrl,
             },
           ],
@@ -196,11 +194,11 @@ const generateRules = errorTry(
 );
 const enableSearchBySelector = shallowRef(true);
 const hasZipId = computed(() => {
-  return importStorage[props.snapshot.id];
+  return snapshotImportId[props.snapshot.id];
 });
 const shareResult = (result: SearchResult) => {
   if (!hasZipId.value) return;
-  const importUrl = new URL(getImportUrl(importStorage[props.snapshot.id]));
+  const importUrl = new URL(getImportUrl(snapshotImportId[props.snapshot.id]));
   if (typeof result.selector == 'object') {
     importUrl.searchParams.set(
       'gkd',
