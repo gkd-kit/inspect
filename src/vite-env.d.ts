@@ -7,13 +7,6 @@ interface Window {
   };
 }
 
-declare module 'virtual:commit' {
-  type DefaultLogFields = import('simple-git').DefaultLogFields;
-  type ListLogLine = import('simple-git').ListLogLine;
-  const latestLog: DefaultLogFields & ListLogLine;
-  export default latestLog;
-}
-
 /**
  * the declaration of JSON5 esm format is not correct
  *
