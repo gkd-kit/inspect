@@ -3,8 +3,9 @@ import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import process from 'node:process';
 import unocss from 'unocss/vite';
+import data from 'unplugin-data/vite';
 import { defineConfig } from 'vite';
-import { commit, mirror, unAutoImport } from './plugins';
+import { mirror, unAutoImport } from './plugins';
 
 export default defineConfig(() => {
   return {
@@ -14,7 +15,7 @@ export default defineConfig(() => {
       unocss(),
       unAutoImport(),
       legacy({ renderLegacyChunks: false, modernPolyfills: true }),
-      commit(),
+      data(),
       mirror(),
     ],
     resolve: {

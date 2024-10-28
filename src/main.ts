@@ -2,7 +2,7 @@ import 'normalize.css';
 import 'uno.css';
 import App from './App.vue';
 import router from './router';
-import { commitLog } from './utils/commit';
+import commitLog from './utils/commit.data';
 import root from './utils/root';
 
 const pinia = createPinia();
