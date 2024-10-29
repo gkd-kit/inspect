@@ -1,5 +1,4 @@
 import { saveAs } from 'file-saver';
-import JSZip from 'jszip';
 import pLimit from 'p-limit';
 import { uploadAsset } from './github';
 import { delay } from './others';
@@ -7,9 +6,10 @@ import { screenshotStorage } from './snapshot';
 import Compressor from 'compressorjs';
 import type { Snapshot } from './types';
 import { getImageId } from './url';
+import { JSZipAsync } from './chunk';
 
 export const snapshotAsZip = async (snapshot: Snapshot) => {
-  const zip = new JSZip();
+  const zip = new (await JSZipAsync)();
   zip
     .file(`snapshot.json`, JSON.stringify(snapshot))
     .file(`screenshot.png`, (await screenshotStorage.getItem(snapshot.id))!);
@@ -49,7 +49,7 @@ export const exportSnapshotAsJpg = async (snapshot: Snapshot) => {
 };
 
 export const batchJpgDownloadZip = async (snapshots: Snapshot[]) => {
-  const zip = new JSZip();
+  const zip = new (await JSZipAsync)();
   for (const snapshot of snapshots) {
     await delay();
     zip.file(snapshot.id + `.jpg`, snapshotAsJpg(snapshot));
@@ -62,7 +62,7 @@ export const batchJpgDownloadZip = async (snapshots: Snapshot[]) => {
 };
 
 export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
-  const zip = new JSZip();
+  const zip = new (await JSZipAsync)();
   for (const snapshot of snapshots) {
     await delay();
     zip.file(snapshot.id + `.zip`, await snapshotAsZip(snapshot));

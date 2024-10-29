@@ -1,5 +1,4 @@
 import { fileOpen } from 'browser-fs-access';
-import JSZip, { loadAsync } from 'jszip';
 import pLimit from 'p-limit';
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
@@ -7,8 +6,10 @@ import { isZipBf } from './file_type';
 import { setSnapshot, snapshotStorage } from './snapshot';
 import type { Snapshot } from './types';
 import { getImportFileUrl, getImportId } from './url';
+import { loadAsync } from './chunk';
+import type { JSZipType } from './chunk';
 
-const parseZip = async (zip: JSZip) => {
+const parseZip = async (zip: JSZipType) => {
   const snapshotFile = zip.filter((s) => s.endsWith(`.json`))[0];
   const screenshotFile = zip.filter((s) => s.endsWith(`.png`))[0];
   if (!snapshotFile || !screenshotFile) {

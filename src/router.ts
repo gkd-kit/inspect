@@ -65,36 +65,6 @@ const router = createRouter({
       },
     },
     {
-      path: '/s',
-      component: () => import('@/views/PreviewSharePage.vue'),
-      beforeEnter(to, _, next) {
-        if (to.query.url) {
-          const u = toValidURL(String(to.query.url));
-          if (u) {
-            return next();
-          }
-        }
-        return next({ path: '/404' });
-      },
-    },
-    {
-      path: '/s/:github_asset_id',
-      component: () => import('@/views/PreviewSharePage.vue'),
-      beforeEnter(to, _, next) {
-        const github_asset_id = String(to.params.github_asset_id).match(
-          /^\d+/,
-        )?.[0];
-        if (!github_asset_id) {
-          return next({ path: '/404' });
-        }
-        if (to.params.github_asset_id === github_asset_id) {
-          return next();
-        } else {
-          return next('/s/' + github_asset_id);
-        }
-      },
-    },
-    {
       path: '/selector',
       component: () => import('@/views/SelectorPage.vue'),
     },
