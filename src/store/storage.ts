@@ -4,6 +4,12 @@ import { getImageId, getImportId } from '@/utils/url';
 import localforage from 'localforage';
 import type { Reactive } from 'vue';
 
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    location.reload();
+  });
+}
+
 interface InitHelper<T> {
   waitInit: () => Promise<Reactive<T>>;
   inited: globalThis.Ref<boolean>;
@@ -145,7 +151,7 @@ export const useStorageStore = defineStore('storage', () => {
   } as const;
 
   const inited = computed(() => {
-    return Object.values(data).every((v) => v.init.inited);
+    return Object.values(data).every((v) => v.init.inited.value);
   });
   const waitInit = async () => {
     if (inited.value) return;
