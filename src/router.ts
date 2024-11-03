@@ -3,6 +3,12 @@ import { getImportFileUrl } from '@/utils/url';
 import type { RouteRecordRedirectOption } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
 
+const routeModules = new Set<() => unknown>();
+const recordModule = <T, S extends () => T>(v: S): S => {
+  routeModules.add(v);
+  return v;
+};
+
 const redirectImport: RouteRecordRedirectOption = (to) => {
   const github_asset_id = String(to.params.github_asset_id).match(/^\d+/)?.[0]; // 丢弃非法字符
   if (!github_asset_id) {
@@ -22,16 +28,18 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('@/views/home/HomePage.vue'),
+      component: recordModule(() => import('@/views/home/HomePage.vue')),
     },
     {
       path: '/snapshot/:snapshotId',
       name: 'snapshot',
-      component: () => import('@/views/snapshot/SnapshotPage.vue'),
+      component: recordModule(
+        () => import('@/views/snapshot/SnapshotPage.vue'),
+      ),
     },
     {
       path: '/i',
-      component: () => import('@/views/ImportPage.vue'),
+      component: recordModule(() => import('@/views/ImportPage.vue')),
     },
     {
       path: '/i/:github_asset_id',
@@ -52,7 +60,7 @@ const router = createRouter({
     },
     {
       path: '/device',
-      component: () => import('@/views/DevicePage.vue'),
+      component: recordModule(() => import('@/views/DevicePage.vue')),
       beforeEnter(to, _, next) {
         const u = toValidURL(String(to.query.url));
         if (u) {
@@ -66,13 +74,20 @@ const router = createRouter({
     },
     {
       path: '/selector',
-      component: () => import('@/views/SelectorPage.vue'),
+      component: recordModule(() => import('@/views/SelectorPage.vue')),
     },
     {
       path: '/:pathMatch(.*)*',
-      component: () => import('@/views/_404Page.vue'),
+      component: recordModule(() => import('@/views/_404Page.vue')),
     },
   ],
 });
+
+if (import.meta.env.PROD) {
+  setTimeout(() => {
+    // 预加载所有路由组件
+    routeModules.forEach((v) => v());
+  }, 3000);
+}
 
 export default router;
