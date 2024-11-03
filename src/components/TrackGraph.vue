@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import '@/utils/g6';
 import { getLimitLabel } from '@/utils/node';
-import type { ConnectKeyType, GkdSelector } from '@/utils/selector';
-import type { RawNode } from '@/utils/types';
+import type { ConnectKeyType } from '@/utils/selector';
+import type { RawNode, TrackValue } from '@/utils/types';
 import type { TreeGraph, TreeGraphData } from '@antv/g6';
 import G6 from '@antv/g6';
 
 const props = withDefaults(
   defineProps<{
-    track: {
-      selector: GkdSelector;
-      nodes: RawNode[];
-    };
+    track: TrackValue;
   }>(),
   {},
 );

@@ -1,31 +1,13 @@
 <script setup lang="ts">
-import { findNodesByXy } from '@/utils/node';
-import { buildEmptyFn } from '@/utils/others';
-import type { RawNode, Snapshot } from '@/utils/types';
-
-const props = withDefaults(
-  defineProps<{
-    url: string;
-    snapshot: Snapshot;
-    rootNode?: RawNode;
-    focusNode?: RawNode;
-    onUpdateFocusNode?: (data: RawNode) => void;
-    onUpdateFocusNodes?: (data: {
-      nodes: RawNode[];
-      position: { x: number; y: number };
-    }) => void;
-  }>(),
-  {
-    onUpdateFocusNode: buildEmptyFn,
-    onUpdateFocusNodes: buildEmptyFn,
-  },
-);
+const snapshotStore = useSnapshotStore();
+const { updatePosition } = snapshotStore;
+const snapshotRefs = storeToRefs(snapshotStore);
+const { focusNode, screenshotUrl } = snapshotRefs;
 
 const imgRef = shallowRef<HTMLImageElement>();
 const imgLoadTime = shallowRef(false);
 
 const clickImg = (ev: MouseEvent) => {
-  if (!props.rootNode) return;
   const img = imgRef.value;
   if (!img) {
     return;
@@ -36,14 +18,11 @@ const clickImg = (ev: MouseEvent) => {
   const innerHeight = (imgRect.width / img.naturalWidth) * img.naturalHeight;
   const offsetTop = (imgRect.height - innerHeight) / 2;
 
-  const ox = ((ev.clientX - imgRect.left) / imgRect.width) * img.naturalWidth;
-  const oy =
+  const x = ((ev.clientX - imgRect.left) / imgRect.width) * img.naturalWidth;
+  const y =
     ((ev.clientY - imgRect.top - offsetTop) / innerHeight) * img.naturalHeight;
 
-  const results = findNodesByXy(props.snapshot.nodes, ox, oy);
-  if (results.length === 0) return;
-  props.onUpdateFocusNode(results[0]);
-  props.onUpdateFocusNodes({ nodes: results, position: { x: ox, y: oy } });
+  updatePosition({ x, y });
 };
 
 const percent = (n: number) => {
@@ -54,8 +33,9 @@ const imgSize = useElementSize(imgRef);
 
 const positionStyle = computed(() => {
   const img = imgRef.value;
-  const attr = props.focusNode?.attr;
-  if (!props.focusNode || !img || !attr || !imgLoadTime.value) {
+
+  const attr = focusNode.value?.attr;
+  if (!focusNode.value || !img || !attr || !imgLoadTime.value) {
     return ``;
   }
   const imgWidth = imgSize.width.value;
@@ -81,7 +61,7 @@ const positionStyle = computed(() => {
 const imgHover = shallowRef(false);
 const hoverPosition = shallowRef({ ox: 0, oy: 0 });
 const boxHoverPosition = computed(() => {
-  const attr = props.focusNode?.attr;
+  const attr = focusNode.value?.attr;
   if (!attr) {
     return;
   }
@@ -93,6 +73,8 @@ const boxHoverPosition = computed(() => {
     bottom: attr.bottom - oy,
   };
 });
+const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
+
 const imgMove = (ev: MouseEvent) => {
   const img = imgRef.value;
   if (!img) return;
@@ -110,14 +92,13 @@ const imgMove = (ev: MouseEvent) => {
     top: (-(oy - 0.1 * img.naturalWidth) / img.naturalWidth) * 1000 + 'px',
   };
 };
-const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
 </script>
 
 <template>
-  <div flex flex-col relative h-full>
+  <div flex flex-col relative h-full v-if="screenshotUrl">
     <img
       ref="imgRef"
-      :src="url"
+      :src="screenshotUrl"
       @click="clickImg"
       cursor-crosshair
       h-full
@@ -155,7 +136,7 @@ const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
       border-dashed
     >
       <img
-        :src="url"
+        :src="screenshotUrl"
         object-contain
         absolute
         left-0

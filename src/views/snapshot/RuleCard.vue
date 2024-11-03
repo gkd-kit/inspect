@@ -5,14 +5,8 @@ import { parseSelector, type GkdSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
 import type { RawNode } from '@/utils/types';
 
-const props = withDefaults(
-  defineProps<{
-    root: RawNode;
-    focusNode?: RawNode;
-    onUpdateFocusNode?: (data: RawNode) => void;
-  }>(),
-  {},
-);
+const snapshotStore = useSnapshotStore();
+const { rootNode, focusNode } = storeToRefs(snapshotStore);
 
 const tabShow = shallowRef(false);
 const text = shallowRef('');
@@ -23,6 +17,7 @@ interface ResolvedData {
   anyMatches: string[];
   excludeMatches: string[];
 }
+
 const toArray = (v: any): string[] | undefined => {
   if (v === undefined || v === null) return [];
   if (typeof v === 'string') return [v];
@@ -67,7 +62,7 @@ const dataRef = computed<RawNode | string>(() => {
     }
   }
   const matchesResult = resolvedMatches.map((s) =>
-    s.querySelectorAll(props.root),
+    s.querySelectorAll(rootNode.value),
   );
   if (resolvedMatches.length) {
     const notIndex = matchesResult.findIndex((s) => s.length === 0);
@@ -87,7 +82,7 @@ const dataRef = computed<RawNode | string>(() => {
     }
   }
   const anyMatchesResult = resolvedAnyMatches.map((s) =>
-    s.querySelectorAll(props.root),
+    s.querySelectorAll(rootNode.value),
   );
   if (resolvedAnyMatches.length) {
     if (anyMatchesResult.every((s) => s.length === 0)) {
@@ -110,7 +105,7 @@ const dataRef = computed<RawNode | string>(() => {
     }
   }
   const excludeMatchesResult = resolvedExcludeMatches.map((s) =>
-    s.querySelectorAll(props.root),
+    s.querySelectorAll(rootNode.value),
   );
   if (resolvedExcludeMatches.length) {
     const index = excludeMatchesResult.findIndex((s) => s.length !== 0);
@@ -177,7 +172,7 @@ const targetNode = computed(() => {
 
         <NButton
           v-else-if="targetNode"
-          @click="onUpdateFocusNode?.(targetNode)"
+          @click="snapshotStore.updateFocusNode(targetNode)"
           size="small"
           :class="{
             'color-[#00F]': targetNode === focusNode,

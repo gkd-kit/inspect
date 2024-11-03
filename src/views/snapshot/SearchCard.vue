@@ -3,7 +3,7 @@ import DraggableCard from '@/components/DraggableCard.vue';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel } from '@/utils/node';
-import { buildEmptyFn, copy } from '@/utils/others';
+import { copy } from '@/utils/others';
 import type { GkdSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
@@ -12,27 +12,17 @@ import { getImagUrl, getImportUrl } from '@/utils/url';
 import { SelectorCheckException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
 import * as base64url from 'universal-base64url';
-
-const props = withDefaults(
-  defineProps<{
-    snapshot: Snapshot;
-    rootNode: RawNode;
-    focusNode?: RawNode;
-    onUpdateFocusNode?: (data: RawNode) => void;
-    onUpdateTrack?: (track: {
-      selector: GkdSelector;
-      nodes: RawNode[];
-    }) => void;
-  }>(),
-  {
-    onUpdateFocusNode: buildEmptyFn,
-    onUpdateTrack: buildEmptyFn,
-  },
-);
+import type { ShallowRef } from 'vue';
 
 const route = useRoute();
-const { snapshotImportTime, snapshotImportId, snapshotImageId } =
-  useStorageStore();
+const { snapshotImportId, snapshotImageId } = useStorageStore();
+
+const snapshotStore = useSnapshotStore();
+const { updateFocusNode } = snapshotStore;
+const snapshotRefs = storeToRefs(snapshotStore);
+const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
+const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
+const { focusNode, track } = snapshotRefs;
 
 const selectorText = shallowRef(``);
 type SearchResult =
@@ -72,7 +62,7 @@ const searchSelector = (text: string) => {
     return;
   }
 
-  const results = selector.querySelectorTrackAll(props.rootNode);
+  const results = selector.querySelectorTrackAll(rootNode.value);
   if (results.length == 0) {
     message.success(`没有选择到节点`);
     return;
@@ -91,7 +81,7 @@ const searchString = (text: string) => {
     return;
   }
   const results: RawNode[] = [];
-  const stack: RawNode[] = [props.rootNode];
+  const stack: RawNode[] = [rootNode.value];
   while (stack.length > 0) {
     const n = stack.pop()!;
     if (getNodeLabel(n).includes(text)) {
@@ -113,12 +103,11 @@ const searchString = (text: string) => {
 };
 const refreshExpandedKeys = () => {
   const newResult = selectorResults[0];
-
   const newNode = newResult.nodes[0];
   if (!Array.isArray(newNode)) {
-    props.onUpdateFocusNode(newNode);
+    updateFocusNode(newNode);
   } else if (typeof newResult.selector == 'object' && Array.isArray(newNode)) {
-    props.onUpdateFocusNode(newNode[newResult.selector.targetIndex]);
+    updateFocusNode(newNode[newResult.selector.targetIndex]);
   }
   const allKeys = new Set(selectorResults.map((s) => s.key));
   const newKeys = expandedKeys.value.filter((k) => allKeys.has(k));
@@ -156,8 +145,8 @@ const generateRules = errorTry(
     selector: GkdSelector;
     nodes: RawNode[][];
   }) => {
-    const imageId = snapshotImageId[props.snapshot.id];
-    const importId = snapshotImportId[props.snapshot.id];
+    const imageId = snapshotImageId[snapshot.value.id];
+    const importId = snapshotImportId[snapshot.value.id];
     const zipUrl = importId ? getImportUrl(importId) : undefined;
 
     const s = result.selector;
@@ -169,8 +158,8 @@ const generateRules = errorTry(
       (t.quickFind ?? t.textQf) && t.attr.text && s.qfTextValue,
     ].some(Boolean);
     const rule = {
-      id: props.snapshot.appId,
-      name: getAppInfo(props.snapshot).name,
+      id: snapshot.value.appId,
+      name: getAppInfo(snapshot.value).name,
       groups: [
         {
           key: 1,
@@ -179,7 +168,7 @@ const generateRules = errorTry(
           rules: [
             {
               quickFind: quickFind || undefined,
-              activityIds: props.snapshot.activityId,
+              activityIds: snapshot.value.activityId,
               matches: s.toString(),
               exampleUrls: getImagUrl(imageId),
               snapshotUrls: zipUrl,
@@ -194,11 +183,11 @@ const generateRules = errorTry(
 );
 const enableSearchBySelector = shallowRef(true);
 const hasZipId = computed(() => {
-  return snapshotImportId[props.snapshot.id];
+  return snapshotImportId[snapshot.value.id];
 });
 const shareResult = (result: SearchResult) => {
   if (!hasZipId.value) return;
-  const importUrl = new URL(getImportUrl(snapshotImportId[props.snapshot.id]));
+  const importUrl = new URL(getImportUrl(snapshotImportId[snapshot.value.id]));
   if (typeof result.selector == 'object') {
     importUrl.searchParams.set(
       'gkd',
@@ -372,7 +361,7 @@ const tabShow = shallowRef(true);
                   Array.isArray(r) ? r[0] : r,
                 )"
                 :key="resultNode.id"
-                @click="onUpdateFocusNode(resultNode)"
+                @click="updateFocusNode(resultNode)"
                 size="small"
                 :class="{ 'color-[#00F]': resultNode === focusNode }"
               >
@@ -389,10 +378,10 @@ const tabShow = shallowRef(true);
                 <NButton
                   size="small"
                   @click="
-                    onUpdateTrack({
+                    track = {
                       nodes: trackNodes,
                       selector: result.selector,
-                    })
+                    }
                   "
                 >
                   <NIcon>
@@ -406,7 +395,7 @@ const tabShow = shallowRef(true);
                 </NButton>
                 <NButton
                   @click="
-                    onUpdateFocusNode(trackNodes[result.selector.targetIndex])
+                    updateFocusNode(trackNodes[result.selector.targetIndex])
                   "
                   size="small"
                   :class="{

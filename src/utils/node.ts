@@ -1,4 +1,11 @@
-import type { AppInfo, Device, RawNode, SizeExt, Snapshot } from './types';
+import type {
+  AppInfo,
+  Device,
+  Position,
+  RawNode,
+  SizeExt,
+  Snapshot,
+} from './types';
 
 export const listToTree = (nodes: RawNode[]) => {
   // nodes = structuredClone(nodes);
@@ -22,11 +29,10 @@ export const listToTree = (nodes: RawNode[]) => {
   return nodes[0];
 };
 
-const xyInNode = (node: RawNode, ox: number, oy: number) => {
+const xyInNode = (node: RawNode, position: Position) => {
   const attr = node.attr;
-  return (
-    attr.left <= ox && ox <= attr.right && attr.top <= oy && oy <= attr.bottom
-  );
+  const { x, y } = position;
+  return attr.left <= x && x <= attr.right && attr.top <= y && y <= attr.bottom;
 };
 
 const includesRectNode = (outer: RawNode, inner: RawNode) => {
@@ -57,35 +63,15 @@ const isAncestor = (parent: RawNode | undefined, child: RawNode): boolean => {
   return false;
 };
 
-export const findNodeByXy = (
-  nodes: RawNode[],
-  ox: number,
-  oy: number,
-): RawNode | undefined => {
-  let prevNode: RawNode | undefined = undefined;
-  for (const node of nodes) {
-    if (node?.attr?.left === undefined) continue;
-    if (!xyInNode(node, ox, oy)) continue;
-    if (!prevNode) {
-      prevNode = node;
-      continue;
-    }
-    if (includesRectNode(prevNode, node)) {
-      prevNode = node;
-    }
-  }
-  return prevNode;
-};
-
 export const findNodesByXy = (
-  nodes: RawNode[],
-  ox: number,
-  oy: number,
+  nodes: RawNode[] | undefined,
+  position: Position | undefined,
 ): RawNode[] => {
+  if (!nodes || !position) return [];
   let results: RawNode[] = [];
   for (const node of nodes) {
     if (node?.attr?.left === undefined) continue;
-    if (!xyInNode(node, ox, oy)) continue;
+    if (!xyInNode(node, position)) continue;
     results.push(node);
   }
   if (results.length <= 1) {

@@ -117,8 +117,8 @@ export type GkdSelector = {
   canCopy: boolean;
   toString: () => string;
   match: (node: RawNode) => RawNode | undefined;
-  querySelectorAll: (node: RawNode) => RawNode[];
-  querySelectorTrackAll: (node: RawNode) => RawNode[][];
+  querySelectorAll: (node: RawNode | undefined) => RawNode[];
+  querySelectorTrackAll: (node: RawNode | undefined) => RawNode[][];
 };
 
 export type ConnectKeyType = '+' | '-' | '>' | '<' | '<<';
@@ -158,9 +158,11 @@ export const parseSelector = (source: string): GkdSelector => {
       return s.match(node, transform, matchOption) ?? undefined;
     },
     querySelectorAll: (node) => {
+      if (!node) return [];
       return transform.querySelectorAllArray(node, s);
     },
     querySelectorTrackAll: (node) => {
+      if (!node) return [];
       return transform
         .querySelectorAllContextArray(node, s)
         .map((v) => v.toArray());

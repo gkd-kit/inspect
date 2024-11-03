@@ -58,6 +58,7 @@ interface SettingsState {
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;
   ignoreWasmWarn: boolean;
+  maxShowNodeSize: number;
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -67,6 +68,7 @@ export const useSettingsStore = defineStore('settings', () => {
       autoUploadImport: false,
       ignoreUploadWarn: false,
       ignoreWasmWarn: false,
+      maxShowNodeSize: 2000,
     }),
   );
   return {

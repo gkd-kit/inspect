@@ -131,3 +131,15 @@ export const isIntString = (v: string | number | undefined) => {
     Array.prototype.every.call(v, (c) => '0' <= c && c <= '9')
   );
 };
+
+export const toInteger = (v: unknown): number | undefined => {
+  if (typeof v === 'number' && Number.isSafeInteger(v)) {
+    return v;
+  }
+  if (typeof v === 'string' && v.length > 0) {
+    const n = Number(v);
+    if (Number.isSafeInteger(n)) {
+      return n;
+    }
+  }
+};

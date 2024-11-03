@@ -1,3 +1,5 @@
+import type { GkdSelector } from '@/utils/selector';
+
 export type PrimitiveType = boolean | string | number | null | undefined;
 
 export interface RpcError {
@@ -113,3 +115,13 @@ export interface SizeExt {
   height: number;
   width: number;
 }
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export type TrackValue = {
+  selector: GkdSelector;
+  nodes: RawNode[];
+};

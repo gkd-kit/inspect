@@ -134,7 +134,8 @@ export const batchCreateZipUrl = async (snapshots: Snapshot[]) => {
   }, []);
 };
 
-export const detectSnapshot = async (importId: number | string) => {
+export const detectSnapshot = async (importId: number | string | undefined) => {
+  if (!importId) return;
   if (!Number.isSafeInteger(+importId)) {
     return;
   }

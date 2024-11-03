@@ -1,41 +1,35 @@
 <script setup lang="tsx">
+import GapList from '@/components/GapList';
+import { message } from '@/utils/discrete';
 import {
   getAppInfo,
   getDevice,
-  getNodeLabel,
   getGkdAppInfo,
+  getNodeLabel,
 } from '@/utils/node';
-import { buildEmptyFn, copy, delay } from '@/utils/others';
+import { copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
 import type { TreeInst } from 'naive-ui';
-import type { HTMLAttributes } from 'vue';
-import GapList from '@/components/GapList';
-import { message } from '@/utils/discrete';
+import type { HTMLAttributes, ShallowRef } from 'vue';
 
-const props = withDefaults(
-  defineProps<{
-    snapshot: Snapshot;
-    rootNode: RawNode;
-    focusNode?: RawNode;
-    focusCount: number;
-    onUpdateFocusNode?: (data: RawNode) => void;
-  }>(),
-  {
-    onUpdateFocusNode: buildEmptyFn,
-  },
-);
+const snapshotStore = useSnapshotStore();
+const { updateFocusNode } = snapshotStore;
+const snapshotRefs = storeToRefs(snapshotStore);
+const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
+const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
+const { focusNode, focusTime } = snapshotRefs;
 
 const expandedKeys = shallowRef<number[]>([]);
-watch([() => props.focusNode, () => props.focusCount], async () => {
-  if (!props.focusNode) return;
-  const key = props.focusNode.id;
+watch([() => focusNode.value, () => focusTime.value], async () => {
+  if (!focusNode.value) return;
+  const key = focusNode.value.id;
   nextTick().then(async () => {
     await delay(100);
-    if (key === props.focusNode?.id) {
+    if (key === focusNode.value?.id) {
       treeRef.value?.scrollTo({ key, behavior: 'smooth', debounce: true });
     }
   });
-  let parent = props.focusNode.parent;
+  let parent = focusNode.value.parent;
   if (!parent) {
     return;
   }
@@ -56,7 +50,7 @@ watch([() => props.focusNode, () => props.focusCount], async () => {
 const treeRef = shallowRef<TreeInst>();
 
 const treeFilter = (pattern: string, node: RawNode) => {
-  return node.id === props.focusNode?.id;
+  return node.id === focusNode.value?.id;
 };
 const treeNodeProps = (info: {
   option: RawNode;
@@ -64,10 +58,10 @@ const treeNodeProps = (info: {
   const qf = info.option.idQf || info.option.textQf || info.option.quickFind;
   return {
     onClick: () => {
-      props.onUpdateFocusNode(info.option);
+      updateFocusNode(info.option);
     },
     style: {
-      color: info.option.id == props.focusNode?.id ? `#00F` : undefined,
+      color: info.option.id == focusNode.value?.id ? `#00F` : undefined,
       fontWeight: qf ? `bold` : undefined,
     },
   };
@@ -82,21 +76,21 @@ const renderLabel = (info: {
 };
 
 const deviceName = computed(() => {
-  return `${getDevice(props.snapshot).manufacturer} Android ${getDevice(props.snapshot).release || ``}`;
+  return `${getDevice(snapshot.value).manufacturer} Android ${getDevice(snapshot.value).release || ``}`;
 });
 
 const isSystem = computed(() => {
-  return getAppInfo(props.snapshot).isSystem;
+  return getAppInfo(snapshot.value).isSystem;
 });
 const activityId = computed(() => {
-  if (!props.snapshot.activityId || !props.snapshot.appId) return '';
+  if (!snapshot.value.activityId || !snapshot.value.appId) return '';
   if (
-    props.snapshot.activityId.startsWith(props.snapshot.appId) &&
-    props.snapshot.activityId.length > props.snapshot.appId.length
+    snapshot.value.activityId.startsWith(snapshot.value.appId) &&
+    snapshot.value.activityId.length > snapshot.value.appId.length
   ) {
-    return props.snapshot.activityId.substring(props.snapshot.appId.length);
+    return snapshot.value.activityId.substring(snapshot.value.appId.length);
   }
-  return props.snapshot.activityId;
+  return snapshot.value.activityId;
 });
 const clickSettings = () => {
   message.info('暂未实现');

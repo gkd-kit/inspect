@@ -1,62 +1,52 @@
 <script setup lang="ts">
-import { copy } from '@/utils/others';
-import type { RawNode } from '@/utils/types';
 import DraggableCard from '@/components/DraggableCard.vue';
+import { copy } from '@/utils/others';
 
-const props = withDefaults(defineProps<{ focusNode: RawNode }>(), {});
+const { focusNode } = storeToRefs(useSnapshotStore());
 
-const attrTip: Record<
+type AttrTipMap = Record<
   string,
-  { show?: () => unknown; desc: string; type: 'info' | 'quickFind' }
-> = {
-  _id: {
-    desc: `虚拟属性(真机不可用):生成快照访问节点顺序`,
-    type: 'info',
-  },
-  _pid: { desc: `虚拟属性(真机不可用):父节点的 _id`, type: 'info' },
-  depth: { desc: `使用此属性在某些应用上可能造成无限节点错误`, type: 'info' },
-  id: {
-    desc: `可快速查找`,
-    type: 'quickFind',
-    show() {
-      return (
-        (props.focusNode.quickFind || props.focusNode.idQf) &&
-        props.focusNode.attr.id
-      );
+  { desc: string; type: 'info' | 'quickFind'; show?: boolean }
+>;
+
+const attrTip = computed<AttrTipMap>(() => {
+  const node = focusNode.value;
+  if (!node) return {};
+  return {
+    _id: {
+      desc: `虚拟属性(真机不可用):生成快照访问节点顺序`,
+      type: 'info',
     },
-  },
-  vid: {
-    desc: `可快速查找`,
-    type: 'quickFind',
-    show() {
-      return (
-        (props.focusNode.quickFind || props.focusNode.idQf) &&
-        props.focusNode.attr.vid
-      );
+    _pid: { desc: `虚拟属性(真机不可用):父节点的 _id`, type: 'info' },
+    depth: { desc: `使用此属性在某些应用上可能造成无限节点错误`, type: 'info' },
+    id: {
+      desc: `可快速查找`,
+      type: 'quickFind',
+      show: Boolean((node.quickFind || node.idQf) && node.attr.id),
     },
-  },
-  text: {
-    desc: `可快速查找`,
-    type: 'quickFind',
-    show() {
-      return (
-        (props.focusNode.quickFind || props.focusNode.textQf) &&
-        props.focusNode.attr.text
-      );
+    vid: {
+      desc: `可快速查找`,
+      type: 'quickFind',
+      show: Boolean((node.quickFind || node.idQf) && node.attr.vid),
     },
-  },
-};
+    text: {
+      desc: `可快速查找`,
+      type: 'quickFind',
+      show: Boolean((node.quickFind || node.textQf) && node.attr.text),
+    },
+  } as AttrTipMap;
+});
 
 const lenAttrNames = [`text`, `desc`];
 const attrs = computed(() => {
-  return Object.entries(props.focusNode.attr)
+  if (!focusNode.value) return [];
+  return Object.entries(focusNode.value.attr)
     .map(([name, value]) => {
-      const show = attrTip[name]?.show;
       const attr = {
         name,
         value,
         desc: JSON.stringify(value),
-        tip: (show ? show() : true) ? attrTip[name] : undefined,
+        tip: attrTip.value[name]?.show ? attrTip.value[name] : undefined,
       };
       if (lenAttrNames.includes(name)) {
         return [
@@ -77,6 +67,7 @@ const attrs = computed(() => {
 
 <template>
   <DraggableCard
+    v-if="focusNode"
     :initialValue="{ top: 40, right: 10 }"
     v-slot="{ onRef }"
     class="box-shadow-dim"
