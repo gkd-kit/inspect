@@ -67,12 +67,13 @@ const attrs = computed(() => {
 
 <template>
   <DraggableCard
-    v-if="focusNode"
     :initialValue="{ top: 40, right: 10 }"
     v-slot="{ onRef }"
     class="box-shadow-dim"
+    :show="Boolean(focusNode)"
   >
     <NTable
+      v-if="focusNode"
       size="small"
       striped
       :singleLine="false"

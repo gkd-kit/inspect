@@ -9,12 +9,17 @@ const left = _1vw * 25.5;
 </script>
 <template>
   <DraggableCard
-    v-if="overlapNodes && focusPosition"
     :initialValue="{ top: 215, left }"
     v-slot="{ onRef }"
     class="z-2 box-shadow-dim w-420px"
+    :show="Boolean(overlapNodes && focusPosition)"
   >
-    <NCard size="small" closable @close="overlapNodes = undefined">
+    <NCard
+      v-if="overlapNodes && focusPosition"
+      size="small"
+      closable
+      @close="overlapNodes = undefined"
+    >
       <template #header>
         <div :ref="onRef" cursor-move>
           位置
