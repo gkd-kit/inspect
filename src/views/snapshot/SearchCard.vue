@@ -3,7 +3,7 @@ import DraggableCard from '@/components/DraggableCard.vue';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel } from '@/utils/node';
-import { copy } from '@/utils/others';
+import { buildEmptyFn, copy } from '@/utils/others';
 import type { GkdSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
@@ -13,6 +13,16 @@ import { SelectorCheckException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
 import * as base64url from 'universal-base64url';
 import type { ShallowRef } from 'vue';
+
+withDefaults(
+  defineProps<{
+    show: boolean;
+    onUpdateShow?: (data: boolean) => void;
+  }>(),
+  {
+    onUpdateShow: buildEmptyFn,
+  },
+);
 
 const route = useRoute();
 const { snapshotImportId, snapshotImageId } = useStorageStore();
@@ -198,8 +208,6 @@ const shareResult = (result: SearchResult) => {
   }
   copy(importUrl.toString());
 };
-
-const tabShow = shallowRef(true);
 </script>
 <template>
   <DraggableCard
@@ -212,7 +220,7 @@ const tabShow = shallowRef(true);
     sizeDraggable
     v-slot="{ onRef }"
     class="z-1 box-shadow-dim"
-    :show="tabShow"
+    :show="show"
   >
     <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
       <div flex m-b-4px pr-4px>
@@ -223,7 +231,7 @@ const tabShow = shallowRef(true);
           </NSpace>
         </NRadioGroup>
         <div flex-1 cursor-move :ref="onRef"></div>
-        <NButton @click="tabShow = !tabShow" text title="最小化">
+        <NButton @click="onUpdateShow(!show)" text title="最小化">
           <template #icon>
             <NIcon>
               <svg viewBox="0 0 24 24">
@@ -410,40 +418,6 @@ const tabShow = shallowRef(true);
           </NSpace>
         </NCollapseItem>
       </NCollapse>
-    </div>
-  </DraggableCard>
-  <DraggableCard
-    :initialValue="{
-      bottom: 8,
-      right: 16,
-    }"
-    :minWidth="300"
-    v-slot="{ onRef, moved }"
-    class="z-1 box-shadow-dim rounded-1/2 bg-white"
-    :show="!tabShow"
-  >
-    <div :ref="onRef">
-      <NButton
-        @click="
-          if (!moved) {
-            tabShow = !tabShow;
-          }
-        "
-        circle
-        size="large"
-        title="搜索面板"
-      >
-        <template #icon>
-          <NIcon>
-            <svg viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M2 19v-2h10v2zm0-5v-2h5v2zm0-5V7h5v2zm18.6 10l-3.85-3.85q-.6.425-1.312.638T14 16q-2.075 0-3.537-1.463T9 11t1.463-3.537T14 6t3.538 1.463T19 11q0 .725-.213 1.438t-.637 1.312L22 17.6zM14 14q1.25 0 2.125-.875T17 11t-.875-2.125T14 8t-2.125.875T11 11t.875 2.125T14 14"
-              />
-            </svg>
-          </NIcon>
-        </template>
-      </NButton>
     </div>
   </DraggableCard>
 </template>

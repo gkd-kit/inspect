@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/DraggableCard.vue';
 import { getNodeLabel } from '@/utils/node';
+import { buildEmptyFn } from '@/utils/others';
 import { parseSelector, type GkdSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
 import type { RawNode } from '@/utils/types';
 
+withDefaults(
+  defineProps<{
+    show: boolean;
+    onUpdateShow?: (data: boolean) => void;
+  }>(),
+  {
+    onUpdateShow: buildEmptyFn,
+  },
+);
+
 const snapshotStore = useSnapshotStore();
 const { rootNode, focusNode } = storeToRefs(snapshotStore);
 
-const tabShow = shallowRef(false);
 const text = shallowRef('');
 const lazyText = refDebounced(text, 500);
 
@@ -140,13 +150,13 @@ const targetNode = computed(() => {
     sizeDraggable
     v-slot="{ onRef }"
     class="z-2 box-shadow-dim"
-    :show="tabShow"
+    :show="show"
   >
     <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
       <div flex m-b-4px pr-4px>
         <div>测试规则</div>
         <div flex-1 cursor-move :ref="onRef"></div>
-        <NButton @click="tabShow = !tabShow" text title="最小化">
+        <NButton @click="onUpdateShow(!show)" text title="最小化">
           <template #icon>
             <NIcon>
               <svg viewBox="0 0 24 24">
@@ -181,40 +191,6 @@ const targetNode = computed(() => {
           {{ getNodeLabel(targetNode) }}
         </NButton>
       </div>
-    </div>
-  </DraggableCard>
-  <DraggableCard
-    :initialValue="{
-      bottom: 56,
-      right: 16,
-    }"
-    :minWidth="300"
-    v-slot="{ onRef, moved }"
-    class="z-1 box-shadow-dim rounded-1/2 bg-white"
-    :show="!tabShow"
-  >
-    <div :ref="onRef">
-      <NButton
-        @click="
-          if (!moved) {
-            tabShow = !tabShow;
-          }
-        "
-        circle
-        size="large"
-        title="测试规则"
-      >
-        <template #icon>
-          <NIcon>
-            <svg viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M14.4 20L13 18.6l2.6-2.6l-2.6-2.6l1.4-1.4l2.6 2.6l2.6-2.6l1.4 1.4l-2.6 2.6l2.6 2.6l-1.4 1.4l-2.6-2.6zm1.975-9l-3.55-3.55l1.4-1.4l2.125 2.125l4.25-4.25L22 5.35zM2 17v-2h9v2zm0-8V7h9v2z"
-              />
-            </svg>
-          </NIcon>
-        </template>
-      </NButton>
     </div>
   </DraggableCard>
 </template>

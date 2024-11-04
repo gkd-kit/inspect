@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/DraggableCard.vue';
-import { copy } from '@/utils/others';
+import { buildEmptyFn, copy } from '@/utils/others';
+
+withDefaults(
+  defineProps<{
+    show: boolean;
+    onUpdateShow?: (data: boolean) => void;
+  }>(),
+  {
+    onUpdateShow: buildEmptyFn,
+  },
+);
 
 const { focusNode } = storeToRefs(useSnapshotStore());
 
@@ -70,8 +80,19 @@ const attrs = computed(() => {
     :initialValue="{ top: 40, right: 10 }"
     v-slot="{ onRef }"
     class="box-shadow-dim"
-    :show="Boolean(focusNode)"
+    :show="show && Boolean(focusNode)"
   >
+    <div absolute top-0 right-0 pt-4px pr-8px>
+      <NButton @click="onUpdateShow(!show)" text title="最小化">
+        <template #icon>
+          <NIcon>
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M6 13v-2h12v2z" />
+            </svg>
+          </NIcon>
+        </template>
+      </NButton>
+    </div>
     <NTable
       v-if="focusNode"
       size="small"
