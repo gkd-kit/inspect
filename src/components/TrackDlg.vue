@@ -27,7 +27,6 @@ watchEffect(() => {
 </script>
 <template>
   <NModal
-    v-if="track"
     v-model:show="show"
     preset="dialog"
     title="选择器路径视图"
@@ -44,10 +43,12 @@ watchEffect(() => {
         </svg>
       </NIcon>
     </template>
-    <div class="gkd_code py-2px px-4px rounded-2px bg-[#eee]">
-      {{ track.selector.toString() }}
-    </div>
-    <AsyncTrackGraph :track="track" />
-    <div opacity-75 text-12px>*为简化视图已隐藏部分节点</div>
+    <template v-if="track">
+      <div class="gkd_code py-2px px-4px rounded-2px bg-[#eee]">
+        {{ track.selector.toString() }}
+      </div>
+      <AsyncTrackGraph :track="track" />
+      <div opacity-75 text-12px>*为简化视图已隐藏部分节点</div>
+    </template>
   </NModal>
 </template>
