@@ -13,7 +13,6 @@ import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
 
 const router = useRouter();
-const title = useTitle(`新设备`);
 const { api, origin } = useDeviceApi();
 const link = useStorage(`device_link`, ``);
 const device = shallowRef<Device>();
@@ -36,7 +35,7 @@ onMounted(async () => {
 const snapshots = shallowRef<Snapshot[]>([]);
 watchEffect(async () => {
   if (!device.value) return;
-  title.value = `已连接 ` + device.value.manufacturer;
+  document.title = `已连接 ` + device.value.manufacturer;
   const result = await api.snapshots();
   result.sort((a, b) => b.id - a.id);
   snapshots.value = result;
@@ -380,7 +379,7 @@ const placeholder = `
   </NModal>
   <div flex flex-col p-10px gap-10px h-full>
     <div flex items-center gap-24px>
-      <a href="/" flex ml-12px title="首页">
+      <RouterLink to="/" flex ml-12px title="首页">
         <NButton text>
           <template #icon>
             <NIcon :size="24">
@@ -397,7 +396,7 @@ const placeholder = `
             </NIcon>
           </template>
         </NButton>
-      </a>
+      </RouterLink>
       <NInputGroup>
         <NInput
           v-model:value="link"

@@ -34,7 +34,7 @@ const clickSettings = () => {
       <div w-28px py-8px flex flex-col gap-16px>
         <NButton text>
           <template #icon>
-            <a href="/" title="首页" color="inherit">
+            <RouterLink to="/" title="首页" color="inherit">
               <NIcon size="24">
                 <svg viewBox="0 0 32 32">
                   <path
@@ -43,7 +43,7 @@ const clickSettings = () => {
                   ></path>
                 </svg>
               </NIcon>
-            </a>
+            </RouterLink>
           </template>
         </NButton>
         <NButton title="设置" @click="clickSettings" text>

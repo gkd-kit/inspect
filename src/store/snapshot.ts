@@ -19,7 +19,6 @@ const getRemoteImportId = async (id: number): Promise<number> => {
 export const useSnapshotStore = defineStore('snapshot', () => {
   const route = useRoute();
   const router = useRouter();
-  const title = useTitle();
   const settingsStore = useSettingsStore();
   const storageStore = useStorageStore();
   const { snapshotImportId, snapshotImageId, importSnapshotId } = storageStore;
@@ -42,7 +41,7 @@ export const useSnapshotStore = defineStore('snapshot', () => {
   const snapshot = shallowRef<Snapshot>();
   watchEffect(() => {
     if (snapshot.value) {
-      title.value =
+      document.title =
         '快照-' + (getAppInfo(snapshot.value).name || snapshot.value.appId);
     }
   });
@@ -168,6 +167,7 @@ export const useSnapshotStore = defineStore('snapshot', () => {
   };
 
   const track = shallowRef<TrackValue>();
+  console.log('snapshot');
   return {
     snapshotId,
     snapshot,
@@ -187,3 +187,9 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     track,
   };
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    location.reload();
+  });
+}

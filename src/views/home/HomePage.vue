@@ -343,7 +343,7 @@ const settingsDlgShow = shallowRef(false);
             </NButton>
           </NSpace>
         </NPopover>
-        <a flex href="/device" title="连接设备">
+        <RouterLink flex to="/device" title="连接设备">
           <NButton text>
             <template #icon>
               <NIcon :size="24">
@@ -356,7 +356,7 @@ const settingsDlgShow = shallowRef(false);
               </NIcon>
             </template>
           </NButton>
-        </a>
+        </RouterLink>
         <a
           flex
           href="https://github.com/gkd-kit/inspect"

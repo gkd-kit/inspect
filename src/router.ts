@@ -29,6 +29,7 @@ const router = createRouter({
     {
       path: '/',
       component: recordModule(() => import('@/views/home/HomePage.vue')),
+      meta: { title: '首页' },
     },
     {
       path: '/snapshot/:snapshotId',
@@ -36,10 +37,12 @@ const router = createRouter({
       component: recordModule(
         () => import('@/views/snapshot/SnapshotPage.vue'),
       ),
+      meta: { title: '快照' },
     },
     {
       path: '/i',
       component: recordModule(() => import('@/views/ImportPage.vue')),
+      meta: { title: '导入快照' },
     },
     {
       path: '/i/:github_asset_id',
@@ -71,16 +74,22 @@ const router = createRouter({
         }
         next();
       },
+      meta: { title: '连接设备' },
     },
     {
       path: '/selector',
       component: recordModule(() => import('@/views/SelectorPage.vue')),
+      meta: { title: '选择器' },
     },
     {
       path: '/:pathMatch(.*)*',
       component: recordModule(() => import('@/views/_404Page.vue')),
     },
   ],
+});
+
+router.beforeEach((to) => {
+  document.title = String(to.meta.title || 'GKD');
 });
 
 if (import.meta.env.PROD) {
