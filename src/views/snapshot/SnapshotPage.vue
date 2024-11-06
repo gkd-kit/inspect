@@ -20,9 +20,9 @@ watchEffect(() => {
   }
 });
 
-const searchShow = shallowRef(true);
-const ruleShow = shallowRef(false);
-const attrShow = shallowRef(true);
+const searchShow = useStorage('searchShow', true, sessionStorage);
+const ruleShow = useStorage('ruleShow', false, sessionStorage);
+const attrShow = useStorage('attrShow', true, sessionStorage);
 
 const clickSettings = () => {
   message.info('暂未实现');
