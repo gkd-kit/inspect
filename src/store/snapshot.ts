@@ -167,7 +167,6 @@ export const useSnapshotStore = defineStore('snapshot', () => {
   };
 
   const track = shallowRef<TrackValue>();
-  console.log('snapshot');
   return {
     snapshotId,
     snapshot,
