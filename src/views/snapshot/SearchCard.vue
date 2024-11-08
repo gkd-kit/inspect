@@ -371,7 +371,9 @@ const shareResult = (result: SearchResult) => {
                 :key="resultNode.id"
                 @click="updateFocusNode(resultNode)"
                 size="small"
-                :class="{ 'color-[#00F]': resultNode === focusNode }"
+                :style="{
+                  color: resultNode === focusNode ? '#00F' : undefined,
+                }"
               >
                 {{ getNodeLabel(resultNode) }}
               </NButton>
@@ -406,9 +408,11 @@ const shareResult = (result: SearchResult) => {
                     updateFocusNode(trackNodes[result.selector.targetIndex])
                   "
                   size="small"
-                  :class="{
-                    'color-[#00F]':
-                      trackNodes[result.selector.targetIndex] === focusNode,
+                  :style="{
+                    color:
+                      trackNodes[result.selector.targetIndex] === focusNode
+                        ? '#00F'
+                        : undefined,
                   }"
                 >
                   {{ getNodeLabel(trackNodes[result.selector.targetIndex]) }}

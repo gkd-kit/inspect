@@ -38,7 +38,9 @@ const left = _1vw * 25.5;
           :key="resultNode.id"
           @click="snapshotStore.updateFocusNode(resultNode)"
           size="small"
-          :class="{ 'color-[#00F]': resultNode === focusNode }"
+          :style="{
+            color: resultNode === focusNode ? '#00F' : undefined,
+          }"
         >
           {{ getNodeLabel(resultNode) }}
         </NButton>

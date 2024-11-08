@@ -184,8 +184,8 @@ const targetNode = computed(() => {
           v-else-if="targetNode"
           @click="snapshotStore.updateFocusNode(targetNode)"
           size="small"
-          :class="{
-            'color-[#00F]': targetNode === focusNode,
+          :style="{
+            color: targetNode === focusNode ? '#00F' : undefined,
           }"
         >
           {{ getNodeLabel(targetNode) }}
