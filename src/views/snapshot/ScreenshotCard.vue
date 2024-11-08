@@ -131,7 +131,7 @@ const imgBounding = useElementBounding(imgRef);
           top: imgBounding.top.value + 'px',
         }"
         pointer-events-none
-        absolute
+        fixed
         overflow-hidden
         z-2
         bg-white

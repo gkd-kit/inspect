@@ -14,16 +14,14 @@ import ErrorDlg from './components/ErrorDlg.vue';
   --gkd-width: max(1200px, 100vw);
   --gkd-height: max(700px, 100vh);
 }
+
 #app {
-  min-width: 1200px;
-  min-height: 700px;
   display: flex;
   flex-direction: column;
-  width: 100vw;
-  height: 100vh;
+  width: var(--gkd-width);
+  height: var(--gkd-height);
   &.mobile {
     --gkd-width: 100vw;
-    min-width: auto;
   }
 }
 .gkd_code,

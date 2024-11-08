@@ -146,6 +146,7 @@ const getLabelSuffix = (node: RawNode) => {
   return node.attr.text || node.attr.desc || node.attr.vid || node.attr.id;
 };
 const labelKey = Symbol(`labelKey`);
+const labelLimit = 20;
 export const getNodeLabel = (node: RawNode): string => {
   if (Reflect.has(node, labelKey)) {
     return Reflect.get(node, labelKey);
@@ -157,6 +158,11 @@ export const getNodeLabel = (node: RawNode): string => {
   }
   const text = getLabelSuffix(node);
   if (text) {
+    // if (text.length > labelLimit) {
+    //   label = `${label} : ${text.slice(0, labelLimit)}...`;
+    // } else {
+    //   label = `${label} : ${text}`;
+    // }
     label = `${label} : ${text}`;
   }
   Reflect.set(node, labelKey, label);

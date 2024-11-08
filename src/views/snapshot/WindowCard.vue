@@ -67,6 +67,7 @@ const treeNodeProps = (info: {
       color: info.option.id == focusNode.value?.id ? `#00F` : undefined,
       fontWeight: qf ? `bold` : undefined,
     },
+    class: 'whitespace-nowrap overflow-hidden text-ellipsis',
   };
 };
 
@@ -106,7 +107,7 @@ const onDelete = async () => {
 </script>
 
 <template>
-  <div flex flex-col>
+  <div flex flex-col overflow-hidden>
     <div flex items-center px-8px>
       <GapList flex flex-wrap items-center gap-8px gkd_code>
         <template #gap>
@@ -212,16 +213,20 @@ const onDelete = async () => {
       />
     </div>
     <div h-1px mt-4px bg="#efeff5"></div>
-    <NTree
-      ref="treeRef"
-      virtualScroll
-      showLine
-      keyField="id"
-      v-model:expandedKeys="expandedKeys"
-      :data="[rootNode as any]"
-      :filter="(treeFilter as any)"
-      :nodeProps="(treeNodeProps as any)"
-      :renderLabel="(renderLabel as any)"
-    />
+
+    <NScrollbar xScrollable>
+      <NTree
+        class="mb-24px mr-24px"
+        ref="treeRef"
+        virtualScroll
+        showLine
+        keyField="id"
+        v-model:expandedKeys="expandedKeys"
+        :data="[rootNode as any]"
+        :filter="(treeFilter as any)"
+        :nodeProps="(treeNodeProps as any)"
+        :renderLabel="(renderLabel as any)"
+      />
+    </NScrollbar>
   </div>
 </template>
