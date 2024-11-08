@@ -22,18 +22,26 @@ const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
 const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
 const { focusNode, focusTime } = snapshotRefs;
 
+let lastClickId = Number.NaN;
 const expandedKeys = shallowRef<number[]>([]);
+const selectedKeys = shallowRef<number[]>([]);
 watch([() => focusNode.value, () => focusTime.value], async () => {
   if (!focusNode.value) return;
   const key = focusNode.value.id;
   nextTick().then(async () => {
     await delay(300);
     if (key === focusNode.value?.id) {
+      if (lastClickId === key) {
+        // 当点击节点树中的节点时, 不滚动
+        lastClickId = Number.NaN;
+        return;
+      }
       // NTree 被 virtualScroll 包裹后, treeRef.value?.scrollTo 无效, 使用 scrollIntoView
       const item = document.querySelector<HTMLElement>(
         `[data-node-id="${key}"]`,
       );
       if (!item) return;
+      selectedKeys.value = [key];
       item.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
@@ -66,13 +74,15 @@ const treeNodeProps = (info: {
   const qf = info.option.idQf || info.option.textQf || info.option.quickFind;
   return {
     onClick: () => {
+      lastClickId = info.option.id;
       updateFocusNode(info.option);
     },
     style: {
-      color: info.option.id == focusNode.value?.id ? `#00F` : undefined,
+      '--n-node-text-color':
+        info.option.id == focusNode.value?.id ? `#00F` : undefined,
       fontWeight: qf ? `bold` : undefined,
     },
-    class: 'whitespace-nowrap overflow-hidden text-ellipsis',
+    class: 'whitespace-nowrap',
     'data-node-id': String(info.option.id),
   };
 };
@@ -226,8 +236,10 @@ const onDelete = async () => {
         ref="treeRef"
         virtualScroll
         showLine
+        blockLine
         keyField="id"
         v-model:expandedKeys="expandedKeys"
+        v-model:selectedKeys="selectedKeys"
         :data="[rootNode as any]"
         :filter="(treeFilter as any)"
         :nodeProps="(treeNodeProps as any)"
