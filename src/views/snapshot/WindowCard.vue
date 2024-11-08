@@ -27,9 +27,14 @@ watch([() => focusNode.value, () => focusTime.value], async () => {
   if (!focusNode.value) return;
   const key = focusNode.value.id;
   nextTick().then(async () => {
-    await delay(100);
+    await delay(300);
     if (key === focusNode.value?.id) {
-      treeRef.value?.scrollTo({ key, behavior: 'smooth', debounce: true });
+      // NTree 被 virtualScroll 包裹后, treeRef.value?.scrollTo 无效, 使用 scrollIntoView
+      const item = document.querySelector<HTMLElement>(
+        `[data-node-id="${key}"]`,
+      );
+      if (!item) return;
+      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
   let parent = focusNode.value.parent;
@@ -68,6 +73,7 @@ const treeNodeProps = (info: {
       fontWeight: qf ? `bold` : undefined,
     },
     class: 'whitespace-nowrap overflow-hidden text-ellipsis',
+    'data-node-id': String(info.option.id),
   };
 };
 
@@ -214,7 +220,7 @@ const onDelete = async () => {
     </div>
     <div h-1px mt-4px bg="#efeff5"></div>
 
-    <NScrollbar xScrollable>
+    <NScrollbar xScrollable class="flex-1">
       <NTree
         class="mb-24px mr-24px"
         ref="treeRef"
