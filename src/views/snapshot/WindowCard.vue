@@ -109,8 +109,8 @@ const onDelete = async () => {
   <div flex flex-col>
     <div flex items-center px-8px>
       <GapList flex flex-wrap items-center gap-8px gkd_code>
-        <template #gap="{ index }">
-          <div w-1px bg-gray h-12px v-if="index > 0"></div>
+        <template #gap>
+          <div w-1px bg-gray h-12px></div>
         </template>
         <NTooltip>
           <template #trigger>
