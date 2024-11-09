@@ -162,7 +162,7 @@ const generateRules = errorTry(
     const s = result.selector;
     const t = result.nodes[0].at(-1)!;
 
-    const quickFind = [
+    const fastQuery = [
       (t.quickFind ?? t.idQf) && t.attr.id && s.qfIdValue,
       (t.quickFind ?? t.idQf) && t.attr.vid && s.qfVidValue,
       (t.quickFind ?? t.textQf) && t.attr.text && s.qfTextValue,
@@ -177,7 +177,7 @@ const generateRules = errorTry(
           desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
           rules: [
             {
-              quickFind: quickFind || undefined,
+              fastQuery: fastQuery || undefined,
               activityIds: snapshot.value.activityId,
               matches: s.toString(),
               exampleUrls: getImagUrl(imageId),
