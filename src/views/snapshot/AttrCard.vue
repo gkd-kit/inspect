@@ -26,9 +26,18 @@ const attrTip = computed<AttrTipMap>(() => {
     _id: {
       desc: `虚拟属性(真机不可用):生成快照访问节点顺序`,
       type: 'info',
+      show: true,
     },
-    _pid: { desc: `虚拟属性(真机不可用):父节点的 _id`, type: 'info' },
-    depth: { desc: `使用此属性在某些应用上可能造成无限节点错误`, type: 'info' },
+    _pid: {
+      desc: `虚拟属性(真机不可用):父节点的 _id`,
+      type: 'info',
+      show: true,
+    },
+    depth: {
+      desc: `使用此属性在某些应用上可能造成无限节点错误`,
+      type: 'info',
+      show: true,
+    },
     id: {
       desc: `可快速查找`,
       type: 'quickFind',
