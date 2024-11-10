@@ -1,7 +1,7 @@
 import { saveAs } from 'file-saver';
 import pLimit from 'p-limit';
 import { uploadAsset } from './github';
-import { delay } from './others';
+import { delay, obj2usp } from './others';
 import { screenshotStorage } from './snapshot';
 import Compressor from 'compressorjs';
 import type { Snapshot } from './types';
@@ -102,7 +102,7 @@ export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
     ).then((r) => {
       snapshotImportId[snapshot.id] = r.id;
       importSnapshotId[r.id] = snapshot.id;
-      detectFetchSnapshot(r.id);
+      detectFetchSnapshot(snapshot.id, r.id);
       return r.id;
     })
   );
@@ -135,10 +135,19 @@ export const batchCreateZipUrl = async (snapshots: Snapshot[]) => {
   }, []);
 };
 
-const detectFetchSnapshot = async (importId: number | string) => {
-  return fetch(`https://detect.gkd.li/api/detectSnapshot?importId=` + importId);
+const detectFetchSnapshot = async (id: number, importId: number | string) => {
+  return fetch(
+    `https://detect.gkd.li/api/detectSnapshot?` +
+      obj2usp({
+        id,
+        importId,
+      }).toString(),
+  );
 };
-export const detectSnapshot = async (importId: number | string | undefined) => {
+export const detectSnapshot = async (
+  id: number,
+  importId: number | string | undefined,
+) => {
   if (!importId) return;
   if (!Number.isSafeInteger(+importId)) {
     return;
@@ -148,5 +157,5 @@ export const detectSnapshot = async (importId: number | string | undefined) => {
   if (importSnapshotId[importId]) {
     return;
   }
-  await detectFetchSnapshot(importId);
+  await detectFetchSnapshot(id, importId);
 };

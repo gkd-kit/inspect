@@ -117,7 +117,7 @@ export const useSnapshotStore = defineStore('snapshot', () => {
       exportSnapshotAsImportId(snapshot.value);
     }
     if (autoUpload.value && snapshot.value && importId.value) {
-      detectSnapshot(importId.value);
+      detectSnapshot(snapshot.value.id, importId.value);
     }
   });
   const nodes = computed(() => {
