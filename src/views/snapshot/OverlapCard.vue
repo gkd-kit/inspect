@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/DraggableCard.vue';
-import { getNodeLabel } from '@/utils/node';
+import { getNodeLabel, getNodeStyle } from '@/utils/node';
 
 const snapshotStore = useSnapshotStore();
 const { focusNode, overlapNodes, focusPosition } = storeToRefs(snapshotStore);
@@ -38,9 +38,7 @@ const left = _1vw * 25.5;
           :key="resultNode.id"
           @click="snapshotStore.updateFocusNode(resultNode)"
           size="small"
-          :style="{
-            color: resultNode === focusNode ? '#00F' : undefined,
-          }"
+          :style="getNodeStyle(resultNode, focusNode)"
         >
           {{ getNodeLabel(resultNode) }}
         </NButton>

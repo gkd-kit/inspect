@@ -2,7 +2,7 @@
 import DraggableCard from '@/components/DraggableCard.vue';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
-import { getAppInfo, getNodeLabel } from '@/utils/node';
+import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import type { GkdSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
@@ -371,9 +371,7 @@ const shareResult = (result: SearchResult) => {
                 :key="resultNode.id"
                 @click="updateFocusNode(resultNode)"
                 size="small"
-                :style="{
-                  color: resultNode === focusNode ? '#00F' : undefined,
-                }"
+                :style="getNodeStyle(resultNode, focusNode)"
               >
                 {{ getNodeLabel(resultNode) }}
               </NButton>
@@ -408,12 +406,12 @@ const shareResult = (result: SearchResult) => {
                     updateFocusNode(trackNodes[result.selector.targetIndex])
                   "
                   size="small"
-                  :style="{
-                    color:
-                      trackNodes[result.selector.targetIndex] === focusNode
-                        ? '#00F'
-                        : undefined,
-                  }"
+                  :style="
+                    getNodeStyle(
+                      trackNodes[result.selector.targetIndex],
+                      focusNode,
+                    )
+                  "
                 >
                   {{ getNodeLabel(trackNodes[result.selector.targetIndex]) }}
                 </NButton>

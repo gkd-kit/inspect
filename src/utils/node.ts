@@ -146,7 +146,6 @@ const getLabelSuffix = (node: RawNode) => {
   return node.attr.text || node.attr.desc || node.attr.vid || node.attr.id;
 };
 const labelKey = Symbol(`labelKey`);
-const labelLimit = 20;
 export const getNodeLabel = (node: RawNode): string => {
   if (Reflect.has(node, labelKey)) {
     return Reflect.get(node, labelKey);
@@ -230,4 +229,14 @@ export const isRawNode = (node: any): node is RawNode => {
     return true;
   }
   return false;
+};
+
+export const getNodeStyle = (node: RawNode, focusNode?: RawNode) => {
+  const qf = Boolean(node.idQf || node.textQf || node.quickFind);
+  const fontWeight = qf ? 'bold' : undefined;
+  const color = node.id === focusNode?.id ? '#00F' : undefined;
+  return {
+    fontWeight,
+    color,
+  };
 };

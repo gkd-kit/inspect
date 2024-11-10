@@ -7,6 +7,7 @@ import {
   getDevice,
   getGkdAppInfo,
   getNodeLabel,
+  getNodeStyle,
 } from '@/utils/node';
 import { copy, delay } from '@/utils/others';
 import type { RawNode, Snapshot } from '@/utils/types';
@@ -71,16 +72,15 @@ const treeFilter = (pattern: string, node: RawNode) => {
 const treeNodeProps = (info: {
   option: RawNode;
 }): HTMLAttributes & Record<string, unknown> => {
-  const qf = info.option.idQf || info.option.textQf || info.option.quickFind;
+  const style = getNodeStyle(info.option, focusNode.value);
   return {
     onClick: () => {
       lastClickId = info.option.id;
       updateFocusNode(info.option);
     },
     style: {
-      '--n-node-text-color':
-        info.option.id == focusNode.value?.id ? `#00F` : undefined,
-      fontWeight: qf ? `bold` : undefined,
+      '--n-node-text-color': style.color,
+      ...style,
     },
     class: 'whitespace-nowrap',
     'data-node-id': String(info.option.id),

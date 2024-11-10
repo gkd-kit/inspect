@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/DraggableCard.vue';
-import { getNodeLabel } from '@/utils/node';
+import { getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn } from '@/utils/others';
 import { parseSelector, type GkdSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
@@ -184,9 +184,7 @@ const targetNode = computed(() => {
           v-else-if="targetNode"
           @click="snapshotStore.updateFocusNode(targetNode)"
           size="small"
-          :style="{
-            color: targetNode === focusNode ? '#00F' : undefined,
-          }"
+          :style="getNodeStyle(targetNode, focusNode)"
         >
           {{ getNodeLabel(targetNode) }}
         </NButton>
