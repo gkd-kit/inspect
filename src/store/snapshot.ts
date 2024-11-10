@@ -1,4 +1,5 @@
 import {
+  detectSnapshot,
   exportSnapshotAsImageId,
   exportSnapshotAsImportId,
 } from '@/utils/export';
@@ -115,16 +116,25 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     if (autoUpload.value && snapshot.value && !importId.value) {
       exportSnapshotAsImportId(snapshot.value);
     }
+    if (autoUpload.value && snapshot.value && importId.value) {
+      detectSnapshot(importId.value);
+    }
   });
-  const rootNode = computed(() => {
+  const nodes = computed(() => {
     if (snapshot.value && settingsStore.inited) {
       if (snapshot.value.nodes.length <= settingsStore.maxShowNodeSize) {
-        return listToTree(snapshot.value.nodes);
+        return structuredClone(snapshot.value.nodes);
       } else {
-        return listToTree(
+        return structuredClone(
           snapshot.value.nodes.slice(0, settingsStore.maxShowNodeSize),
         );
       }
+    }
+    return [];
+  });
+  const rootNode = computed(() => {
+    if (nodes.value.length) {
+      return listToTree(nodes.value);
     }
     return undefined;
   });
@@ -154,10 +164,7 @@ export const useSnapshotStore = defineStore('snapshot', () => {
   });
   const updatePosition = (position: Position) => {
     focusPosition.value = position;
-    const resultNodes = findNodesByXy(
-      snapshot.value?.nodes,
-      focusPosition.value,
-    );
+    const resultNodes = findNodesByXy(nodes.value, focusPosition.value);
     if (resultNodes.length) {
       updateFocusNode(resultNodes[0]);
     }

@@ -8,7 +8,6 @@ import type {
 } from './types';
 
 export const listToTree = (nodes: RawNode[]) => {
-  // nodes = structuredClone(nodes);
   nodes.forEach((node) => {
     node.attr ??= { name: `NULL` } as any;
     node.children ??= [];

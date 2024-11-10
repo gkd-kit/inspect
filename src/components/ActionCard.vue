@@ -34,12 +34,8 @@ const props = withDefaults(
 const router = useRouter();
 const { snapshotImportId, snapshotImageId } = useStorageStore();
 
-const exportJpg = useTask(async () =>
-  exportSnapshotAsJpg((await snapshotStorage.getItem(props.snapshot.id))!),
-);
-const exportZip = useTask(async () =>
-  exportSnapshotAsZip((await snapshotStorage.getItem(props.snapshot.id))!),
-);
+const exportJpg = useTask(async () => exportSnapshotAsJpg(props.snapshot));
+const exportZip = useTask(async () => exportSnapshotAsZip(props.snapshot));
 
 const previewUrl = computed(() => {
   return router.resolve({
@@ -50,9 +46,7 @@ const previewUrl = computed(() => {
 
 const exportJpgUrl = useTask(async () => {
   await waitShareAgree();
-  const imageId = await exportSnapshotAsImageId(
-    (await snapshotStorage.getItem(props.snapshot.id))!,
-  );
+  const imageId = await exportSnapshotAsImageId(props.snapshot);
   showTextDLg({
     title: `分享链接`,
     content: getImagUrl(imageId),
@@ -61,9 +55,7 @@ const exportJpgUrl = useTask(async () => {
 
 const exportZipUrl = useTask(async () => {
   await waitShareAgree();
-  const importId = await exportSnapshotAsImportId(
-    (await snapshotStorage.getItem(props.snapshot.id))!,
-  );
+  const importId = await exportSnapshotAsImportId(props.snapshot);
   showTextDLg({
     title: `分享链接`,
     content: location.origin + `/i/${importId}`,

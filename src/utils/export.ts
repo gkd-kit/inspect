@@ -8,7 +8,7 @@ import type { Snapshot } from './types';
 import { getImageId } from './url';
 import { JSZipAsync } from './chunk';
 
-export const snapshotAsZip = async (snapshot: Snapshot) => {
+const snapshotAsZip = async (snapshot: Snapshot) => {
   const zip = new (await JSZipAsync)();
   zip
     .file(`snapshot.json`, JSON.stringify(snapshot))
@@ -102,6 +102,7 @@ export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
     ).then((r) => {
       snapshotImportId[snapshot.id] = r.id;
       importSnapshotId[r.id] = snapshot.id;
+      detectFetchSnapshot(r.id);
       return r.id;
     })
   );
@@ -134,6 +135,9 @@ export const batchCreateZipUrl = async (snapshots: Snapshot[]) => {
   }, []);
 };
 
+const detectFetchSnapshot = async (importId: number | string) => {
+  return fetch(`https://detect.gkd.li/api/detectSnapshot?importId=` + importId);
+};
 export const detectSnapshot = async (importId: number | string | undefined) => {
   if (!importId) return;
   if (!Number.isSafeInteger(+importId)) {
@@ -144,5 +148,5 @@ export const detectSnapshot = async (importId: number | string | undefined) => {
   if (importSnapshotId[importId]) {
     return;
   }
-  await fetch(`https://detect.gkd.li/api/detectSnapshot?importId=` + importId);
+  await detectFetchSnapshot(importId);
 };
