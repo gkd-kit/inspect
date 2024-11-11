@@ -125,7 +125,6 @@ export const GM_fetch = async (
       // temporarily fix tampermonkey bug when post github api
       responseType: method === 'GET' ? 'blob' : undefined,
       async onload(e) {
-        console.log(e);
         await delay();
         let useNull = false;
         if (e.response instanceof Blob) {
