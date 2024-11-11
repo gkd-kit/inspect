@@ -90,12 +90,6 @@ export const GM_fetch = async (
   const method = request.method.toUpperCase();
   const url = fixUrl(request.url);
 
-  // temporarily fix tampermonkey bug
-  let responseType: 'blob' | undefined = undefined;
-  if (url.startsWith('https://github.com/user-attachments/files/')) {
-    responseType = 'blob';
-  }
-
   // headers
   const sendHeaders = new Headers(request.headers);
   new Headers(init.headers).forEach((value, key) => {
@@ -105,7 +99,7 @@ export const GM_fetch = async (
   let binary = false;
   let data: URLSearchParams | FormData | Blob | string | undefined = undefined;
 
-  if (method != 'GET') {
+  if (method !== 'GET') {
     if (init.body) {
       if (
         typeof init.body == 'string' ||
@@ -128,8 +122,10 @@ export const GM_fetch = async (
       headers: headers2obj(sendHeaders),
       data,
       binary,
-      responseType,
+      // temporarily fix tampermonkey bug when post github api
+      responseType: method === 'GET' ? 'blob' : undefined,
       async onload(e) {
+        console.log(e);
         await delay();
         let useNull = false;
         if (e.response instanceof Blob) {
