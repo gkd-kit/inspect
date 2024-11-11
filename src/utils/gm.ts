@@ -90,6 +90,12 @@ export const GM_fetch = async (
   const method = request.method.toUpperCase();
   const url = fixUrl(request.url);
 
+  // temporarily fix tampermonkey bug
+  let responseType: 'blob' | undefined = undefined;
+  if (url.startsWith('https://github.com/user-attachments/files/')) {
+    responseType = 'blob';
+  }
+
   // headers
   const sendHeaders = new Headers(request.headers);
   new Headers(init.headers).forEach((value, key) => {
@@ -122,9 +128,14 @@ export const GM_fetch = async (
       headers: headers2obj(sendHeaders),
       data,
       binary,
+      responseType,
       async onload(e) {
         await delay();
-        const resp = new Response(e.response || e.responseText || null, {
+        let useNull = false;
+        if (e.response instanceof Blob) {
+          useNull = e.response.size === 0;
+        }
+        const resp = new Response((useNull ? null : e.response) || null, {
           status: e.status,
           statusText: e.statusText,
           headers: parseHeaders(e.responseHeaders),
@@ -132,9 +143,9 @@ export const GM_fetch = async (
         Object.defineProperty(resp, 'url', { value: e.finalUrl });
         resolve(resp);
       },
-      async onerror() {
+      async onerror(e) {
         await delay();
-        reject(new TypeError('Network request onerror failed'));
+        reject(new TypeError('Network request onerror failed', { cause: e }));
       },
       async ontimeout() {
         await delay();
