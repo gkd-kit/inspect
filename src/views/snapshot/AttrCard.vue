@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/DraggableCard.vue';
+import { getNodeSelectorText } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 
 withDefaults(
@@ -30,6 +31,11 @@ const attrTip = computed<AttrTipMap>(() => {
     },
     _pid: {
       desc: `虚拟属性(真机不可用):父节点的 _id`,
+      type: 'info',
+      show: true,
+    },
+    _selector: {
+      desc: `自动生成的选择器, 点击“_selector”可直接复制内容, 用于定位`,
       type: 'info',
       show: true,
     },
@@ -82,6 +88,11 @@ const attrs = computed(() => {
     })
     .flat();
 });
+
+const selectText = computed(() => {
+  if (!focusNode.value) return '';
+  return getNodeSelectorText(focusNode.value);
+});
 </script>
 
 <template>
@@ -110,7 +121,7 @@ const attrs = computed(() => {
       class="gkd_code"
       :themeOverrides="{
         thPaddingSmall: '1px 3px',
-        tdPaddingSmall: '1px 3px',
+        tdPaddingSmall: '0px 3px',
       }"
       ><thead>
         <tr :ref="onRef" cursor-move>
@@ -162,6 +173,29 @@ const attrs = computed(() => {
             >
               {{ attrx.desc }}
             </NEllipsis>
+          </NTd>
+        </NTr>
+        <NTr>
+          <NTd colspan="2">
+            <div flex items-center h-24px px-2px>
+              <NTooltip>
+                <template #trigger>
+                  <NButton text @click="copy(selectText)">
+                    <template #icon>
+                      <NIcon size="20">
+                        <svg viewBox="0 0 24 24">
+                          <path
+                            fill="currentColor"
+                            d="M5 21V8.825Q4.125 8.5 3.563 7.738T3 6q0-1.25.875-2.125T6 3q1.25 0 2.125.875T9 6q0 .975-.562 1.738T7 8.825V19h4V3h8v12.175q.875.325 1.438 1.088T21 18q0 1.25-.875 2.125T18 21q-1.25 0-2.125-.875T15 18q0-.975.563-1.75T17 15.175V5h-4v16zM6 7q.425 0 .713-.288T7 6q0-.425-.288-.712T6 5q-.425 0-.712.288T5 6q0 .425.288.713T6 7m12 12q.425 0 .713-.288T19 18q0-.425-.288-.712T18 17q-.425 0-.712.288T17 18q0 .425.288.713T18 19m0-1"
+                          />
+                        </svg>
+                      </NIcon>
+                    </template>
+                  </NButton>
+                </template>
+                {{ selectText }}
+              </NTooltip>
+            </div>
           </NTd>
         </NTr>
       </NTbody>
