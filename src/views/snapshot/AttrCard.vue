@@ -33,6 +33,11 @@ const attrTip = computed<AttrTipMap>(() => {
       type: 'info',
       show: true,
     },
+    _selector: {
+      desc: `自动生成的选择器, 点击“_selector”可直接复制内容, 用于定位`,
+      type: 'info',
+      show: true,
+    },
     depth: {
       desc: `使用此属性在某些应用上可能造成无限节点错误`,
       type: 'info',
@@ -82,6 +87,14 @@ const attrs = computed(() => {
     })
     .flat();
 });
+
+const copyAttrx = (attrx: any): string => {
+  if (attrx.name == '_selector') {
+    copy(attrx.value);
+  } else {
+    copy(`${attrx.name}=${attrx.desc}`);
+  }
+};
 </script>
 
 <template>
@@ -120,7 +133,7 @@ const attrs = computed(() => {
       </thead>
       <NTbody>
         <NTr v-for="attrx in attrs" :key="attrx.name">
-          <NTd @click="copy(`${attrx.name}=${attrx.desc}`)">
+          <NTd @click="copyAttrx(attrx)">
             <div v-if="attrx.tip" flex justify-between items-center>
               <div>
                 {{ attrx.name }}

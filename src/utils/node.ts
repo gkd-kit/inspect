@@ -7,6 +7,67 @@ import type {
   Snapshot,
 } from './types';
 
+// 获取元素id最后一个.后面的内容
+const getShortName = (fullName: string): string => {
+  let lstIndex = fullName.lastIndexOf('.');
+  if (lstIndex === -1) {
+    return fullName;
+  }
+  return fullName.slice(lstIndex + 1);
+};
+
+// 递归算法，自动生成基于页面结构的选择器
+const getSelector = (
+  curNode: RawNode /* 当前节点 */,
+  isFirst: boolean = true /* 调用时须省略 */,
+  lastIndex: number = 1 /* 调用时须省略 */,
+): string => {
+  // 先处理递归基
+  if (!curNode.parent) {
+    // 当前节点为根节点
+    if (isFirst) {
+      return '[parent=null]';
+    } else {
+      return ' <' + lastIndex + ' [parent=null]';
+    }
+  }
+  if (curNode.idQf) {
+    // 可以快速查询
+    // （依赖页面结构而不是文本内容，只处理idQf的情况）
+    if (isFirst) {
+      return '[id="' + curNode.attr.id + '"]';
+    } else {
+      return ' <' + lastIndex + ' [id="' + curNode.attr.id + '"]';
+    }
+  }
+  // 处理一般的递归情况
+  if (isFirst) {
+    // 第一次调用，当前节点即为目标节点
+    // 返回完整的选择器，假设getSelector会返回后面应该拼接的文本
+    // （递归基在前面已经处理掉了，所以说这里一定会有后缀）
+    return (
+      '@' +
+      getShortName(curNode.attr.name) +
+      getSelector(curNode.parent, false, curNode.attr.index + 1)
+      /* 当前节点的index转序号后传递给下一层函数调用
+       * 否则下一层函数不知道现在的节点是父节点的第几个儿子 */
+    );
+  }
+  // 不是第一次调用，所以说函数的目标是拼接返回选择器的后缀部分
+  return (
+    ' <' +
+    lastIndex /* 当前处理的是目标节点的(间接)父节点
+     * 所以说这里取子节点（也就是上一层函数的节点）的index */ +
+    ' ' +
+    getShortName(curNode.attr.name) +
+    getSelector(
+      curNode.parent,
+      false,
+      curNode.attr.index + 1,
+    ) /* 递归构造后缀 */
+  );
+};
+
 export const listToTree = (nodes: RawNode[]) => {
   nodes.forEach((node) => {
     node.attr ??= { name: `NULL` } as any;
@@ -24,6 +85,7 @@ export const listToTree = (nodes: RawNode[]) => {
     node.attr.depth = (node.parent?.attr?.depth ?? -1) + 1;
     node.attr._id ??= node.id;
     node.attr._pid ??= node.pid;
+    node.attr._selector ??= getSelector(node);
   });
   return nodes[0];
 };
