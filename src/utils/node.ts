@@ -16,8 +16,7 @@ const getShortName = (fullName: string): string => {
   return fullName.slice(lstIndex + 1);
 };
 
-// 递归算法，自动生成基于页面结构的选择器
-const getSelector = (
+export const getNodeSelectorText = (
   curNode: RawNode /* 当前节点 */,
   isFirst: boolean = true /* 调用时须省略 */,
   lastIndex: number = 1 /* 调用时须省略 */,
@@ -34,10 +33,12 @@ const getSelector = (
   if (curNode.idQf) {
     // 可以快速查询
     // （依赖页面结构而不是文本内容，只处理idQf的情况）
+    const key = curNode.attr.vid ? 'vid' : 'id';
+    const value = curNode.attr.vid || curNode.attr.id;
     if (isFirst) {
-      return '[id="' + curNode.attr.id + '"]';
+      return `[${key}="${value}"]`;
     } else {
-      return ' <' + lastIndex + ' [id="' + curNode.attr.id + '"]';
+      return ' <' + lastIndex + ` [${key}="${value}"]`;
     }
   }
   // 处理一般的递归情况
@@ -48,7 +49,7 @@ const getSelector = (
     return (
       '@' +
       getShortName(curNode.attr.name) +
-      getSelector(curNode.parent, false, curNode.attr.index + 1)
+      getNodeSelectorText(curNode.parent, false, curNode.attr.index + 1)
       /* 当前节点的index转序号后传递给下一层函数调用
        * 否则下一层函数不知道现在的节点是父节点的第几个儿子 */
     );
@@ -60,7 +61,7 @@ const getSelector = (
      * 所以说这里取子节点（也就是上一层函数的节点）的index */ +
     ' ' +
     getShortName(curNode.attr.name) +
-    getSelector(
+    getNodeSelectorText(
       curNode.parent,
       false,
       curNode.attr.index + 1,
@@ -85,7 +86,6 @@ export const listToTree = (nodes: RawNode[]) => {
     node.attr.depth = (node.parent?.attr?.depth ?? -1) + 1;
     node.attr._id ??= node.id;
     node.attr._pid ??= node.pid;
-    node.attr._selector ??= getSelector(node);
   });
   return nodes[0];
 };

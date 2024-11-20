@@ -60,7 +60,6 @@ export interface RawAttr {
   height: number;
   _id?: number;
   _pid?: number;
-  _selector?: string;
 }
 
 export interface Overview {
