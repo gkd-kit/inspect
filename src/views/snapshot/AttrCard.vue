@@ -193,7 +193,7 @@ const selectText = computed(() => {
                     </template>
                   </NButton>
                 </template>
-                {{ selectText }}
+                <div max-w-500px>{{ selectText }}</div>
               </NTooltip>
             </div>
           </NTd>
