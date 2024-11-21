@@ -149,7 +149,7 @@ const targetNode = computed(() => {
     :minWidth="300"
     sizeDraggable
     v-slot="{ onRef }"
-    class="z-2 box-shadow-dim"
+    class="box-shadow-dim"
     :show="show"
   >
     <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>

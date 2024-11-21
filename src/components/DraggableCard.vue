@@ -150,10 +150,28 @@ const updateTarget = (arg: unknown) => {
     target.value = void 0;
   }
 };
+
+const { setTop, zIndex } = useZIndexStore().useZindex();
+watch(
+  () => props.show,
+  () => {
+    if (props.show) {
+      setTop();
+    }
+  },
+);
 </script>
 <template>
   <Teleport to="#app">
-    <div v-if="show" fixed ref="box" :style="currentStyle" :class="props.class">
+    <div
+      v-if="show"
+      fixed
+      ref="box"
+      :style="[currentStyle, { zIndex }]"
+      :class="props.class"
+      class="DraggableCard"
+      @mousedown="setTop"
+    >
       <slot :onRef="updateTarget" :moved="moved"></slot>
 
       <template v-if="sizeDraggable">

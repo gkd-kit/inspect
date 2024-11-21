@@ -11,7 +11,7 @@ const left = _1vw * 25.5;
   <DraggableCard
     :initialValue="{ top: 215, left }"
     v-slot="{ onRef }"
-    class="z-2 box-shadow-dim w-420px"
+    class="box-shadow-dim w-420px"
     :show="Boolean(overlapNodes && focusPosition)"
   >
     <NCard
