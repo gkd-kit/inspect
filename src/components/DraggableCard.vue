@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDragMove } from '@/utils/draggable';
+import { useDragMove, useZindex } from '@/utils/draggable';
 
 const props = withDefaults(
   defineProps<{
@@ -151,7 +151,7 @@ const updateTarget = (arg: unknown) => {
   }
 };
 
-const { setTop, zIndex } = useZIndexStore().useZindex();
+const { setTop, zIndex } = useZindex();
 watch(
   () => props.show,
   () => {

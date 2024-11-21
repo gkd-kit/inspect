@@ -77,3 +77,16 @@ export const useDragMove = (xFilter: (x: number) => boolean) => {
     offset,
   };
 };
+
+let initValue = 1000;
+export const useZindex = () => {
+  initValue++;
+  const zIndex = shallowRef(initValue);
+  const setTop = () => {
+    zIndex.value = ++initValue;
+  };
+  return {
+    zIndex,
+    setTop,
+  };
+};
