@@ -30,7 +30,7 @@ watchEffect(() => {
     v-model:show="show"
     preset="dialog"
     title="选择器路径视图"
-    class="min-w-[calc(var(--gkd-width)*0.4)]"
+    class="min-w-[calc(var(--gkd-w)*0.4)]"
     @afterLeave="onUpdateTrack()"
   >
     <template #icon>

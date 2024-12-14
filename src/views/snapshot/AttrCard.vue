@@ -165,7 +165,7 @@ const selectText = computed(() => {
           </NTd>
           <NTd>
             <NEllipsis
-              class="w-[calc(var(--gkd-width)*0.12)]"
+              class="w-[calc(var(--gkd-w)*0.12)]"
               :class="{
                 'text-left direction-rtl': attrx.name == 'id',
                 'opacity-50': attrx.value === null,

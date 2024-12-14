@@ -105,7 +105,7 @@ const imgBounding = useElementBounding(imgRef);
       cursor-crosshair
       h-full
       object-contain
-      class="max-w-[calc(var(--gkd-width)*0.35)]"
+      class="max-w-[calc(var(--gkd-w)*0.35)]"
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"

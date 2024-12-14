@@ -1,6 +1,8 @@
 import type { LocationQuery } from 'vue-router';
 import { message } from './discrete';
 import root from './root';
+import { Teleport } from 'vue';
+import BodyScrollbar from '@/components/BodyScrollbar.vue';
 
 export const obj2form = (...objs: Record<string, unknown>[]) => {
   const fd = new FormData();
@@ -64,15 +66,13 @@ export const copy = (() => {
   };
 })();
 
-export const useAdaptMobile = () => {
-  const isMobile = window.innerHeight > window.innerWidth;
+export const useAutoHeight = () => {
+  const cls = 'app-auto-h';
   onMounted(() => {
-    if (isMobile) {
-      root.classList.add('mobile');
-    }
+    root.classList.add(cls);
   });
   onUnmounted(() => {
-    root.classList.remove('mobile');
+    root.classList.remove(cls);
   });
 };
 
@@ -143,3 +143,18 @@ export const toInteger = (v: unknown): number | undefined => {
     }
   }
 };
+
+export const ScrollbarWrapper = defineComponent(() => {
+  const show = shallowRef(false);
+  const isMobile = 'ontouchstart' in document.documentElement;
+  show.value = !isMobile;
+  if (isMobile) {
+    document.body.classList.add('mobile');
+    document.documentElement.classList.add('mobile');
+  }
+  return () => {
+    return show.value
+      ? h(Teleport, { to: document.body }, h(BodyScrollbar))
+      : undefined;
+  };
+});

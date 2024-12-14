@@ -2,26 +2,35 @@
 import { dateZhCN, zhCN } from 'naive-ui';
 import { RouterView } from 'vue-router';
 import ErrorDlg from './components/ErrorDlg.vue';
+import { ScrollbarWrapper } from './utils/others';
 </script>
 <template>
   <NConfigProvider :locale="zhCN" :date-locale="dateZhCN" abstract>
     <ErrorDlg />
     <RouterView />
   </NConfigProvider>
+  <ScrollbarWrapper />
 </template>
 <style lang="scss">
+$winMinWidth: 1200px;
+$winMinHeight: 700px;
+
 :root {
-  --gkd-width: max(1200px, 100vw);
-  --gkd-height: max(700px, 100vh);
+  --gkd-w: max(#{$winMinWidth}, 100vw);
+  --gkd-h: max(#{$winMinHeight}, 100vh);
+}
+
+body {
+  &:not(.mobile) {
+    width: var(--gkd-w);
+  }
 }
 
 #app {
   display: flex;
   flex-direction: column;
-  width: var(--gkd-width);
-  height: var(--gkd-height);
-  &.mobile {
-    --gkd-width: 100vw;
+  &:not(.app-auto-h) {
+    height: var(--gkd-h);
   }
 }
 .gkd_code,
