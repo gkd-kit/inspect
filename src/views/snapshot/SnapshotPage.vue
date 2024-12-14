@@ -133,6 +133,32 @@ const clickSettings = () => {
           </template>
           测试规则
         </NTooltip>
+        <div></div>
+        <NTooltip placement="right">
+          <template #trigger>
+            <a
+              flex
+              justify-center
+              href="https://gkd.li/guide/snapshot#share-note"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <NButton text>
+                <template #icon>
+                  <NIcon size="24">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M1 21L12 2l11 19zm3.45-2h15.1L12 6zM12 18q.425 0 .713-.288T13 17t-.288-.712T12 16t-.712.288T11 17t.288.713T12 18m-1-3h2v-5h-2zm1-2.5"
+                      />
+                    </svg>
+                  </NIcon>
+                </template>
+              </NButton>
+            </a>
+          </template>
+          分享须知
+        </NTooltip>
       </div>
       <ScreenshotCard />
       <WindowCard class="flex-1" />
