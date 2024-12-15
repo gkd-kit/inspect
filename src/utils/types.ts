@@ -121,7 +121,7 @@ export interface Position {
   y: number;
 }
 
-export type TrackValue = {
+export interface TrackValue {
   selector: GkdSelector;
   nodes: RawNode[];
-};
+}

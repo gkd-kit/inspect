@@ -1,10 +1,11 @@
 import { delay } from './others';
 import { headers2obj } from './others';
 
-type GmXhrRequest = import('vite-plugin-monkey/dist/client').GmXhrRequest<
-  unknown,
-  'blob'
->;
+type GmXhrOptions =
+  import('vite-plugin-monkey/dist/client').GmXmlhttpRequestOption<
+    'blob',
+    undefined
+  >;
 const proxyFc = <T extends (...args: any[]) => any>(getFc: () => T) => {
   return ((...args: any[]) => getFc()(...args)) as T;
 };
@@ -79,8 +80,8 @@ export const GM_fetch = async (
   input: RequestInfo | URL,
   init: RequestInit = {},
   xhrDetails:
-    | Partial<GmXhrRequest>
-    | ((arg: GmXhrRequest) => GmXhrRequest) = {},
+    | Partial<GmXhrOptions>
+    | ((arg: GmXhrOptions) => GmXhrOptions) = {},
 ): Promise<Response> => {
   const request = new Request(input, init).clone();
   if (request.signal?.aborted) {
@@ -116,7 +117,7 @@ export const GM_fetch = async (
     }
   }
   return new Promise<Response>((resolve, reject) => {
-    let initXhrDetails: GmXhrRequest = {
+    let initXhrDetails: GmXhrOptions = {
       method,
       url,
       headers: headers2obj(sendHeaders),

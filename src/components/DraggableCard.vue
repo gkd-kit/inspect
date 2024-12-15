@@ -162,14 +162,14 @@ watch(
 );
 </script>
 <template>
-  <Teleport to="#app">
+  <Teleport to="body">
     <div
       v-if="show"
       fixed
       ref="box"
+      class="DraggableCard"
       :style="[currentStyle, { zIndex }]"
       :class="props.class"
-      class="DraggableCard"
       @mousedown="setTop"
     >
       <slot :onRef="updateTarget" :moved="moved"></slot>

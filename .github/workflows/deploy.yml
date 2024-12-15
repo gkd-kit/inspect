@@ -34,9 +34,8 @@ jobs:
       - run: git checkout .
       - run: curl -X PUT 'https://registry-direct.npmmirror.com/@gkd-kit/inspect/sync'
 
-      - uses: cloudflare/pages-action@v1
+      - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: gkd-inspect
-          directory: dist
+          command: pages deploy dist --project-name=gkd-inspect
