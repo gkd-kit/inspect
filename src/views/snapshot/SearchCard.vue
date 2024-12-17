@@ -157,7 +157,8 @@ const generateRules = errorTry(
   }) => {
     const imageId = snapshotImageId[snapshot.value.id];
     const importId = snapshotImportId[snapshot.value.id];
-    const zipUrl = importId ? getImportUrl(importId) : undefined;
+    const snapshotUrls = importId ? getImportUrl(importId) : undefined;
+    const exampleUrls = imageId ? getImagUrl(imageId) : undefined;
 
     const s = result.selector;
     const t = result.nodes[0].at(-1)!;
@@ -180,8 +181,8 @@ const generateRules = errorTry(
               fastQuery: fastQuery || undefined,
               activityIds: snapshot.value.activityId,
               matches: s.toString(),
-              exampleUrls: getImagUrl(imageId),
-              snapshotUrls: zipUrl,
+              exampleUrls,
+              snapshotUrls,
             },
           ],
         },
