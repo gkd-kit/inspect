@@ -103,14 +103,13 @@ const isSystem = computed(() => {
   return getAppInfo(snapshot.value).isSystem;
 });
 const activityId = computed(() => {
-  if (!snapshot.value.activityId || !snapshot.value.appId) return '';
-  if (
-    snapshot.value.activityId.startsWith(snapshot.value.appId) &&
-    snapshot.value.activityId.length > snapshot.value.appId.length
-  ) {
-    return snapshot.value.activityId.substring(snapshot.value.appId.length);
+  const v = snapshot.value.activityId;
+  const appId = snapshot.value.appId;
+  if (!v || !appId) return '';
+  if (v.startsWith(appId) && v[appId.length] === '.') {
+    return v.substring(appId.length);
   }
-  return snapshot.value.activityId;
+  return v;
 });
 
 const onDelete = async () => {
