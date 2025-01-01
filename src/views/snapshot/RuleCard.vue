@@ -4,7 +4,8 @@ import { getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn } from '@/utils/others';
 import { parseSelector, type GkdSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
-import type { RawNode } from '@/utils/types';
+import type { RawNode, Snapshot } from '@/utils/types';
+import type { ShallowRef } from 'vue';
 
 withDefaults(
   defineProps<{
@@ -17,7 +18,9 @@ withDefaults(
 );
 
 const snapshotStore = useSnapshotStore();
-const { rootNode, focusNode } = storeToRefs(snapshotStore);
+const snapshotRefs = storeToRefs(snapshotStore);
+const { rootNode, focusNode } = snapshotRefs;
+const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
 
 const text = shallowRef('');
 const lazyText = refDebounced(text, 500);
@@ -33,21 +36,7 @@ const toArray = (v: any): string[] | undefined => {
   if (typeof v === 'string') return [v];
   if (Array.isArray(v) && v.every((s) => typeof s === 'string')) return v;
 };
-const dataRef = computed<RawNode | string>(() => {
-  if (!lazyText.value) return '';
-  const obj = (() => {
-    try {
-      return JSON5.parse<ResolvedData>(lazyText.value);
-    } catch (e) {
-      return e as Error;
-    }
-  })();
-  if (obj instanceof Error) {
-    return `非法格式: ${obj.message}`;
-  }
-  if (typeof obj !== 'object' && obj !== null) {
-    return '非法格式: 请使用对象格式';
-  }
+const checkRule = (obj: ResolvedData): string | RawNode => {
   const matches = toArray(obj.matches);
   if (!matches) {
     return '非法格式: matches';
@@ -127,6 +116,53 @@ const dataRef = computed<RawNode | string>(() => {
     return anyMatchesResult[0][0];
   }
   return matchesResult.at(-1)![0];
+};
+
+const isObj = (v: any): v is Record<string, any> => {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+};
+
+const dataRef = computed<RawNode | string>(() => {
+  if (!lazyText.value) return '';
+  const obj = (() => {
+    try {
+      return JSON5.parse(lazyText.value);
+    } catch (e) {
+      return e as Error;
+    }
+  })();
+  if (obj instanceof Error) {
+    return `非法格式: ${obj.message}`;
+  }
+  if (!isObj(obj)) {
+    return '非法格式: 请使用对象格式';
+  }
+  if (typeof obj.id === 'string') {
+    if (obj.id !== snapshot.value.appId) {
+      return '非法格式: id 不匹配 appId';
+    }
+    if (!Array.isArray(obj.groups)) {
+      return '非法格式: groups 不是数组';
+    }
+    if (obj.groups.length !== 1) {
+      return '非法格式: groups 长度不为 1';
+    }
+    const group = obj.groups[0];
+    if (!group?.rules) {
+      return '非法格式: groups[0].rules 非法';
+    }
+    const rules = Array.isArray(group.rules) ? group.rules : [group.rules];
+    if (rules.length !== 1) {
+      return '非法格式: groups[0].rules 长度不为 1';
+    }
+    const rule =
+      typeof rules[0] === 'string' ? { matches: rules[0] } : rules[0];
+    if (!isObj(rule)) {
+      return '非法格式: rules[0] 非法';
+    }
+    return checkRule(rule as ResolvedData);
+  }
+  return checkRule(obj as ResolvedData);
 });
 const errorText = computed(() => {
   if (text.value && lazyText.value && typeof dataRef.value === 'string') {
