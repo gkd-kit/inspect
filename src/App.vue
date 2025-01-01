@@ -21,16 +21,18 @@ $winMinHeight: 700px;
 }
 
 body {
-  &:not(.mobile) {
-    width: var(--gkd-w);
+  width: var(--gkd-w);
+  &.body-auto-w {
+    --gkd-w: 100vw;
   }
 }
 
 #app {
   display: flex;
   flex-direction: column;
-  &:not(.app-auto-h) {
-    height: var(--gkd-h);
+  height: var(--gkd-h);
+  &.app-auto-h {
+    --gkd-h: auto;
   }
 }
 .gkd_code,

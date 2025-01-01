@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { useAutoHeight } from '@/utils/others';
+import { useAutoHeight, useAutoWidth } from '@/utils/others';
 
-// 页面: 输入框, 输入后解析当前选择器的结构
 useAutoHeight();
+useAutoWidth();
+
+const text = shallowRef('');
 </script>
 <template>
   <div flex flex-col items-center p-8px>
-    <input />
-    <div v-for="i in 60" :key="i">
-      {{ Math.random() }}
-    </div>
+    <NInput
+      v-model:value="text"
+      type="textarea"
+      placeholder="请输入选择器"
+      class="gkd_code"
+    />
   </div>
 </template>

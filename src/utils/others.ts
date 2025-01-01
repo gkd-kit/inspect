@@ -66,14 +66,22 @@ export const copy = (() => {
   };
 })();
 
-export const useAutoHeight = () => {
-  const cls = 'app-auto-h';
+const useAutoCls = (el: Element, cls: string) => {
+  el.classList.add(cls);
   onMounted(() => {
-    root.classList.add(cls);
+    el.classList.add(cls);
   });
   onUnmounted(() => {
-    root.classList.remove(cls);
+    el.classList.remove(cls);
   });
+};
+
+export const useAutoHeight = () => {
+  useAutoCls(root, 'app-auto-h');
+};
+
+export const useAutoWidth = () => {
+  useAutoCls(document.body, 'body-auto-w');
 };
 
 export const timeAgo = (date: number) => {
