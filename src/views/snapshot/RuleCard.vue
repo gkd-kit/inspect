@@ -162,6 +162,18 @@ const dataRef = computed<RawNode | string>(() => {
     }
     return checkRule(rule as ResolvedData);
   }
+  if (obj.rules) {
+    const rules = Array.isArray(obj.rules) ? obj.rules : [obj.rules];
+    if (rules.length !== 1) {
+      return '非法格式: rules 长度不为 1';
+    }
+    const rule =
+      typeof rules[0] === 'string' ? { matches: rules[0] } : rules[0];
+    if (!isObj(rule)) {
+      return '非法格式: rules[0] 非法';
+    }
+    return checkRule(rule as ResolvedData);
+  }
   return checkRule(obj as ResolvedData);
 });
 const errorText = computed(() => {
