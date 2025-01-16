@@ -73,6 +73,19 @@ const boxHoverPosition = computed(() => {
     bottom: attr.bottom - oy,
   };
 });
+const boxHoverPerPosition = computed(() => {
+  const attr = focusNode.value?.attr;
+  if (!attr || !boxHoverPosition.value) {
+    return;
+  }
+  const { bottom, left, right, top } = boxHoverPosition.value;
+  return {
+    left: (left / (right + left)).toFixed(3),
+    right: (right / (right + left)).toFixed(3),
+    top: (top / (top + bottom)).toFixed(3),
+    bottom: (bottom / (top + bottom)).toFixed(3),
+  };
+});
 const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
 
 const imgMove = (ev: MouseEvent) => {
@@ -183,6 +196,25 @@ const imgBounding = useElementBounding(imgRef);
             }}
           </div>
           <div>{{ boxHoverPosition.bottom.toFixed(0) }}</div>
+        </div>
+        <div
+          v-if="boxHoverPerPosition"
+          absolute
+          right-2px
+          bottom-2px
+          p-1px
+          z-1
+          text-12px
+          class="leading-[1] bg-[rgba(256,256,256,0.7)]"
+          flex
+          flex-col
+          flex-items-center
+        >
+          <div>{{ boxHoverPerPosition.top }}</div>
+          <div>
+            {{ boxHoverPerPosition.left + ',' + boxHoverPerPosition.right }}
+          </div>
+          <div>{{ boxHoverPerPosition.bottom }}</div>
         </div>
         <div
           class="top-[calc(50%-1px)] bg-[length:10px_1px]"
