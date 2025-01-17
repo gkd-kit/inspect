@@ -2,13 +2,16 @@ import { saveAs } from 'file-saver';
 import pLimit from 'p-limit';
 import { uploadAsset } from './github';
 import { delay, obj2usp } from './others';
-import { screenshotStorage } from './snapshot';
+import { screenshotStorage, snapshotStorage } from './snapshot';
 import Compressor from 'compressorjs';
 import type { Snapshot } from './types';
 import { getImageId } from './url';
 import { JSZipAsync } from './chunk';
 
 const snapshotAsZip = async (snapshot: Snapshot) => {
+  if (!snapshot.nodes.length) {
+    snapshot = (await snapshotStorage.getItem(snapshot.id)) || snapshot;
+  }
   const zip = new (await JSZipAsync)();
   zip
     .file(`snapshot.json`, JSON.stringify(snapshot))
