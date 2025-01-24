@@ -6,7 +6,7 @@ import { dialog } from '@/utils/discrete';
 import {
   batchCreateImageId,
   batchCreateZipUrl,
-  batchJpgDownloadZip,
+  batchImageDownloadZip,
   batchZipDownloadZip,
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
@@ -202,14 +202,14 @@ const batchDelete = useTask(async () => {
   );
   await updateSnapshots();
 });
-const batchDownloadJpg = useTask(async () => {
-  await batchJpgDownloadZip(await checkedSnapshots());
+const batchDownloadImage = useTask(async () => {
+  await batchImageDownloadZip(await checkedSnapshots());
 });
 const batchDownloadZip = useTask(async () => {
   await batchZipDownloadZip(await checkedSnapshots());
 });
 
-const batchShareJpgUrl = useTask(async () => {
+const batchShareImageUrl = useTask(async () => {
   await waitShareAgree();
   const imageIds = await batchCreateImageId(await checkedSnapshots());
   showTextDLg({
@@ -265,8 +265,8 @@ const settingsDlgShow = shallowRef(false);
                 批量下载-快照
               </NButton>
               <NButton
-                @click="batchDownloadJpg.invoke"
-                :loading="batchDownloadJpg.loading"
+                @click="batchDownloadImage.invoke"
+                :loading="batchDownloadImage.loading"
               >
                 批量下载-图片
               </NButton>
@@ -284,8 +284,8 @@ const settingsDlgShow = shallowRef(false);
                 批量生成链接-快照
               </NButton>
               <NButton
-                @click="batchShareJpgUrl.invoke"
-                :loading="batchShareJpgUrl.loading"
+                @click="batchShareImageUrl.invoke"
+                :loading="batchShareImageUrl.loading"
               >
                 批量生成链接-图片
               </NButton>

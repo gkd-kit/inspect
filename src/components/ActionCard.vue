@@ -3,7 +3,7 @@ import { showTextDLg, waitShareAgree } from '@/utils/dialog';
 import { message } from '@/utils/discrete';
 import {
   exportSnapshotAsImportId,
-  exportSnapshotAsJpg,
+  exportSnapshotAsImage,
   exportSnapshotAsImageId,
   exportSnapshotAsZip,
 } from '@/utils/export';
@@ -34,7 +34,7 @@ const props = withDefaults(
 const router = useRouter();
 const { snapshotImportId, snapshotImageId } = useStorageStore();
 
-const exportJpg = useTask(async () => exportSnapshotAsJpg(props.snapshot));
+const exportJpg = useTask(async () => exportSnapshotAsImage(props.snapshot));
 const exportZip = useTask(async () => exportSnapshotAsZip(props.snapshot));
 
 const previewUrl = computed(() => {

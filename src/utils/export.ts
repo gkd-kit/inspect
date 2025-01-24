@@ -28,40 +28,32 @@ export const exportSnapshotAsZip = async (snapshot: Snapshot) => {
   saveAs(await snapshotAsZip(snapshot), fileName);
 };
 
-export const snapshotAsJpg = async (snapshot: Snapshot) => {
-  const imgBf = (await screenshotStorage.getItem(snapshot.id))!;
-  const jpgBlob = await new Promise<Blob>((res, rej) => {
-    new Compressor(new Blob([imgBf], { type: 'image/png' }), {
-      quality: 0.75,
-      convertSize: 200_000,
-      success(file) {
-        res(file);
-      },
-      error(error) {
-        rej(error);
-      },
-    });
-  });
-  const content = new Blob([jpgBlob], { type: 'image/jpeg' });
-  return content;
+export const exportSnapshotAsImage = async (snapshot: Snapshot) => {
+  const fileName = `snapshot-${snapshot.id}.png`;
+  saveAs(
+    new Blob([(await screenshotStorage.getItem(snapshot.id))!], {
+      type: 'image/png',
+    }),
+    fileName,
+  );
 };
 
-export const exportSnapshotAsJpg = async (snapshot: Snapshot) => {
-  const fileName = `snapshot-${snapshot.id}.jpg`;
-  saveAs(await snapshotAsJpg(snapshot), fileName);
-};
-
-export const batchJpgDownloadZip = async (snapshots: Snapshot[]) => {
+export const batchImageDownloadZip = async (snapshots: Snapshot[]) => {
   const zip = new (await JSZipAsync)();
   for (const snapshot of snapshots) {
     await delay();
-    zip.file(snapshot.id + `.jpg`, snapshotAsJpg(snapshot));
+    zip.file(
+      snapshot.id + `.png`,
+      new Blob([(await screenshotStorage.getItem(snapshot.id))!], {
+        type: 'image/png',
+      }),
+    );
   }
   const batchZipFile = await zip.generateAsync({
     type: 'blob',
     compression: `STORE`,
   });
-  saveAs(batchZipFile, `batch-png-${snapshots.length}.zip`);
+  saveAs(batchZipFile, `batch-png-${Date.now()}.zip`);
 };
 
 export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
@@ -74,7 +66,22 @@ export const batchZipDownloadZip = async (snapshots: Snapshot[]) => {
     type: 'blob',
     compression: `STORE`,
   });
-  saveAs(batchZipFile, `batch-zip-${snapshots.length}.zip`);
+  saveAs(batchZipFile, `batch-zip-${Date.now()}.zip`);
+};
+
+const comporessPngToJpg = async (imgBf: ArrayBuffer): Promise<Blob> => {
+  return new Promise<Blob>((res, rej) => {
+    new Compressor(new Blob([imgBf], { type: 'image/png' }), {
+      quality: 0.75,
+      convertSize: 200_000,
+      success(file) {
+        res(file);
+      },
+      error(error) {
+        rej(error);
+      },
+    });
+  });
 };
 
 export const exportSnapshotAsImageId = async (snapshot: Snapshot) => {
@@ -82,7 +89,7 @@ export const exportSnapshotAsImageId = async (snapshot: Snapshot) => {
   return (
     snapshotImageId[snapshot.id] ??
     uploadAsset(
-      await snapshotAsJpg(snapshot).then((r) => r.arrayBuffer()),
+      await comporessPngToJpg((await screenshotStorage.getItem(snapshot.id))!),
       'file.jpg',
     ).then((r) => {
       const imageId = getImageId(r.href);
