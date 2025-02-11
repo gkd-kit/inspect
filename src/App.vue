@@ -80,4 +80,11 @@ object {
     display: none;
   }
 }
+
+html,
+body,
+#app {
+  /* 禁止 iOS/Edge 滚动回弹效果 */
+  overscroll-behavior: none;
+}
 </style>
