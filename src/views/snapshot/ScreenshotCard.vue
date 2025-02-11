@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import dayjs from 'dayjs';
+import MiniHoverImg from './MiniHoverImg.vue';
+
 const snapshotStore = useSnapshotStore();
 const { updatePosition } = snapshotStore;
 const snapshotRefs = storeToRefs(snapshotStore);
 const { focusNode, screenshotUrl } = snapshotRefs;
+
+const snapshot = computed(() => snapshotStore.snapshot!);
 
 const imgRef = shallowRef<HTMLImageElement>();
 const imgLoadTime = shallowRef(false);
@@ -105,156 +110,71 @@ const imgMove = (ev: MouseEvent) => {
     top: (-(oy - 0.1 * img.naturalWidth) / img.naturalWidth) * 1000 + 'px',
   };
 };
-
-const imgBounding = useElementBounding(imgRef);
 </script>
 
 <template>
-  <div flex flex-col relative h-full v-if="screenshotUrl">
+  <div
+    v-if="screenshotUrl"
+    flex
+    flex-col
+    relative
+    h-full
+    p-2px
+    box-border
+    overflow-hidden
+  >
     <img
       ref="imgRef"
       :src="screenshotUrl"
       @click="clickImg"
       cursor-crosshair
-      h-full
       object-contain
+      h-full
       class="max-w-[calc(var(--gkd-w)*0.35)]"
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
       @load="imgLoadTime = true"
     />
-    <div
-      :style="positionStyle"
-      absolute
-      pointer-events-none
-      transition-all-300
-      b-1px
-      b-blue
-      b-solid
-    >
-      <div absolute left-0 top-0 bottom-0 right-0 b-solid b-1px b-red></div>
-    </div>
-    <Teleport to="body">
-      <!-- 渲染在外部防止被遮挡 -->
+    <div pointer-events-none absolute left-2px top-2px size="[calc(100%-4px)]">
       <div
-        v-show="imgHover"
-        :style="{
-          left: imgBounding.right.value + 4 + 'px',
-          top: imgBounding.top.value + 'px',
-        }"
-        pointer-events-none
-        fixed
-        overflow-hidden
-        z-2
-        bg-white
-        h-200px
-        w-200px
-        border-1px
-        border-indigo-600
-        border-dashed
+        :style="positionStyle"
+        absolute
+        transition-all-300
+        b-1px
+        b-blue
+        b-solid
       >
-        <img
-          :src="screenshotUrl"
-          object-contain
-          absolute
-          left-0
-          top-0
-          :style="hoverPositionStyle"
-          w-1000px
-        />
-        <div
-          absolute
-          left-2px
-          top-2px
-          p-1px
-          z-1
-          text-13px
-          class="leading-[1] bg-[rgba(256,256,256,0.7)]"
-        >
-          {{ `${hoverPosition.ox.toFixed(0)},${hoverPosition.oy.toFixed(0)}` }}
-        </div>
-        <div
-          v-if="boxHoverPosition"
-          absolute
-          left-2px
-          bottom-2px
-          p-1px
-          z-1
-          text-12px
-          class="leading-[1] bg-[rgba(256,256,256,0.7)]"
-          flex
-          flex-col
-          flex-items-center
-        >
-          <div>{{ boxHoverPosition.top.toFixed(0) }}</div>
-          <div>
-            {{
-              boxHoverPosition.left.toFixed(0) +
-              ',' +
-              boxHoverPosition.right.toFixed(0)
-            }}
-          </div>
-          <div>{{ boxHoverPosition.bottom.toFixed(0) }}</div>
-        </div>
-        <div
-          v-if="boxHoverPerPosition"
-          absolute
-          right-2px
-          bottom-2px
-          p-1px
-          z-1
-          text-12px
-          class="leading-[1] bg-[rgba(256,256,256,0.7)]"
-          flex
-          flex-col
-          flex-items-center
-        >
-          <div>{{ boxHoverPerPosition.top }}</div>
-          <div>
-            {{ boxHoverPerPosition.left + ',' + boxHoverPerPosition.right }}
-          </div>
-          <div>{{ boxHoverPerPosition.bottom }}</div>
-        </div>
-        <div
-          class="top-[calc(50%-1px)] bg-[length:10px_1px]"
-          absolute
-          left-0
-          right-0
-          h-1px
-          bg-repeat-x
-          mix-blend-difference
-          style="
-            background-image: linear-gradient(
-              to left,
-              transparent 0%,
-              transparent 50%,
-              #fff 50%,
-              #fff 100%
-            );
-            background-position-x: 1.5px;
-          "
-        ></div>
-        <div
-          class="left-[calc(50%-1px)] bg-[length:1px_10px]"
-          absolute
-          top-0
-          bottom-0
-          w-1px
-          bg-repeat-y
-          mix-blend-difference
-          style="
-            background-image: linear-gradient(
-              to top,
-              transparent 0%,
-              transparent 50%,
-              #fff 50%,
-              #fff 100%
-            );
-            background-position-y: 1.5px;
-          "
-        ></div>
+        <div absolute left-0 top-0 bottom-0 right-0 b-solid b-1px b-red></div>
       </div>
-    </Teleport>
+    </div>
+    <div
+      absolute
+      z-4
+      pointer-events-none
+      left-0
+      top-0
+      text-12px
+      leading="100%"
+      flex
+      gap-4px
+    >
+      <div p-1px bg="#ffffff70">
+        {{ `${snapshot.screenWidth}x${snapshot.screenHeight}` }}
+      </div>
+      <div p-1px bg="#ffffff70">
+        {{ dayjs(snapshot.id).format('YYYY-MM-DD HH:mm:ss') }}
+      </div>
+    </div>
+    <MiniHoverImg
+      v-if="imgRef"
+      :imgHover="imgHover"
+      :imgRef="imgRef"
+      :boxHoverPerPosition="boxHoverPerPosition"
+      :boxHoverPosition="boxHoverPosition"
+      :hoverPositionStyle="hoverPositionStyle"
+      :hoverPosition="hoverPosition"
+      :screenshotUrl="screenshotUrl"
+    />
   </div>
 </template>

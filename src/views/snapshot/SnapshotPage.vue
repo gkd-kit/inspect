@@ -30,7 +30,7 @@ const clickSettings = () => {
 </script>
 <template>
   <template v-if="snapshot && rootNode">
-    <div h-full flex gap-5px p-5px box-border>
+    <div h-full flex gap-5px>
       <div w-28px py-8px flex flex-col gap-16px>
         <NTooltip placement="right">
           <template #trigger>
