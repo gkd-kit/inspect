@@ -4,12 +4,12 @@ import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
-import type { GkdSelector } from '@/utils/selector';
+import type { ResolvedSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
 import type { RawNode, Snapshot } from '@/utils/types';
 import { getImagUrl, getImportUrl } from '@/utils/url';
-import { SelectorCheckException } from '@gkd-kit/selector';
+import { FastQuery, GkdException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
 import * as base64url from 'universal-base64url';
 import type { ShallowRef } from 'vue';
@@ -32,20 +32,23 @@ const { updateFocusNode } = snapshotStore;
 const snapshotRefs = storeToRefs(snapshotStore);
 const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
 const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
-const { focusNode, track } = snapshotRefs;
+const { focusNode } = snapshotRefs;
 
 const selectorText = shallowRef(``);
-type SearchResult =
-  | {
-      key: number;
-      selector: string;
-      nodes: RawNode[];
-    }
-  | {
-      key: number;
-      selector: GkdSelector;
-      nodes: RawNode[][];
-    };
+
+interface SelectorSearchResult {
+  key: number;
+  selector: ResolvedSelector;
+  nodes: RawNode[];
+}
+interface StringSearchResult {
+  key: number;
+  selector: string;
+  nodes: RawNode[];
+}
+
+type SearchResult = SelectorSearchResult | StringSearchResult;
+
 const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
 const searchSelector = (text: string) => {
@@ -55,10 +58,10 @@ const searchSelector = (text: string) => {
       if (typeof e == 'string') {
         return e;
       }
-      if (e instanceof Error && e.cause instanceof SelectorCheckException) {
-        return e.message;
+      if (e instanceof GkdException) {
+        return `非法选择器:` + e.outMessage;
       }
-      return `非法选择器`;
+      return `非法选择器:` + (e instanceof Error ? e.message : e);
     },
   );
   if (
@@ -72,7 +75,7 @@ const searchSelector = (text: string) => {
     return;
   }
 
-  const results = selector.querySelectorTrackAll(rootNode.value);
+  const results = selector.querySelectorAll(rootNode.value);
   if (results.length == 0) {
     message.success(`没有选择到节点`);
     return;
@@ -116,8 +119,8 @@ const refreshExpandedKeys = () => {
   const newNode = newResult.nodes[0];
   if (!Array.isArray(newNode)) {
     updateFocusNode(newNode);
-  } else if (typeof newResult.selector == 'object' && Array.isArray(newNode)) {
-    updateFocusNode(newNode[newResult.selector.targetIndex]);
+  } else if (typeof newResult.selector == 'object') {
+    updateFocusNode(newNode);
   }
   const allKeys = new Set(selectorResults.map((s) => s.key));
   const newKeys = expandedKeys.value.filter((k) => allKeys.has(k));
@@ -149,49 +152,55 @@ onMounted(async () => {
   }
 });
 
-const generateRules = errorTry(
-  async (result: {
-    key: number;
-    selector: GkdSelector;
-    nodes: RawNode[][];
-  }) => {
-    const imageId = snapshotImageId[snapshot.value.id];
-    const importId = snapshotImportId[snapshot.value.id];
-    const snapshotUrls = importId ? getImportUrl(importId) : undefined;
-    const exampleUrls = imageId ? getImagUrl(imageId) : undefined;
+const generateRules = errorTry(async (result: SelectorSearchResult) => {
+  const imageId = snapshotImageId[snapshot.value.id];
+  const importId = snapshotImportId[snapshot.value.id];
+  const snapshotUrls = importId ? getImportUrl(importId) : undefined;
+  const exampleUrls = imageId ? getImagUrl(imageId) : undefined;
 
-    const s = result.selector;
-    const t = result.nodes[0].at(-1)!;
+  const s = result.selector;
+  const t = result.nodes[0];
 
-    const fastQuery = [
-      (t.quickFind ?? t.idQf) && t.attr.id && s.qfIdValue,
-      (t.quickFind ?? t.idQf) && t.attr.vid && s.qfVidValue,
-      (t.quickFind ?? t.textQf) && t.attr.text && s.qfTextValue,
-    ].some(Boolean);
-    const rule = {
-      id: snapshot.value.appId,
-      name: getAppInfo(snapshot.value).name,
-      groups: [
-        {
-          key: 1,
-          name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
-          desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
-          rules: [
-            {
-              fastQuery: fastQuery || undefined,
-              activityIds: snapshot.value.activityId,
-              matches: s.toString(),
-              exampleUrls,
-              snapshotUrls,
-            },
-          ],
-        },
-      ],
-    };
+  const fastQuery = [
+    (t.quickFind ?? t.idQf) &&
+      t.attr.id &&
+      s.fastQueryList.some(
+        (v) => v instanceof FastQuery.Id && v.value === t.attr.id,
+      ),
+    (t.quickFind ?? t.idQf) &&
+      t.attr.vid &&
+      s.fastQueryList.some(
+        (v) => v instanceof FastQuery.Vid && v.value === t.attr.vid,
+      ),
+    (t.quickFind ?? t.textQf) &&
+      t.attr.text &&
+      s.fastQueryList.some(
+        (v) => v instanceof FastQuery.Text && v.value === t.attr.text,
+      ),
+  ].some(Boolean);
+  const rule = {
+    id: snapshot.value.appId,
+    name: getAppInfo(snapshot.value).name,
+    groups: [
+      {
+        key: 1,
+        name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
+        desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
+        rules: [
+          {
+            fastQuery: fastQuery || undefined,
+            activityIds: snapshot.value.activityId,
+            matches: s.toString(),
+            exampleUrls,
+            snapshotUrls,
+          },
+        ],
+      },
+    ],
+  };
 
-    copy(JSON5.stringify(rule, undefined, 2));
-  },
-);
+  copy(JSON5.stringify(rule, undefined, 2));
+});
 const enableSearchBySelector = shallowRef(true);
 const hasZipId = computed(() => {
   return snapshotImportId[snapshot.value.id];
@@ -273,6 +282,7 @@ const shareResult = (result: SearchResult) => {
             <span
               v-if="result.nodes.length > 1"
               underline
+              leading-20px
               decoration-1
               m-r-4px
               title="查询数量"
@@ -281,6 +291,9 @@ const shareResult = (result: SearchResult) => {
             </span>
             <span
               break-all
+              px-4px
+              leading-20px
+              bg="#eee"
               :title="
                 typeof result.selector == 'object' ? `选择器` : `搜索字符`
               "
@@ -294,10 +307,7 @@ const shareResult = (result: SearchResult) => {
               v-if="
                 typeof result.selector == 'object' && result.selector.canCopy
               "
-              @click.stop="
-                // @ts-ignore
-                generateRules(result)
-              "
+              @click.stop="generateRules(result as SelectorSearchResult)"
               title="复制规则"
             >
               <template #icon>
@@ -356,69 +366,41 @@ const shareResult = (result: SearchResult) => {
               </template>
             </NButton>
           </template>
-          <NSpace
-            style="max-height: 400px; overflow-y: scroll; padding-bottom: 10px"
-          >
-            <template
-              v-if="
-                typeof result.selector == 'string' ||
-                result.selector.connectKeys.length === 0
-              "
-            >
-              <NButton
-                v-for="resultNode in result.nodes.map((r) =>
-                  Array.isArray(r) ? r[0] : r,
-                )"
-                :key="resultNode.id"
-                @click="updateFocusNode(resultNode)"
-                size="small"
-                :style="getNodeStyle(resultNode, focusNode)"
-              >
-                {{ getNodeLabel(resultNode) }}
-              </NButton>
-            </template>
-            <template v-else>
-              <NButtonGroup
-                v-for="(trackNodes, index) in result.nodes.map((r) =>
-                  Array.isArray(r) ? r : [r],
-                )"
-                :key="index"
+          <NScrollbar xScrollable style="max-height: 400px">
+            <div flex gap-8px flex-wrap>
+              <template
+                v-if="
+                  typeof result.selector == 'string' ||
+                  result.selector.connectKeys.length === 0
+                "
               >
                 <NButton
+                  v-for="resultNode in result.nodes"
+                  :key="resultNode.id"
+                  @click="updateFocusNode(resultNode)"
                   size="small"
-                  @click="
-                    track = {
-                      nodes: trackNodes,
-                      selector: result.selector,
-                    }
-                  "
+                  :style="getNodeStyle(resultNode, focusNode)"
                 >
-                  <NIcon>
-                    <svg viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M5 21V8.825Q4.125 8.5 3.563 7.738T3 6q0-1.25.875-2.125T6 3q1.25 0 2.125.875T9 6q0 .975-.562 1.738T7 8.825V19h4V3h8v12.175q.875.325 1.438 1.088T21 18q0 1.25-.875 2.125T18 21q-1.25 0-2.125-.875T15 18q0-.975.563-1.75T17 15.175V5h-4v16zM6 7q.425 0 .713-.288T7 6q0-.425-.288-.712T6 5q-.425 0-.712.288T5 6q0 .425.288.713T6 7m12 12q.425 0 .713-.288T19 18q0-.425-.288-.712T18 17q-.425 0-.712.288T17 18q0 .425.288.713T18 19m0-1"
-                      />
-                    </svg>
-                  </NIcon>
+                  {{ getNodeLabel(resultNode) }}
                 </NButton>
-                <NButton
-                  @click="
-                    updateFocusNode(trackNodes[result.selector.targetIndex])
-                  "
-                  size="small"
-                  :style="
-                    getNodeStyle(
-                      trackNodes[result.selector.targetIndex],
-                      focusNode,
-                    )
-                  "
+              </template>
+              <template v-else>
+                <NButtonGroup
+                  v-for="(resultNode, index) in result.nodes"
+                  :key="index"
                 >
-                  {{ getNodeLabel(trackNodes[result.selector.targetIndex]) }}
-                </NButton>
-              </NButtonGroup>
-            </template>
-          </NSpace>
+                  <NButton
+                    @click="updateFocusNode(resultNode)"
+                    size="small"
+                    :style="getNodeStyle(resultNode, focusNode)"
+                  >
+                    {{ getNodeLabel(resultNode) }}
+                  </NButton>
+                </NButtonGroup>
+              </template>
+            </div>
+            <div un="h-10px"></div>
+          </NScrollbar>
         </NCollapseItem>
       </NCollapse>
     </div>

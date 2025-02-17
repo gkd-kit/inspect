@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import { dateZhCN, zhCN } from 'naive-ui';
+import { dateZhCN, zhCN, type GlobalThemeOverrides } from 'naive-ui';
 import { RouterView } from 'vue-router';
 import ErrorDlg from './components/ErrorDlg.vue';
 import { ScrollbarWrapper } from './utils/others';
+
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    lineHeight: '20px',
+  },
+};
 </script>
 <template>
-  <NConfigProvider :locale="zhCN" :date-locale="dateZhCN" abstract>
+  <NConfigProvider
+    abstract
+    :locale="zhCN"
+    :date-locale="dateZhCN"
+    :theme-overrides="themeOverrides"
+  >
     <ErrorDlg />
     <RouterView />
   </NConfigProvider>
@@ -37,7 +48,8 @@ body {
 }
 .gkd_code,
 [gkd_code] {
-  font-family: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace !important;
+  font-family:
+    v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace !important;
 }
 
 [direction-rtl],
@@ -86,5 +98,8 @@ body,
 #app {
   /* 禁止 iOS/Edge 滚动回弹效果 */
   overscroll-behavior: none;
+
+  font-size: 14px;
+  line-height: 20px;
 }
 </style>

@@ -2,7 +2,7 @@
 import DraggableCard from '@/components/DraggableCard.vue';
 import { getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn } from '@/utils/others';
-import { parseSelector, type GkdSelector } from '@/utils/selector';
+import { parseSelector, type ResolvedSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
 import type { RawNode, Snapshot } from '@/utils/types';
 import type { ShallowRef } from 'vue';
@@ -50,7 +50,7 @@ const checkRule = (obj: ResolvedData): string | RawNode => {
     return '非法格式: excludeMatches';
   }
 
-  const resolvedMatches: GkdSelector[] = [];
+  const resolvedMatches: ResolvedSelector[] = [];
   for (let i = 0; i < matches.length; i++) {
     const v = matches[i];
     try {
@@ -70,7 +70,7 @@ const checkRule = (obj: ResolvedData): string | RawNode => {
     }
   }
 
-  const resolvedAnyMatches: GkdSelector[] = [];
+  const resolvedAnyMatches: ResolvedSelector[] = [];
   for (let i = 0; i < anyMatches.length; i++) {
     const v = anyMatches[i];
     try {
@@ -93,7 +93,7 @@ const checkRule = (obj: ResolvedData): string | RawNode => {
     return '非法规则: matches 和 anyMatches 至少存在一个';
   }
 
-  const resolvedExcludeMatches: GkdSelector[] = [];
+  const resolvedExcludeMatches: ResolvedSelector[] = [];
   for (let i = 0; i < excludeMatches.length; i++) {
     const v = excludeMatches[i];
     try {

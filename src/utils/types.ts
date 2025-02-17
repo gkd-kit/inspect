@@ -1,4 +1,4 @@
-import type { GkdSelector } from '@/utils/selector';
+import type { ResolvedSelector } from '@/utils/selector';
 
 export type PrimitiveType = boolean | string | number | null | undefined;
 
@@ -122,6 +122,6 @@ export interface Position {
 }
 
 export interface TrackValue {
-  selector: GkdSelector;
+  selector: ResolvedSelector;
   nodes: RawNode[];
 }

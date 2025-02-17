@@ -27,6 +27,7 @@ export default ts.config(
     },
   },
   {
+    // @ts-ignore
     languageOptions: autoImport,
   },
   {

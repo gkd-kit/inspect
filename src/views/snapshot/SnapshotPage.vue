@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import TrackDlg from '@/components/TrackDlg.vue';
 import { loadingBar, message } from '@/utils/discrete';
 import AttrCard from './AttrCard.vue';
 import OverlapCard from './OverlapCard.vue';
@@ -10,7 +9,7 @@ import WindowCard from './WindowCard.vue';
 
 const snapshotStore = useSnapshotStore();
 const snapshotRefs = storeToRefs(snapshotStore);
-const { snapshot, rootNode, track, loading, redirected } = snapshotRefs;
+const { snapshot, rootNode, loading, redirected } = snapshotRefs;
 
 watchEffect(() => {
   if (loading.value) {
@@ -168,7 +167,6 @@ const clickSettings = () => {
     <RuleCard :show="ruleShow" @updateShow="ruleShow = $event" />
     <AttrCard :show="attrShow" @updateShow="attrShow = $event" />
     <OverlapCard />
-    <TrackDlg :track="track" @updateTrack="track = $event" />
   </template>
   <div v-else-if="!loading && !redirected" flex justify-center pt-80px>
     <div>快照数据缺失</div>
