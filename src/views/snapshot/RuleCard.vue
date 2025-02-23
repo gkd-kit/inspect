@@ -206,11 +206,7 @@ const targetNode = computed(() => {
         <div flex-1 cursor-move :ref="onRef"></div>
         <NButton @click="onUpdateShow(!show)" text title="最小化">
           <template #icon>
-            <NIcon>
-              <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M6 13v-2h12v2z" />
-              </svg>
-            </NIcon>
+            <SvgIcon name="minus" />
           </template>
         </NButton>
       </div>

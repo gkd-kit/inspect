@@ -82,6 +82,11 @@ const router = createRouter({
       meta: { title: '选择器' },
     },
     {
+      path: '/svg',
+      component: recordModule(() => import('@/views/SvgPage.vue')),
+      meta: { title: 'SVG' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       component: recordModule(() => import('@/views/_404Page.vue')),
     },
