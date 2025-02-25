@@ -107,11 +107,11 @@ const error = computed(() => {
       p-4px
       gkd_code
       transition-colors
-      overflow-x-scroll
-      scrollbar-hidden
       :class="error ? `bg-red-200` : `bg-light-600`"
     >
-      <SelectorText v-if="ast" :text="text" :node="ast" />
+      <div v-if="ast" overflow-x-scroll scrollbar-hidden>
+        <SelectorText :text="text" :node="ast" />
+      </div>
       <span v-else-if="error" whitespace-pre-wrap>
         <span v-if="error.headText">{{ error.headText }}</span>
         <span bg-red relative>
