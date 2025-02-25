@@ -24,7 +24,7 @@
     "@antv/g6": "5.0.43",
     "@eslint/js": "9.21.0",
     "@gkd-kit/api": "0.6.0",
-    "@gkd-kit/selector": "0.5.5",
+    "@gkd-kit/selector": "0.5.11",
     "@gkd-kit/wasm_matches": "0.0.1",
     "@tsconfig/node20": "20.1.4",
     "@types/file-saver": "2.0.7",

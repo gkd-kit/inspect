@@ -18,8 +18,8 @@ importers:
         specifier: 0.6.0
         version: 0.6.0
       '@gkd-kit/selector':
-        specifier: 0.5.5
-        version: 0.5.5
+        specifier: 0.5.11
+        version: 0.5.11
       '@gkd-kit/wasm_matches':
         specifier: 0.0.1
         version: 0.0.1
@@ -1200,8 +1200,8 @@ packages:
   '@gkd-kit/api@0.6.0':
     resolution: {integrity: sha512-QRzbC3FRVUbsabKRr02QfzKPcez4JAPJqytK+jo8Ts8F0CX5+65Akh3gV/R2tqqzaelvdHjzrgL4j3O6v9KpKQ==}
 
-  '@gkd-kit/selector@0.5.5':
-    resolution: {integrity: sha512-1HmSngHoCobQl9OaeVXafispBCnc7zFTuKdRhm3B4XOgZysV9Y5mzwh0KSda0CUo+NqcpxFTcJdPt6S469dlpw==}
+  '@gkd-kit/selector@0.5.11':
+    resolution: {integrity: sha512-EFRj7NxSZdTORhycpNOv9hdPwocK43ciZDHi+7hqQ+YUoBHBIfpqNgpk69Wpji2TF0lWLf7ozZcm2Iqv0CvJcA==}
 
   '@gkd-kit/wasm_matches@0.0.1':
     resolution: {integrity: sha512-PUYa98MXyumiIVuYHozbYThhPnYwrdvEwyL+tBmneonIq1Vm2CmeUfk3FbJXxaMQE2/3JBa7utfk0HAu/03xDQ==}
@@ -5019,7 +5019,7 @@ snapshots:
 
   '@gkd-kit/api@0.6.0': {}
 
-  '@gkd-kit/selector@0.5.5': {}
+  '@gkd-kit/selector@0.5.11': {}
 
   '@gkd-kit/wasm_matches@0.0.1': {}
 

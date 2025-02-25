@@ -299,6 +299,15 @@ const settingsDlgShow = shallowRef(false);
             </NIcon>
           </template>
         </NButton>
+        <RouterLink flex to="/selector" title="测试选择器">
+          <NButton text>
+            <template #icon>
+              <NIcon :size="24">
+                <SvgIcon name="terminal" />
+              </NIcon>
+            </template>
+          </NButton>
+        </RouterLink>
         <NPopover>
           <template #trigger>
             <NButton text>
