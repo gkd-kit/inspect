@@ -68,6 +68,26 @@ const error = computed(() => {
 });
 </script>
 <template>
+  <div flex items-center gap-16px pt-12px px-12px>
+    <NTooltip placement="right">
+      <template #trigger>
+        <NButton text>
+          <template #icon>
+            <RouterLink to="/" color="inherit">
+              <NIcon size="24">
+                <SvgIcon name="home" />
+              </NIcon>
+            </RouterLink>
+          </template>
+        </NButton>
+      </template>
+      回到首页
+    </NTooltip>
+    <div>
+      <span text-18px>测试选择器</span>
+      <span>(语法高亮/错误解析)</span>
+    </div>
+  </div>
   <div flex flex-col items-center p-8px text="40px/52px">
     <NInput
       v-model:value="inputText"
@@ -91,8 +111,18 @@ const error = computed(() => {
         <span bg-red relative>
           <span v-if="error.errorText">{{ error.errorText }}</span>
           <span v-else pl-20px></span>
-          <div absolute left-0 right-0 top--14px flex flex-col items-center>
-            <SvgIcon name="arrow" class="text-16px color-dark" />
+          <div
+            absolute
+            left-0
+            right-0
+            top--12px
+            flex
+            flex-col
+            items-center
+            animate-bounce
+            pointer-events-none
+          >
+            <SvgIcon name="arrow" class="text-18px color-dark" />
           </div>
         </span>
         <span v-if="error.tailText">{{ error.tailText }}</span>

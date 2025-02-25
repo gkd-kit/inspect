@@ -133,6 +133,9 @@ const children = computed(() => {
 [data-name~='ValueExpression'] {
   color: green;
 }
+[data-name~='ValueExpression'][data-name~='LiteralExpression'] {
+  color: steelblue;
+}
 [data-name~='CompareOperator'] {
   color: mediumblue;
 }
