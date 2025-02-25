@@ -1,16 +1,38 @@
 import {
-  FastQuery,
   getBooleanInvoke,
   getIntInvoke,
   getStringAttr,
   getStringInvoke,
   initDefaultTypeInfo,
+  updateWasmToMatches,
   MatchOption,
   QueryResult,
-  Selector,
   Transform,
-  updateWasmToMatches,
   QueryContext,
+  AstNode,
+  Selector,
+  FastQuery,
+  BinaryExpression,
+  CompareOperator,
+  ConnectExpression,
+  ConnectOperator,
+  ConnectSegment,
+  ConnectWrapper,
+  Expression,
+  LogicalExpression,
+  LogicalOperator,
+  LogicalSelectorExpression,
+  NotExpression,
+  PolynomialExpression,
+  PropertySegment,
+  ValueExpression,
+  PropertyUnit,
+  PropertyWrapper,
+  SelectorExpression,
+  SelectorLogicalOperator,
+  TupleExpression,
+  UnitSelectorExpression,
+  NotSelectorExpression,
 } from '@gkd-kit/selector';
 import matchesInstantiate from '@gkd-kit/wasm_matches';
 import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
@@ -160,4 +182,65 @@ export const parseSelector = (source: string): ResolvedSelector => {
 
 export const checkSelector = (source: string) => {
   return Selector.Companion.parseOrNull(source) != null;
+};
+
+// keep class name avoid minify
+const clazzList = Object.entries({
+  MatchOption,
+  QueryResult,
+  Transform,
+  QueryContext,
+  AstNode,
+  Selector,
+  FastQuery,
+  BinaryExpression,
+  CompareOperator,
+  ConnectExpression,
+  ConnectOperator,
+  ConnectSegment,
+  ConnectWrapper,
+  Expression,
+  LogicalExpression,
+  LogicalOperator,
+  LogicalSelectorExpression,
+  NotExpression,
+  PolynomialExpression,
+  PropertySegment,
+  ValueExpression,
+  PropertyUnit,
+  PropertyWrapper,
+  SelectorExpression,
+  SelectorLogicalOperator,
+  TupleExpression,
+  UnitSelectorExpression,
+  NotSelectorExpression,
+}).map(([k, v]) => ({
+  clazz: v as any,
+  name: k,
+}));
+
+clazzList.forEach((v) => {
+  Object.keys(v.clazz).forEach((subClazzName) => {
+    const clazz = v.clazz[subClazzName];
+    if (clazz instanceof Function) {
+      clazzList.push({ clazz, name: subClazzName });
+    }
+  });
+});
+
+const getGkdInnerClassName = (clazz: any): string => {
+  const c = clazzList.find((v) => v.clazz === clazz);
+  if (c) return c.name;
+  console.error('unknown class:', clazz);
+  return '';
+};
+
+export const getAstNodeClassName = (node: AstNode<any>) => {
+  const list = [node.name];
+  let clazz = Object.getPrototypeOf(Object.getPrototypeOf(node.value));
+  while (clazz?.constructor && clazz.constructor !== Object) {
+    list.push(getGkdInnerClassName(clazz.constructor));
+    clazz = Object.getPrototypeOf(clazz);
+  }
+  return list.join(' ');
 };

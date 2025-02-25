@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { AstNode } from '@gkd-kit/selector';
 import SelectorText from './SelectorText.vue';
+import { getAstNodeClassName } from '@/utils/selector';
 
 const props = defineProps<{
   text: string;
@@ -18,16 +19,6 @@ interface ExtraNode {
 
 const getExtraText = (child: ExtraNode) => {
   return props.text.substring(child.start, child.end);
-};
-
-const getName = (node: AstNode<any>) => {
-  const list = [node.name];
-  let t = Object.getPrototypeOf(Object.getPrototypeOf(node.value));
-  while (t?.constructor?.name && t.constructor !== Object) {
-    list.push(t.constructor.name);
-    t = Object.getPrototypeOf(t);
-  }
-  return list.join(' ');
 };
 
 const getExtraName = (child: ExtraNode) => {
@@ -105,7 +96,7 @@ const children = computed(() => {
 <template>
   <span
     whitespace-pre-wrap
-    :data-name="getName(node)"
+    :data-name="getAstNodeClassName(node)"
     :data-range="getRange(node)"
     :data-value="subText"
   >
