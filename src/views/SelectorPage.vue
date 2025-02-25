@@ -83,9 +83,9 @@ const error = computed(() => {
       </template>
       回到首页
     </NTooltip>
-    <div>
-      <span text-18px>测试选择器</span>
-      <span>(语法高亮/错误解析)</span>
+    <div flex gap-16px>
+      <div text-18px>测试选择器</div>
+      <div>语法高亮/错误解析</div>
     </div>
   </div>
   <div flex flex-col items-center p-8px text="40px/52px">
@@ -95,14 +95,20 @@ const error = computed(() => {
       placeholder="请输入选择器"
       class="gkd_code py-4px"
       style="--n-font-size: 20px; --n-line-height-textarea: 28px"
+      :autosize="{
+        minRows: 3,
+        maxRows: 8,
+      }"
     />
+    <div h-20px></div>
     <div
-      mt-20px
+      max-w-full
       mb-8px
-      py-4px
-      px-8px
+      p-4px
       gkd_code
       transition-colors
+      overflow-x-scroll
+      scrollbar-hidden
       :class="error ? `bg-red-200` : `bg-light-600`"
     >
       <SelectorText v-if="ast" :text="text" :node="ast" />

@@ -86,7 +86,8 @@ object {
   display: block;
 }
 
-.scrollbar-hidden {
+.scrollbar-hidden,
+[scrollbar-hidden] {
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
