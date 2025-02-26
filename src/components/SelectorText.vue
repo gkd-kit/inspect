@@ -106,6 +106,9 @@ const children = computed(() => {
 [data-name~='PropertySegment'] {
   color: blueviolet;
 }
+[data-name~='PropertySegment'] [data-name='String'][data-value='@'] {
+  color: rgb(98, 55, 138);
+}
 [data-name~='ConnectOperator'] {
   color: green;
 }
