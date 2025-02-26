@@ -26,24 +26,6 @@ const getExtraName = (child: ExtraNode) => {
   if (!t) {
     return 'Whitespace';
   }
-  if (t === '(') {
-    return 'Bracket LeftParenthesis';
-  }
-  if (t === ')') {
-    return 'Bracket RightParenthesis';
-  }
-  if (t === ',') {
-    return 'Comma';
-  }
-  if (t == '[') {
-    return 'Bracket LeftSquareBracket';
-  }
-  if (t == ']') {
-    return 'Bracket RightSquareBracket';
-  }
-  if (t === '.') {
-    return 'Point';
-  }
   if (t === '+') {
     return '';
   }
@@ -145,13 +127,18 @@ const children = computed(() => {
 [data-name~='SelectorLogicalOperator'] {
   color: darkgreen;
 }
-[data-name~='Bracket'] {
+[data-name='String'][data-value=')'],
+[data-name='String'][data-value='('] {
   color: #b392f0;
 }
-[data-name~='Comma'] {
+[data-name='String'][data-value=']'],
+[data-name='String'][data-value='['] {
   color: #b392f0;
 }
-[data-name~='Point'] {
+[data-name='String'][data-value=','] {
+  color: #5e418c;
+}
+[data-name='String'][data-value='.'] {
   color: #b392f0;
 }
 </style>
