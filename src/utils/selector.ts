@@ -121,6 +121,8 @@ const transform = Transform.Companion.multiplatformBuild<RawNode>(
 );
 
 export interface ResolvedSelector {
+  source: string;
+  ast: AstNode<Selector>;
   value: Selector;
   connectKeys: string[];
   fastQueryList: readonly FastQuery[];
@@ -138,15 +140,17 @@ const typeInfo = initDefaultTypeInfo(true).globalType;
 const matchOption = new MatchOption(false);
 
 export const parseSelector = (source: string): ResolvedSelector => {
-  const value = Selector.Companion.parse(source);
+  const ast = Selector.Companion.parseAst(source);
+  const value = ast.value;
   value.checkType(typeInfo);
   const binaryExpressionList =
     value.expression.binaryExpressionList.asJsReadonlyArrayView();
   const fastQueryList = value.expression.fastQueryList.asJsReadonlyArrayView();
   const connectSegmentList =
     value.expression.connectSegmentList.asJsReadonlyArrayView();
-
   const selector: ResolvedSelector = {
+    source,
+    ast,
     value,
     connectKeys: connectSegmentList.map((v) => v.operator.key),
     canCopy: !binaryExpressionList.some((b) =>

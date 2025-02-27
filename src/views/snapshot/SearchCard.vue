@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/DraggableCard.vue';
+import SelectorText from '@/components/SelectorText.vue';
 import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
@@ -34,14 +35,16 @@ const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
 const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
 const { focusNode } = snapshotRefs;
 
-const selectorText = shallowRef(``);
+const searchText = shallowRef(``);
 
 interface SelectorSearchResult {
+  gkd: true;
   key: number;
   selector: ResolvedSelector;
   nodes: RawNode[];
 }
 interface StringSearchResult {
+  gkd: false;
   key: number;
   selector: string;
   nodes: RawNode[];
@@ -81,7 +84,12 @@ const searchSelector = (text: string) => {
     return;
   }
   message.success(`选择到 ${results.length} 个节点`);
-  selectorResults.unshift({ selector, nodes: results, key: Date.now() });
+  selectorResults.unshift({
+    selector,
+    nodes: results,
+    key: Date.now(),
+    gkd: true,
+  });
   return results.length;
 };
 const searchString = (text: string) => {
@@ -108,6 +116,7 @@ const searchString = (text: string) => {
   }
   message.success(`搜索到 ${results.length} 个节点`);
   selectorResults.unshift({
+    gkd: false,
     selector: text,
     nodes: results,
     key: Date.now(),
@@ -128,7 +137,7 @@ const refreshExpandedKeys = () => {
   expandedKeys.value = newKeys;
 };
 const searchBySelector = errorTry(() => {
-  const text = selectorText.value.trim();
+  const text = searchText.value.trim();
   if (!text) return;
   if (enableSearchBySelector.value) {
     if (!searchSelector(text)) return;
@@ -249,7 +258,7 @@ const shareResult = (result: SearchResult) => {
       </div>
       <NInputGroup>
         <NInput
-          v-model:value="selectorText"
+          v-model:value="searchText"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
           @keyup.enter="searchBySelector"
           :inputProps="{ class: 'gkd_code' }"
@@ -274,6 +283,7 @@ const shareResult = (result: SearchResult) => {
               leading-20px
               decoration-1
               m-r-4px
+              gkd_code
               title="查询数量"
             >
               {{ result.nodes.length }}
@@ -283,59 +293,55 @@ const shareResult = (result: SearchResult) => {
               px-4px
               leading-20px
               bg="#eee"
-              :title="
-                typeof result.selector == 'object' ? `选择器` : `搜索字符`
-              "
+              gkd_code
+              :title="result.gkd ? `选择器` : `搜索字符`"
             >
-              {{ result.selector.toString() }}
+              <SelectorText
+                v-if="result.gkd"
+                :node="result.selector.ast"
+                :text="result.selector.source"
+              />
+              <template v-else>{{ result.selector }}</template>
             </span>
+            <span pl-4px></span>
           </template>
           <template #header-extra>
-            <NButton
-              size="small"
-              v-if="
-                typeof result.selector == 'object' && result.selector.canCopy
-              "
-              @click.stop="generateRules(result as SelectorSearchResult)"
-              title="复制规则"
-            >
-              <template #icon>
-                <SvgIcon name="copy" />
-              </template>
-            </NButton>
-            <div p-l-4px></div>
-            <NButton
-              v-if="hasZipId"
-              size="small"
-              :title="
-                typeof result.selector == 'object'
-                  ? `复制查询链接`
-                  : `复制搜索链接`
-              "
-              @click.stop="shareResult(result)"
-            >
-              <template #icon>
-                <SvgIcon name="share" />
-              </template>
-            </NButton>
-            <div p-l-4px></div>
-            <NButton
-              size="small"
-              @click.stop="selectorResults.splice(index, 1)"
-              title="删除记录"
-            >
-              <template #icon>
-                <SvgIcon name="delete" />
-              </template>
-            </NButton>
+            <NButtonGroup>
+              <NButton
+                size="small"
+                v-if="result.gkd && result.selector.canCopy"
+                @click.stop="generateRules(result as SelectorSearchResult)"
+                title="复制规则"
+              >
+                <template #icon>
+                  <SvgIcon name="copy" />
+                </template>
+              </NButton>
+              <NButton
+                v-if="hasZipId"
+                size="small"
+                :title="result.gkd ? `复制查询链接` : `复制搜索链接`"
+                @click.stop="shareResult(result)"
+              >
+                <template #icon>
+                  <SvgIcon name="share" />
+                </template>
+              </NButton>
+              <NButton
+                size="small"
+                @click.stop="selectorResults.splice(index, 1)"
+                title="删除记录"
+              >
+                <template #icon>
+                  <SvgIcon name="delete" />
+                </template>
+              </NButton>
+            </NButtonGroup>
           </template>
           <NScrollbar xScrollable style="max-height: 400px">
             <div flex gap-8px flex-wrap>
               <template
-                v-if="
-                  typeof result.selector == 'string' ||
-                  result.selector.connectKeys.length === 0
-                "
+                v-if="!result.gkd || result.selector.connectKeys.length === 0"
               >
                 <NButton
                   v-for="resultNode in result.nodes"

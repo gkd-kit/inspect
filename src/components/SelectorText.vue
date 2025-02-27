@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AstNode } from '@gkd-kit/selector';
+import { AstNode, Selector } from '@gkd-kit/selector';
 import SelectorText from './SelectorText.vue';
 import { getAstNodeClassName } from '@/utils/selector';
 
@@ -7,6 +7,10 @@ const props = defineProps<{
   text: string;
   node: AstNode<any>;
 }>();
+
+const isRoot = computed(() => {
+  return props.node.value instanceof Selector;
+});
 
 const subText = computed(() => {
   return props.text.substring(props.node.start, props.node.end);
@@ -77,10 +81,12 @@ const children = computed(() => {
 </script>
 <template>
   <span
-    whitespace-pre-wrap
+    :whitespace-pre-wrap="isRoot ? `` : undefined"
     :data-name="getAstNodeClassName(node)"
     :data-range="getRange(node)"
-    :data-value="subText"
+    :class="{
+      SelectorText: isRoot,
+    }"
   >
     <template v-if="node.outChildren.length">
       <template v-for="child in children" :key="child.start">
