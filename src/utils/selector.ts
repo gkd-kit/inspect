@@ -71,7 +71,7 @@ const getNodeInvoke = (target: RawNode, name: string, args: any) => {
   return null;
 };
 
-const transform = Transform.Companion.multiplatformBuild<RawNode>(
+export const transform = Transform.Companion.multiplatformBuild<RawNode>(
   (target, name) => {
     if (typeof target === 'string') {
       return getStringAttr(target, name);
@@ -125,7 +125,7 @@ export interface ResolvedSelector {
   ast: AstNode<Selector>;
   value: Selector;
   connectKeys: string[];
-  fastQueryList: readonly FastQuery[];
+  fastQueryList: FastQuery[];
   canQf: boolean;
   canCopy: boolean;
   toString: () => string;
@@ -134,6 +134,7 @@ export interface ResolvedSelector {
   querySelectorAllContext: (
     node: RawNode | undefined,
   ) => QueryResult<RawNode>[];
+  findAst: <T>(v: T) => AstNode<T>;
 }
 
 const typeInfo = initDefaultTypeInfo(true).globalType;
@@ -145,9 +146,30 @@ export const parseSelector = (source: string): ResolvedSelector => {
   value.checkType(typeInfo);
   const binaryExpressionList =
     value.expression.binaryExpressionList.asJsReadonlyArrayView();
-  const fastQueryList = value.expression.fastQueryList.asJsReadonlyArrayView();
+  const fastQueryList = value.expression.fastQueryList
+    .asJsReadonlyArrayView()
+    .concat();
   const connectSegmentList =
     value.expression.connectSegmentList.asJsReadonlyArrayView();
+  const innerFindAst = <T>(t: AstNode<any>, v: T): AstNode<T> | undefined => {
+    if (t.value === v) {
+      for (const c of t.outChildren) {
+        if (c.value === v) {
+          return c;
+        }
+      }
+      return t;
+    }
+    for (const c of t.outChildren) {
+      const r = innerFindAst(c, v);
+      if (r) return r;
+    }
+  };
+  const findAst = <T>(v: T): AstNode<T> => {
+    const r = innerFindAst(ast, v);
+    if (r) return r;
+    throw new Error('not found');
+  };
   const selector: ResolvedSelector = {
     source,
     ast,
@@ -172,6 +194,7 @@ export const parseSelector = (source: string): ResolvedSelector => {
       if (!node) return [];
       return transform.querySelectorAllContextArray(node, value);
     },
+    findAst,
   };
   for (const exp of binaryExpressionList) {
     if (exp.operator.key == '~=' && !useGlobalStore().wasmSupported) {

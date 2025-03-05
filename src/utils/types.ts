@@ -1,4 +1,5 @@
 import type { ResolvedSelector } from '@/utils/selector';
+import type { QueryResult } from '@gkd-kit/selector';
 
 export type PrimitiveType = boolean | string | number | null | undefined;
 
@@ -121,7 +122,24 @@ export interface Position {
   y: number;
 }
 
-export interface TrackValue {
+export interface TrackCardProps {
+  nodes: RawNode[];
+  queryResult: QueryResult<RawNode>;
+  selector: ResolvedSelector;
+}
+
+export interface SelectorSearchResult {
+  gkd: true;
+  key: number;
   selector: ResolvedSelector;
   nodes: RawNode[];
+  results: QueryResult<RawNode>[];
 }
+export interface StringSearchResult {
+  gkd: false;
+  key: number;
+  selector: string;
+  nodes: RawNode[];
+}
+
+export type SearchResult = SelectorSearchResult | StringSearchResult;

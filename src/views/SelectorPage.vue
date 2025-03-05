@@ -110,7 +110,7 @@ const error = computed(() => {
       :class="error ? `bg-red-200` : `bg-light-600`"
     >
       <div v-if="ast" overflow-x-scroll scrollbar-hidden>
-        <SelectorText :text="text" :node="ast" />
+        <SelectorText :source="text" :node="ast" />
       </div>
       <span v-else-if="error" whitespace-pre-wrap>
         <span v-if="error.headText">{{ error.headText }}</span>

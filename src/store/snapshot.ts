@@ -4,12 +4,18 @@ import {
   exportSnapshotAsImportId,
 } from '@/utils/export';
 import { gmOk } from '@/utils/gm';
-import { getAppInfo, listToTree } from '@/utils/node';
+import { findNodesByXy, getAppInfo, listToTree } from '@/utils/node';
 import { toInteger } from '@/utils/others';
-import { snapshotStorage, screenshotStorage } from '@/utils/snapshot';
+import type { ResolvedSelector } from '@/utils/selector';
+import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { useTask } from '@/utils/task';
-import type { Position, RawNode, Snapshot, TrackValue } from '@/utils/types';
-import { findNodesByXy } from '@/utils/node';
+import type {
+  Position,
+  RawNode,
+  Snapshot,
+  TrackCardProps,
+} from '@/utils/types';
+import type { QueryResult } from '@gkd-kit/selector';
 
 const getRemoteImportId = async (id: number): Promise<number> => {
   return fetch('https://detect.gkd.li/api/getImportId?id=' + id)
@@ -173,7 +179,20 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     }
   };
 
-  const track = shallowRef<TrackValue>();
+  const trackShow = ref(false);
+  const trackData = shallowRef<TrackCardProps>();
+  const showTrack = (
+    selector: ResolvedSelector,
+    result: QueryResult<RawNode>,
+  ) => {
+    trackShow.value = true;
+    trackData.value = {
+      selector,
+      nodes: nodes.value,
+      queryResult: result,
+    };
+  };
+
   return {
     snapshotId,
     snapshot,
@@ -190,7 +209,9 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     missNodeSize,
     focusPosition,
     updatePosition,
-    track,
+    trackData,
+    trackShow,
+    showTrack,
   };
 });
 

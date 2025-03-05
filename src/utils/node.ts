@@ -106,9 +106,12 @@ const equalRectNode = (a: RawNode, b: RawNode) => {
 };
 
 const isAncestor = (parent: RawNode | undefined, child: RawNode): boolean => {
+  if (parent?.children?.length === 0) {
+    return false;
+  }
   let p = child.parent;
   while (true) {
-    if (p === parent) return true;
+    if (p?.id === parent?.id) return true;
     p = p?.parent;
     if (!p) break;
   }
@@ -174,6 +177,15 @@ export function* traverseNode(node: RawNode, skipKeys: number[] = []) {
     }
     yield top;
     stack.push(...[...top.children].reverse());
+  }
+}
+
+function* traverseDescendants(node: RawNode) {
+  const stack = node.children.toReversed();
+  while (stack.length > 0) {
+    const top = stack.pop()!;
+    yield top;
+    stack.push(...top.children.toReversed());
   }
 }
 
@@ -291,4 +303,141 @@ export const getNodeStyle = (node: RawNode, focusNode?: RawNode) => {
     fontWeight,
     color,
   };
+};
+
+const nodeCompareFn = (a: RawNode, b: RawNode) => {
+  return a.id - b.id;
+};
+
+const getTopNode = (nodes: RawNode[], subNodes: RawNode[]): RawNode => {
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const node = nodes[i];
+    if (
+      node.children.length &&
+      subNodes.every((n) => node === n || isAncestor(node, n))
+    ) {
+      return node;
+    }
+  }
+  throw new Error('no top node');
+};
+
+const emptyArray = [] as [];
+
+export interface TrackTreeContext {
+  topNode: RawNode;
+  getLabel: (node: RawNode) => string;
+  getChildren: (node: RawNode) => RawNode[];
+  isPlaceholder: (node: RawNode) => boolean;
+}
+
+export const getTrackTreeContext = (
+  nodes: RawNode[],
+  subNodes: RawNode[],
+): TrackTreeContext => {
+  const topNode = getTopNode(nodes, subNodes);
+  const minTreeNodes = new Set([topNode, ...subNodes]);
+  const stack = topNode.children.toReversed();
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (subNodes.some((n) => isAncestor(node, n))) {
+      minTreeNodes.add(node);
+      stack.push(...node.children.toReversed());
+    }
+  }
+  const brotherPlaceholderNodes = new Set<RawNode>();
+  const descendantPlaceholderNodes = new Map<RawNode, RawNode | undefined>();
+  const getLabel = (node: RawNode): string => {
+    if (brotherPlaceholderNodes.has(node)) {
+      const children = node.parent?.children || emptyArray;
+      const i = children.indexOf(node);
+      const lastNode =
+        children.find((n, i2) => {
+          return (
+            i2 > i && !minTreeNodes.has(n) && minTreeNodes.has(children[i2 + 1])
+          );
+        }) || children.at(-1)!;
+      return `[${i} ~ ${lastNode.attr.index}]`;
+    }
+    if (descendantPlaceholderNodes.get(node)) {
+      return `[ ... ]`;
+    }
+
+    return getLimitLabel(node);
+  };
+  const getOnlyDescendant = (node: RawNode): RawNode | undefined => {
+    const n1 = node.children.find(
+      (n) => minTreeNodes.has(n) && !subNodes.includes(n),
+    );
+    if (!n1) return;
+    if (
+      node.children.some(
+        (n) => n !== n1 && (subNodes.includes(n) || minTreeNodes.has(n)),
+      )
+    ) {
+      return;
+    }
+    return getOnlyDescendant(n1) || n1;
+  };
+  const childrenCache = new Map<number, RawNode[]>();
+  const getChildren = (node: RawNode): RawNode[] => {
+    if (node.children.every((n) => !minTreeNodes.has(n))) {
+      return emptyArray;
+    }
+    if (descendantPlaceholderNodes.has(node)) {
+      const c = descendantPlaceholderNodes.get(node);
+      if (c) {
+        return [c];
+      }
+    } else if (!subNodes.includes(node)) {
+      const onlyDescendant = getOnlyDescendant(node);
+      if (onlyDescendant && !node.children.includes(onlyDescendant)) {
+        descendantPlaceholderNodes.set(node, onlyDescendant);
+        return [onlyDescendant];
+      } else {
+        descendantPlaceholderNodes.set(node, undefined);
+      }
+    }
+    if (node.children.length <= 1) {
+      return node.children;
+    }
+    if (childrenCache.get(node.id)) {
+      return childrenCache.get(node.id)!;
+    }
+    const list: RawNode[] = [];
+    for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i];
+      const prev = node.children[i - 1];
+      const next = node.children[i + 1];
+      if (minTreeNodes.has(child)) {
+        list.push(child);
+      } else if (
+        (!prev || minTreeNodes.has(prev)) &&
+        node.children.some((n, i2) => i2 > i && minTreeNodes.has(n))
+      ) {
+        list.push(child);
+        if (next && !minTreeNodes.has(next)) {
+          brotherPlaceholderNodes.add(child);
+        }
+      }
+    }
+    childrenCache.set(node.id, list);
+    return list;
+  };
+  const isPlaceholder = (node: RawNode) => {
+    return (
+      brotherPlaceholderNodes.has(node) ||
+      Boolean(descendantPlaceholderNodes.get(node))
+    );
+  };
+  return {
+    topNode,
+    getLabel,
+    getChildren,
+    isPlaceholder,
+  };
+};
+
+export const getNodeQf = (node: RawNode): boolean => {
+  return Boolean(node.idQf || node.textQf || node.quickFind);
 };

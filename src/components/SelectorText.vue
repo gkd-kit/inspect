@@ -2,10 +2,12 @@
 import { AstNode, Selector } from '@gkd-kit/selector';
 import SelectorText from './SelectorText.vue';
 import { getAstNodeClassName } from '@/utils/selector';
+import type { StyleValue } from 'vue';
 
 const props = defineProps<{
-  text: string;
+  source: string;
   node: AstNode<any>;
+  getNodeStyle?: (node: AstNode<any>) => StyleValue;
 }>();
 
 const isRoot = computed(() => {
@@ -13,7 +15,7 @@ const isRoot = computed(() => {
 });
 
 const subText = computed(() => {
-  return props.text.substring(props.node.start, props.node.end);
+  return props.source.substring(props.node.start, props.node.end);
 });
 
 interface ExtraNode {
@@ -22,11 +24,11 @@ interface ExtraNode {
 }
 
 const getExtraText = (child: ExtraNode) => {
-  return props.text.substring(child.start, child.end);
+  return props.source.substring(child.start, child.end);
 };
 
 const getExtraName = (child: ExtraNode) => {
-  const t = props.text.substring(child.start, child.end).trim();
+  const t = props.source.substring(child.start, child.end).trim();
   if (!t) {
     return 'Whitespace';
   }
@@ -78,23 +80,33 @@ const children = computed(() => {
   }
   return list;
 });
+
+const getDataValue = (str: string) => {
+  return str.length === 1 ? str : undefined;
+};
 </script>
 <template>
   <span
+    class="SelectorText"
     :whitespace-pre-wrap="isRoot ? `` : undefined"
     :data-name="getAstNodeClassName(node)"
     :data-range="getRange(node)"
-    :class="{
-      SelectorText: isRoot,
-    }"
+    :data-value="getDataValue(subText)"
+    :style="getNodeStyle?.(node)"
   >
     <template v-if="node.outChildren.length">
       <template v-for="child in children" :key="child.start">
-        <SelectorText v-if="isAstNode(child)" :text="text" :node="child" />
+        <SelectorText
+          v-if="isAstNode(child)"
+          :source="source"
+          :node="child"
+          :getNodeStyle="getNodeStyle"
+        />
         <span
           v-else
           :data-name="getExtraName(child)"
           :data-range="getRange(child)"
+          :data-value="getDataValue(getExtraText(child))"
         >
           {{ getExtraText(child) }}
         </span>

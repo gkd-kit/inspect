@@ -5,10 +5,14 @@ import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
-import type { ResolvedSelector } from '@/utils/selector';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
-import type { RawNode, Snapshot } from '@/utils/types';
+import type {
+  RawNode,
+  SearchResult,
+  SelectorSearchResult,
+  Snapshot,
+} from '@/utils/types';
 import { getImagUrl, getImportUrl } from '@/utils/url';
 import { FastQuery, GkdException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
@@ -37,21 +41,6 @@ const { focusNode } = snapshotRefs;
 
 const searchText = shallowRef(``);
 
-interface SelectorSearchResult {
-  gkd: true;
-  key: number;
-  selector: ResolvedSelector;
-  nodes: RawNode[];
-}
-interface StringSearchResult {
-  gkd: false;
-  key: number;
-  selector: string;
-  nodes: RawNode[];
-}
-
-type SearchResult = SelectorSearchResult | StringSearchResult;
-
 const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
 const searchSelector = (text: string) => {
@@ -78,7 +67,7 @@ const searchSelector = (text: string) => {
     return;
   }
 
-  const results = selector.querySelectorAll(rootNode.value);
+  const results = selector.querySelectorAllContext(rootNode.value);
   if (results.length == 0) {
     message.success(`没有选择到节点`);
     return;
@@ -86,7 +75,8 @@ const searchSelector = (text: string) => {
   message.success(`选择到 ${results.length} 个节点`);
   selectorResults.unshift({
     selector,
-    nodes: results,
+    nodes: results.map((r) => r.target),
+    results,
     key: Date.now(),
     gkd: true,
   });
@@ -299,7 +289,7 @@ const shareResult = (result: SearchResult) => {
               <SelectorText
                 v-if="result.gkd"
                 :node="result.selector.ast"
-                :text="result.selector.source"
+                :source="result.selector.source"
               />
               <template v-else>{{ result.selector }}</template>
             </span>
@@ -358,6 +348,19 @@ const shareResult = (result: SearchResult) => {
                   v-for="(resultNode, index) in result.nodes"
                   :key="index"
                 >
+                  <NButton
+                    size="small"
+                    @click="
+                      snapshotStore.showTrack(
+                        result.selector,
+                        result.results[index],
+                      )
+                    "
+                  >
+                    <NIcon>
+                      <SvgIcon name="path" />
+                    </NIcon>
+                  </NButton>
                   <NButton
                     @click="updateFocusNode(resultNode)"
                     size="small"

@@ -166,3 +166,43 @@ export const ScrollbarWrapper = defineComponent(() => {
       : undefined;
   };
 });
+
+// https://github.com/alan-turing-institute/distinctipy
+export const colorList = [
+  '#ff00ff',
+  '#18821c',
+  '#00ff00',
+  '#007fff',
+  '#ff7f00',
+  '#7fbf7f',
+  '#4e01bf',
+  '#b80836',
+  '#d67ffd',
+  '#00ffff',
+  '#fafe43',
+  '#00ff7f',
+  '#215b8f',
+  '#bd667c',
+  '#84f7f8',
+  '#8dfa01',
+  '#8f6605',
+  '#f5bc95',
+  '#a631f6',
+  '#21bab7',
+  '#4b1e4a',
+  '#7578c8',
+  '#c1b629',
+  '#ff007f',
+  '#0000ff',
+  '#4cc62a',
+  '#00007f',
+  '#fd404b',
+  '#b6fc97',
+  '#f742d8',
+  '#373fea',
+  '#a31b90',
+  '#ff0000',
+  '#03ae66',
+  '#a1b6e3',
+  '#61f9a8',
+];

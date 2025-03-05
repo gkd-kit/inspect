@@ -49,7 +49,8 @@ body {
 .gkd_code,
 [gkd_code] {
   font-family:
-    v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace !important;
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace !important;
 }
 
 [direction-rtl],
@@ -99,7 +100,10 @@ body,
 #app {
   /* 禁止 iOS/Edge 滚动回弹效果 */
   overscroll-behavior: none;
+}
 
+html,
+body {
   font-size: 14px;
   line-height: 20px;
 }
