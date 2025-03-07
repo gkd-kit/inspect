@@ -73,7 +73,10 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
     overflow-hidden
   >
     <div flex justify-between items-center>
-      <div text="20px/28px" font-bold>选择器路径视图</div>
+      <div flex items-center gap-4px>
+        <SvgIcon name="path" h="24px" />
+        <div text="20px/28px" font-bold>选择器路径视图</div>
+      </div>
       <NButton text @click="onClose">
         <SvgIcon name="close" h="20px" />
       </NButton>
