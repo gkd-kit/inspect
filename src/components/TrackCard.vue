@@ -1,6 +1,13 @@
+<script lang="ts">
+const TrackGraphLoader = () => import('@/components/TrackGraph.vue');
+const TrackGraph = defineAsyncComponent({
+  loader: TrackGraphLoader,
+  delay: 0,
+});
+setTimeout(TrackGraphLoader, 3000);
+</script>
 <script setup lang="ts">
 import SelectorText from '@/components/SelectorText.vue';
-import TrackTreeGraph from '@/components/TrackGraph.vue';
 import { buildEmptyFn, colorList } from '@/utils/others';
 import { type ResolvedSelector } from '@/utils/selector';
 import type { RawNode } from '@/utils/types';
@@ -83,7 +90,7 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
     </div>
     <div flex-1 flex gap-12px overflow-hidden>
       <div self-stretch flex="[2]">
-        <TrackTreeGraph
+        <TrackGraph
           v-if="nodes.length && queryResult"
           :nodes="nodes"
           :queryResult="queryResult"
