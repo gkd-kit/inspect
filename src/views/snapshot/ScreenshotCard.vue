@@ -152,17 +152,17 @@ const imgMove = (ev: MouseEvent) => {
       absolute
       z-4
       pointer-events-none
-      left-0
-      top-0
+      left-4px
+      top-4px
       text-12px
       leading="100%"
       flex
       gap-4px
     >
-      <div p-1px bg="#ffffff70">
+      <div py-1px px-2px bg="#ffffff90" title="尺寸">
         {{ `${snapshot.screenWidth}x${snapshot.screenHeight}` }}
       </div>
-      <div p-1px bg="#ffffff70">
+      <div py-1px px-2px bg="#ffffff90" title="创建时间">
         {{ dayjs(snapshot.id).format('YYYY-MM-DD HH:mm:ss') }}
       </div>
     </div>
