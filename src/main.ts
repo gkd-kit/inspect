@@ -1,5 +1,6 @@
 import 'normalize.css';
 import 'uno.css';
+import '@/style/index.scss';
 import App from './App.vue';
 import router from './router';
 import commitLog from './utils/commit.data';

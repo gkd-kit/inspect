@@ -1,0 +1,26 @@
+// 移除 inline 元素的空白间隙
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+* {
+  /* 禁止 iOS/Edge 滚动回弹效果 */
+  overscroll-behavior: none;
+}
+
+html,
+body {
+  font-size: 14px;
+  line-height: 20px;
+}

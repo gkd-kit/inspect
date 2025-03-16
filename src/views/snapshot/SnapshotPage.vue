@@ -32,17 +32,21 @@ const clickSettings = () => {
 <template>
   <template v-if="snapshot && rootNode">
     <div h-full flex gap-5px>
-      <div w-28px py-8px flex flex-col gap-16px>
+      <div
+        w-40px
+        py-12px
+        flex
+        flex-col
+        items-center
+        gap-16px
+        class="[--svg-h:24px]"
+      >
         <NTooltip placement="right">
           <template #trigger>
             <NButton text>
-              <template #icon>
-                <RouterLink to="/" title="" color="inherit">
-                  <NIcon size="24">
-                    <SvgIcon name="home" />
-                  </NIcon>
-                </RouterLink>
-              </template>
+              <RouterLink to="/">
+                <SvgIcon name="home" />
+              </RouterLink>
             </NButton>
           </template>
           回到首页
@@ -50,11 +54,7 @@ const clickSettings = () => {
         <NTooltip placement="right">
           <template #trigger>
             <NButton @click="clickSettings" text>
-              <template #icon>
-                <NIcon size="24">
-                  <SvgIcon name="settings" />
-                </NIcon>
-              </template>
+              <SvgIcon name="settings" />
             </NButton>
           </template>
           设置
@@ -63,11 +63,7 @@ const clickSettings = () => {
         <NTooltip placement="right">
           <template #trigger>
             <NButton text @click="searchShow = !searchShow">
-              <template #icon>
-                <NIcon size="24">
-                  <SvgIcon name="search-list" />
-                </NIcon>
-              </template>
+              <SvgIcon name="search-list" />
             </NButton>
           </template>
           搜索面板
@@ -75,11 +71,7 @@ const clickSettings = () => {
         <NTooltip placement="right">
           <template #trigger>
             <NButton @click="attrShow = !attrShow" text>
-              <template #icon>
-                <NIcon size="24">
-                  <SvgIcon name="prop" />
-                </NIcon>
-              </template>
+              <SvgIcon name="prop" />
             </NButton>
           </template>
           属性面板
@@ -87,11 +79,7 @@ const clickSettings = () => {
         <NTooltip placement="right">
           <template #trigger>
             <NButton @click="ruleShow = !ruleShow" text>
-              <template #icon>
-                <NIcon size="24">
-                  <SvgIcon name="test" />
-                </NIcon>
-              </template>
+              <SvgIcon name="test" />
             </NButton>
           </template>
           测试规则
@@ -102,16 +90,28 @@ const clickSettings = () => {
             <a
               flex
               justify-center
+              href="https://github.com/orgs/gkd-kit/discussions"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <NButton text>
+                <SvgIcon name="discussion" />
+              </NButton>
+            </a>
+          </template>
+          讨论交流
+        </NTooltip>
+        <NTooltip placement="right">
+          <template #trigger>
+            <a
+              flex
+              justify-center
               href="https://gkd.li/guide/snapshot#share-note"
               target="_blank"
               rel="noopener noreferrer"
             >
               <NButton text>
-                <template #icon>
-                  <NIcon size="24">
-                    <SvgIcon name="warn" />
-                  </NIcon>
-                </template>
+                <SvgIcon name="warn" />
               </NButton>
             </a>
           </template>

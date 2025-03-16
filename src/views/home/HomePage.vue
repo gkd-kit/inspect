@@ -291,31 +291,29 @@ const settingsDlgShow = shallowRef(false);
         </template>
       </NSpace>
       <div flex-1></div>
-      <div flex gap-24px items-center pr-8px>
-        <NButton text title="设置" @click="settingsDlgShow = true">
-          <template #icon>
-            <NIcon :size="24">
+      <div flex gap-24px items-center pr-8px class="[--svg-h:24px]">
+        <NTooltip>
+          <template #trigger>
+            <NButton text @click="settingsDlgShow = true">
               <SvgIcon name="settings" />
-            </NIcon>
+            </NButton>
           </template>
-        </NButton>
-        <RouterLink flex to="/selector" title="测试选择器">
-          <NButton text>
-            <template #icon>
-              <NIcon :size="24">
+          设置
+        </NTooltip>
+        <NTooltip>
+          <template #trigger>
+            <RouterLink flex to="/selector">
+              <NButton text>
                 <SvgIcon name="terminal" />
-              </NIcon>
-            </template>
-          </NButton>
-        </RouterLink>
+              </NButton>
+            </RouterLink>
+          </template>
+          测试选择器
+        </NTooltip>
         <NPopover>
           <template #trigger>
             <NButton text>
-              <template #icon>
-                <NIcon :size="24">
-                  <SvgIcon name="import" />
-                </NIcon>
-              </template>
+              <SvgIcon name="import" />
             </NButton>
           </template>
           <NSpace vertical>
@@ -327,29 +325,46 @@ const settingsDlgShow = shallowRef(false);
             </NButton>
           </NSpace>
         </NPopover>
-        <RouterLink flex to="/device" title="连接设备">
-          <NButton text>
-            <template #icon>
-              <NIcon :size="24">
+        <NTooltip>
+          <template #trigger>
+            <RouterLink flex to="/device">
+              <NButton text>
                 <SvgIcon name="device" />
-              </NIcon>
-            </template>
-          </NButton>
-        </RouterLink>
-        <a
-          flex
-          href="https://github.com/gkd-kit/inspect"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <NButton text>
-            <template #icon>
-              <NIcon :size="24">
+              </NButton>
+            </RouterLink>
+          </template>
+          连接设备
+        </NTooltip>
+        <NTooltip>
+          <template #trigger>
+            <a
+              flex
+              href="https://github.com/orgs/gkd-kit/discussions"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <NButton text>
+                <SvgIcon name="discussion" />
+              </NButton>
+            </a>
+          </template>
+          讨论交流
+        </NTooltip>
+        <NTooltip>
+          <template #trigger>
+            <a
+              flex
+              href="https://github.com/gkd-kit/inspect"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <NButton text>
                 <SvgIcon name="github" />
-              </NIcon>
-            </template>
-          </NButton>
-        </a>
+              </NButton>
+            </a>
+          </template>
+          Github
+        </NTooltip>
       </div>
     </div>
     <NDataTable

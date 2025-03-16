@@ -1,0 +1,17 @@
+@import './html-reset.scss';
+@import './atom.scss';
+
+$winMinWidth: 1200px;
+$winMinHeight: 700px;
+
+:root {
+  --gkd-w: max(#{$winMinWidth}, 100vw);
+  --gkd-h: max(#{$winMinHeight}, 100vh);
+}
+
+body {
+  width: var(--gkd-w);
+  &.body-auto-w {
+    --gkd-w: 100vw;
+  }
+}
