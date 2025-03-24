@@ -102,9 +102,6 @@ export const useSnapshotStore = defineStore('snapshot', () => {
       snapshotId.value
     ) {
       importSnapshotId[importId.value] = snapshotId.value;
-      fetch(
-        `https://detect.gkd.li/api/detectSnapshot?importId=` + importId.value,
-      );
     }
   });
   const autoUpload = computed(() => {
