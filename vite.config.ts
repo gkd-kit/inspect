@@ -13,7 +13,7 @@ export default defineConfig(() => {
     plugins: [
       vue(),
       vueJsx(),
-      unocss(),
+      unocss({ inspector: false }),
       unAutoImport(),
       legacy({ renderLegacyChunks: false, modernPolyfills: true }),
       data(),

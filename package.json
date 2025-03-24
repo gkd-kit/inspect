@@ -11,7 +11,8 @@
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix --ignore-path .gitignore .",
     "format": "prettier --cache --write --ignore-unknown .",
-    "postinstall": "simple-git-hooks"
+    "postinstall": "simple-git-hooks",
+    "postpublish": "curl -X PUT https://registry-direct.npmmirror.com/@gkd-kit/inspect/sync"
   },
   "publishConfig": {
     "access": "public",

@@ -31,9 +31,6 @@ jobs:
           pnpm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
           pnpm publish --no-git-checks
 
-      - run: git checkout .
-      - run: curl -X PUT 'https://registry-direct.npmmirror.com/@gkd-kit/inspect/sync'
-
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

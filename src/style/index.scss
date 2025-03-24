@@ -1,5 +1,5 @@
-@import './html-reset.scss';
-@import './atom.scss';
+@use './html-reset.scss';
+@use './atom.scss';
 
 $winMinWidth: 1200px;
 $winMinHeight: 700px;

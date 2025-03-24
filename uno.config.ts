@@ -1,11 +1,11 @@
 import {
   defineConfig,
   presetAttributify,
-  presetUno,
+  presetWind3,
   transformerAttributifyJsx,
 } from 'unocss';
 
 export default defineConfig({
-  presets: [presetUno(), presetAttributify()],
+  presets: [presetWind3(), presetAttributify()],
   transformers: [transformerAttributifyJsx()],
 });
