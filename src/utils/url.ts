@@ -39,6 +39,16 @@ const urlRegList = [
   /^https:\/\/i\.gkd\.li\/import\/(\d+)$/,
 ];
 
+const fileBaseUrlList = [
+  'https://f.gkd.li/',
+  'https://github.com/user-attachments/files/',
+  'https://github.com/gkd-kit/inspect/files/',
+];
+
+export const isCanProxyImportFileUrl = (url: string): boolean => {
+  return fileBaseUrlList.some((v) => url.startsWith(v));
+};
+
 export const getImportId = (url: string) => {
   if (typeof url !== 'string') return;
   if (url.startsWith(location.origin)) {
