@@ -164,17 +164,17 @@ const generateRules = errorTry(async (result: SelectorSearchResult) => {
     (t.quickFind ?? t.idQf) &&
       t.attr.id &&
       s.fastQueryList.some(
-        (v) => v instanceof FastQuery.Id && v.value === t.attr.id,
+        (v) => v instanceof FastQuery.Id && v.acceptText(t.attr.id!),
       ),
     (t.quickFind ?? t.idQf) &&
       t.attr.vid &&
       s.fastQueryList.some(
-        (v) => v instanceof FastQuery.Vid && v.value === t.attr.vid,
+        (v) => v instanceof FastQuery.Vid && v.acceptText(t.attr.vid!),
       ),
     (t.quickFind ?? t.textQf) &&
       t.attr.text &&
       s.fastQueryList.some(
-        (v) => v instanceof FastQuery.Text && v.value === t.attr.text,
+        (v) => v instanceof FastQuery.Text && v.acceptText(t.attr.text!),
       ),
   ].some(Boolean);
   const rule = {
