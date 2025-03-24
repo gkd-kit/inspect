@@ -46,7 +46,7 @@ const settingsStore = useSettingsStore();
     </div>
     <div>3. 在当前网站启用上述油猴脚本的API注入功能</div>
     <div>
-      4. 如果是分享链接则需要在当前浏览器登录
+      4. 分享文件或导入快照额外需浏览器登录
       <a href="https://github.com" target="_blank" rel="noopener noreferrer">
         github.com
       </a>

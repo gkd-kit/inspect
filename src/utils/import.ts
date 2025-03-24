@@ -90,13 +90,11 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
             return snapshot;
           }
         }
-        const resp = await enhanceFetch(url, undefined, { proxy: true }).catch(
-          (e) => {
-            message.error(`网络异常: ${new URL(url).host}/${e.message || ''}`);
-            console.warn([`download failed`, url, e]);
-            throw e;
-          },
-        );
+        const resp = await enhanceFetch(url).catch((e) => {
+          message.error(`网络异常: ${new URL(url).host} / ${e.message || ''}`);
+          console.warn([`download failed`, url, e]);
+          throw e;
+        });
         const bf = await resp.arrayBuffer();
         let snapshot: Snapshot;
         let screenshotBf: ArrayBuffer;
