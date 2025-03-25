@@ -141,22 +141,21 @@ export const uploadAsset = async (
     },
   });
   // delay is needed
-  delay(1000).then(async () => {
-    // unsubscribe the comment
-    await graphqlFetch({
-      query: 'd0752b2e49295017f67c84f21bfe41a3',
-      variables: {
-        input: { state: 'UNSUBSCRIBED', subscribableId: 'I_kwDOJ3SWBc6viUWN' },
-      },
-    });
-    // delete the comment
-    await graphqlFetch({
-      query: 'b0f125991160e607a64d9407db9c01b3',
-      variables: {
-        connections: [],
-        input: { id: commentResult.data.addComment.timelineEdge.node.id },
-      },
-    });
+  await delay(1000);
+  // unsubscribe the comment
+  await graphqlFetch({
+    query: 'd0752b2e49295017f67c84f21bfe41a3',
+    variables: {
+      input: { state: 'UNSUBSCRIBED', subscribableId: 'I_kwDOJ3SWBc6viUWN' },
+    },
+  });
+  // delete the comment
+  await graphqlFetch({
+    query: 'b0f125991160e607a64d9407db9c01b3',
+    variables: {
+      connections: [],
+      input: { id: commentResult.data.addComment.timelineEdge.node.id },
+    },
   });
   return r;
 };
