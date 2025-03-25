@@ -1,6 +1,10 @@
 import { GM_fetch, gmOk } from './gm';
 import { isCanProxyImportFileUrl, isAllowCorsUrl } from './url';
 
+const isGetReq = (req: Request, init?: RequestInit) => {
+  return (init?.method || req.method).toUpperCase() === 'GET';
+};
+
 export const enhanceFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -12,7 +16,7 @@ export const enhanceFetch = async (
     // with cookie
     // export snapshot need
     return GM_fetch(input, init);
-  } else if (isCanProxyImportFileUrl(u.href)) {
+  } else if (isGetReq(req, init) && isCanProxyImportFileUrl(u.href)) {
     const proxyUrl = new URL(`https://proxy.gkd.li`);
     proxyUrl.searchParams.set(`proxyUrl`, u.href);
     const request = new Request(input, init);
