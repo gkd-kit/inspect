@@ -117,7 +117,7 @@ export const transform = Transform.Companion.multiplatformBuild<RawNode>(
   },
   (node) => node.attr.name,
   (node) => node.children,
-  (node) => node.parent,
+  (node) => node.parent || null,
 );
 
 export interface ResolvedSelector {
@@ -129,12 +129,12 @@ export interface ResolvedSelector {
   canQf: boolean;
   canCopy: boolean;
   toString: () => string;
+  findAst: <T>(v: T) => AstNode<T>;
   match: (node: RawNode) => RawNode | undefined;
-  querySelectorAll: (node: RawNode | undefined) => RawNode[];
-  querySelectorAllContext: (
+  querySelfOrSelectorAll: (node: RawNode | undefined) => RawNode[];
+  querySelfOrSelectorAllContext: (
     node: RawNode | undefined,
   ) => QueryResult<RawNode>[];
-  findAst: <T>(v: T) => AstNode<T>;
 }
 
 const typeInfo = initDefaultTypeInfo(true).globalType;
@@ -183,18 +183,23 @@ export const parseSelector = (source: string): ResolvedSelector => {
     toString() {
       return value.toString();
     },
+    findAst,
     match(node) {
       return value.match(node, transform, matchOption) ?? undefined;
     },
-    querySelectorAll(node) {
+    querySelfOrSelectorAll(node) {
       if (!node) return [];
-      return transform.querySelectorAllArray(node, value);
+      return (selector.match(node) ? [node] : []).concat(
+        transform.querySelectorAllArray(node, value),
+      );
     },
-    querySelectorAllContext(node) {
+    querySelfOrSelectorAllContext(node) {
       if (!node) return [];
-      return transform.querySelectorAllContextArray(node, value);
+      const r = value.matchContext(node, transform, matchOption);
+      return (r.matched ? [r] : []).concat(
+        transform.querySelectorAllContextArray(node, value),
+      );
     },
-    findAst,
   };
   for (const exp of binaryExpressionList) {
     if (exp.operator.key == '~=' && !useGlobalStore().wasmSupported) {

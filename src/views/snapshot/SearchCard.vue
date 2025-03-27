@@ -67,7 +67,7 @@ const searchSelector = (text: string) => {
     return;
   }
 
-  const results = selector.querySelectorAllContext(rootNode.value);
+  const results = selector.querySelfOrSelectorAllContext(rootNode.value);
   if (results.length == 0) {
     message.success(`没有选择到节点`);
     return;

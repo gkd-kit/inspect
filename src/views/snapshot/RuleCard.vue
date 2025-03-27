@@ -61,7 +61,7 @@ const checkRule = (obj: ResolvedData): string | RawNode => {
     }
   }
   const matchesResult = resolvedMatches.map((s) =>
-    s.querySelectorAll(rootNode.value),
+    s.querySelfOrSelectorAll(rootNode.value),
   );
   if (resolvedMatches.length) {
     const notIndex = matchesResult.findIndex((s) => s.length === 0);
@@ -81,7 +81,7 @@ const checkRule = (obj: ResolvedData): string | RawNode => {
     }
   }
   const anyMatchesResult = resolvedAnyMatches.map((s) =>
-    s.querySelectorAll(rootNode.value),
+    s.querySelfOrSelectorAll(rootNode.value),
   );
   if (resolvedAnyMatches.length) {
     if (anyMatchesResult.every((s) => s.length === 0)) {
@@ -104,7 +104,7 @@ const checkRule = (obj: ResolvedData): string | RawNode => {
     }
   }
   const excludeMatchesResult = resolvedExcludeMatches.map((s) =>
-    s.querySelectorAll(rootNode.value),
+    s.querySelfOrSelectorAll(rootNode.value),
   );
   if (resolvedExcludeMatches.length) {
     const index = excludeMatchesResult.findIndex((s) => s.length !== 0);
