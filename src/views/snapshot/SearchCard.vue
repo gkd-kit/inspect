@@ -158,7 +158,7 @@ const generateRules = errorTry(async (result: SelectorSearchResult) => {
   const exampleUrls = imageId ? getImagUrl(imageId) : undefined;
 
   const s = result.selector;
-  const t = result.nodes[0];
+  const t = result.results.map((v) => v.context.toArray().at(-1)!)[0];
 
   const fastQuery = [
     (t.quickFind ?? t.idQf) &&
