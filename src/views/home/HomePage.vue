@@ -170,10 +170,10 @@ const handleSorterChange = (sorter: SortState) => {
   });
 };
 mtimeCol.sortOrder = `descend`;
-const showModal = shallowRef(false);
-const text = shallowRef(``);
+const showImportModal = shallowRef(false);
+const textImportValue = shallowRef(``);
 const importNetwork = useTask(async () => {
-  const urls = text.value
+  const urls = textImportValue.value
     .trim()
     .split(`\n`)
     .map((u) => u.trim())
@@ -181,7 +181,25 @@ const importNetwork = useTask(async () => {
   if (urls.length == 0) return;
   await importFromNetwork(urls);
   await updateSnapshots();
-  text.value = ``;
+  textImportValue.value = ``;
+});
+
+useEventListener(document.body, 'paste', (e) => {
+  const target = e.target as HTMLElement;
+  if (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    (target.className || '').includes('input')
+  ) {
+    return;
+  }
+  const dataTransfer = e.clipboardData;
+  if (!dataTransfer) return;
+  const text = (dataTransfer.getData('text') || '').trim();
+  if (text.startsWith('https://') || text.startsWith('http://')) {
+    textImportValue.value = text;
+    showImportModal.value = true;
+  }
 });
 
 const checkedRowKeys = shallowRef<number[]>([]);
@@ -338,9 +356,19 @@ const settingsDlgShow = shallowRef(false);
               </template>
               <div class="whitespace-nowrap">支持拖拽文件到页面任意位置</div>
             </NTooltip>
-            <NButton @click="showModal = true" :loading="importNetwork.loading">
-              导入网络文件
-            </NButton>
+            <NTooltip placement="left">
+              <template #trigger>
+                <NButton
+                  @click="showImportModal = true"
+                  :loading="importNetwork.loading"
+                >
+                  导入网络文件
+                </NButton>
+              </template>
+              <div class="whitespace-nowrap">
+                支持任意位置粘贴(Ctrl+V)文本触发导入
+              </div>
+            </NTooltip>
           </NSpace>
         </NPopover>
         <NTooltip>
@@ -401,7 +429,7 @@ const settingsDlgShow = shallowRef(false);
     />
   </div>
   <NModal
-    v-model:show="showModal"
+    v-model:show="showImportModal"
     preset="dialog"
     title="导入网络文件"
     :showIcon="false"
@@ -410,13 +438,13 @@ const settingsDlgShow = shallowRef(false);
     style="width: 800px"
     @positiveClick="importNetwork.invoke"
     :loading="importNetwork.loading"
-    @afterLeave="text = ``"
+    @afterLeave="textImportValue = ``"
   >
     <NInput
-      :value="text"
+      :value="textImportValue"
       @update:value="
         if (!importNetwork.loading) {
-          text = $event;
+          textImportValue = $event;
         }
       "
       type="textarea"
