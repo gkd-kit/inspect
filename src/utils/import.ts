@@ -21,15 +21,19 @@ const parseZip = async (zip: JSZipType) => {
   return true;
 };
 
-export const importFromLocal = async () => {
-  const files = await fileOpen({
-    multiple: true,
-    mimeTypes: [`application/zip`],
-  });
+export const importFromLocal = async (
+  _files: File[] | undefined,
+): Promise<boolean> => {
+  const files =
+    _files ??
+    (await fileOpen({
+      multiple: true,
+      mimeTypes: [`application/zip`],
+    }));
   const zipfiles = files.filter((f) => f.name.endsWith(`.zip`));
   if (zipfiles.length == 0) {
     message.warning(`没有发现可导入文件`);
-    return;
+    return false;
   }
   let importNum = 0;
   if (zipfiles.length > 0) {
@@ -58,6 +62,7 @@ export const importFromLocal = async () => {
   } else {
     message.warning(`没有发现可导入记录`);
   }
+  return importNum > 0;
 };
 
 export const importFromNetwork = async (urls: string[] | string = []) => {

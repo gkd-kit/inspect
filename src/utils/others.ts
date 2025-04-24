@@ -206,3 +206,21 @@ export const colorList = [
   '#a1b6e3',
   '#61f9a8',
 ];
+
+export const getDragEventFiles = (e: DragEvent): File[] => {
+  const files: File[] = [];
+  if (e.dataTransfer?.items) {
+    for (let i = 0; i < e.dataTransfer.items.length; i++) {
+      const item = e.dataTransfer.items[i];
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) {
+          files.push(file);
+        }
+      }
+    }
+  } else {
+    files.push(...Array.from(e.dataTransfer?.files || []));
+  }
+  return files;
+};

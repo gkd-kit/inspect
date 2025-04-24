@@ -11,6 +11,7 @@ import {
 } from '@/utils/export';
 import { importFromLocal, importFromNetwork } from '@/utils/import';
 import { getAppInfo } from '@/utils/node';
+import { getDragEventFiles } from '@/utils/others';
 import { shallowSnapshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { renderDevice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
@@ -50,9 +51,18 @@ const filterSnapshots = computed(() => {
   });
 });
 
-const importLocal = useTask(async () => {
-  await importFromLocal();
-  await updateSnapshots();
+const importLocal = useTask(async (_files?: File[]) => {
+  if (await importFromLocal(_files)) {
+    await updateSnapshots();
+  }
+});
+
+useEventListener(document.body, 'drop', async (e) => {
+  e.preventDefault();
+  await importLocal.invoke(getDragEventFiles(e));
+});
+useEventListener(document.body, 'dragover', (e) => {
+  e.preventDefault();
 });
 
 const {
@@ -317,9 +327,17 @@ const settingsDlgShow = shallowRef(false);
             </NButton>
           </template>
           <NSpace vertical>
-            <NButton @click="importLocal.invoke" :loading="importLocal.loading">
-              导入本地文件
-            </NButton>
+            <NTooltip placement="left">
+              <template #trigger>
+                <NButton
+                  @click="importLocal.invoke()"
+                  :loading="importLocal.loading"
+                >
+                  导入本地文件
+                </NButton>
+              </template>
+              <div class="whitespace-nowrap">支持拖拽文件到页面任意位置</div>
+            </NTooltip>
             <NButton @click="showModal = true" :loading="importNetwork.loading">
               导入网络文件
             </NButton>
