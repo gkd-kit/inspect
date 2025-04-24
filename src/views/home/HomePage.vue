@@ -185,6 +185,7 @@ const importNetwork = useTask(async () => {
 });
 
 useEventListener(document.body, 'paste', (e) => {
+  if (showImportModal.value) return;
   const target = e.target as HTMLElement;
   if (
     target instanceof HTMLInputElement ||
