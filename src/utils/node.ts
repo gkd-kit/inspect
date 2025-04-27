@@ -81,7 +81,7 @@ export const listToTree = (nodes: RawNode[]) => {
   return nodes[0];
 };
 
-const xyInNode = (node: RawNode, position: Position) => {
+const xyInNode = (node: RawNode, position: Position): boolean => {
   const attr = node.attr;
   const { x, y } = position;
   return attr.left <= x && x <= attr.right && attr.top <= y && y <= attr.bottom;
