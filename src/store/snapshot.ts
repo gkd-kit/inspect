@@ -175,6 +175,8 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     }
     if (resultNodes.length > 1) {
       overlapNodes.value = resultNodes;
+    } else {
+      overlapNodes.value = undefined;
     }
   };
 
