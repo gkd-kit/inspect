@@ -99,15 +99,14 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
           class="h-[calc(100%-2px)] b-1px b-solid"
         />
         <div relative pointer-events-none z-1>
-          <div absolute left-8px bottom-8px text="12px/14px #6C6E71">
+          <div absolute left-8px bottom-8px text="14px/14px #6C6E71">
             *为简化视图已隐藏无关节点
           </div>
         </div>
       </div>
-      <NScrollbar class="self-stretch flex-1">
-        <div mb-24px break-all px-4px py-2px leading-20px bg="#eee" gkd_code>
+      <NScrollbar class="self-stretch flex-1 text-20px leading-28px gkd_code">
+        <div mb-24px break-all px-4px py-2px bg="#eee">
           <SelectorText
-            class="gkd_code"
             :source="selector.source"
             :node="selector.ast"
             :getNodeStyle="getNodeStyle"
@@ -121,13 +120,11 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
               break-all
               px-4px
               py-2px
-              gkd_code
               b-1px
               b-solid
               b="#ccc"
             >
               <SelectorText
-                class="gkd_code"
                 :source="selector.source"
                 :node="selector.findAst(unitResult.expression)"
               />
@@ -140,7 +137,6 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
             break-all
             px-4px
             py-2px
-            gkd_code
             b-1px
             b-solid
             transition-colors
@@ -155,14 +151,13 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
             <div
               inline-block
               align-middle
-              size-16px
+              size-20px
               :style="{
                 backgroundColor: colorList[i % colorList.length],
               }"
             ></div>
             <span pl-4px></span>
             <SelectorText
-              class="gkd_code"
               :source="selector.source"
               :node="selector.findAst(unitResult.expression)"
             />
