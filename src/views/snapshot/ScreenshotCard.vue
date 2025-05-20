@@ -83,6 +83,9 @@ const boxHoverPerPosition = computed(() => {
   if (!attr || !boxHoverPosition.value) {
     return;
   }
+  if (attr.width <= 0 || attr.height <= 0) {
+    return;
+  }
   const { bottom, left, right, top } = boxHoverPosition.value;
   return {
     left: (left / (right + left)).toFixed(3),
