@@ -390,7 +390,7 @@ const placeholder = `
         <NInput
           v-model:value="link"
           placeholder="请输入设备地址"
-          :style="{ width: `200px` }"
+          :style="{ width: `320px` }"
           @keyup.enter="connect.invoke"
         ></NInput>
         <NButton @click="connect.invoke" :loading="connect.loading">
