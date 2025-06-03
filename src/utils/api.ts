@@ -94,13 +94,14 @@ export const useDeviceApi = (initOrigin?: string) => {
       quickFind?: boolean;
       fastQuery?: boolean;
     }) => {
+      data = structuredClone(data);
+      data.action ||= undefined;
       return jsonRpc<{ message: string; action: string; result: boolean }>(
         `execSelector`,
         {
           init: {
             method: 'POST',
-            // value 是旧版本的选择器
-            body: JSON.stringify({ ...data, value: data.selector }),
+            body: JSON.stringify(data),
             headers: {
               'Content-Type': 'application/json',
             },
