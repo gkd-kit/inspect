@@ -67,7 +67,7 @@ const imgBounding = useElementBounding(computed(() => props.imgRef));
         text-13px
         class="leading-[1] bg-[rgba(256,256,256,0.7)]"
       >
-        {{ `${hoverPosition.ox.toFixed(0)},${hoverPosition.oy.toFixed(0)}` }}
+        {{ `${hoverPosition.ox.toFixed(0)}, ${hoverPosition.oy.toFixed(0)}` }}
       </div>
       <div
         v-if="boxHoverPosition"
@@ -86,7 +86,7 @@ const imgBounding = useElementBounding(computed(() => props.imgRef));
         <div>
           {{
             boxHoverPosition.left.toFixed(0) +
-            ',' +
+            ', ' +
             boxHoverPosition.right.toFixed(0)
           }}
         </div>
@@ -107,7 +107,7 @@ const imgBounding = useElementBounding(computed(() => props.imgRef));
       >
         <div>{{ boxHoverPerPosition.top }}</div>
         <div>
-          {{ boxHoverPerPosition.left + ',' + boxHoverPerPosition.right }}
+          {{ boxHoverPerPosition.left + ', ' + boxHoverPerPosition.right }}
         </div>
         <div>{{ boxHoverPerPosition.bottom }}</div>
       </div>

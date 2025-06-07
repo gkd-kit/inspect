@@ -224,3 +224,16 @@ export const getDragEventFiles = (e: DragEvent): File[] => {
   }
   return files;
 };
+
+const zeroNumberRegs = [/\.0+$/, /0+$/];
+
+export const toFixedNumber = (n: number, fractionDigits: number): string => {
+  const s = n.toFixed(fractionDigits);
+  if (!s.includes('.')) return s;
+  for (const reg of zeroNumberRegs) {
+    if (reg.test(s)) {
+      return s.replace(reg, '');
+    }
+  }
+  return s;
+};

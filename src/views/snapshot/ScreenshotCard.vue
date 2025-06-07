@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs';
 import MiniHoverImg from './MiniHoverImg.vue';
+import { toFixedNumber } from '@/utils/others';
 
 const snapshotStore = useSnapshotStore();
 const { updatePosition } = snapshotStore;
@@ -88,10 +89,10 @@ const boxHoverPerPosition = computed(() => {
   }
   const { bottom, left, right, top } = boxHoverPosition.value;
   return {
-    left: (left / (right + left)).toFixed(3),
-    right: (right / (right + left)).toFixed(3),
-    top: (top / (top + bottom)).toFixed(3),
-    bottom: (bottom / (top + bottom)).toFixed(3),
+    left: toFixedNumber(left / (right + left), 3),
+    right: toFixedNumber(right / (right + left), 3),
+    top: toFixedNumber(top / (top + bottom), 3),
+    bottom: toFixedNumber(bottom / (top + bottom), 3),
   };
 });
 const hoverPositionStyle = shallowRef({ left: '0', top: '0' });
