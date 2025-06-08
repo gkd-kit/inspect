@@ -24,16 +24,25 @@ export const useTask = <T extends (...args: any[]) => Promise<void>>(
       return loadingRef.value;
     },
     invoke: async (...args: Parameters<T>) => {
-      if (loading) {
-        return;
-      }
+      // avoid track getter
+      if (loading) return;
+      let finished = false;
+      const task = fn(...args)
+        .catch((e) => {
+          handler?.(e);
+        })
+        .finally(() => {
+          finished = true;
+        });
+      // 避免界面渲染闪烁
+      await Promise.resolve();
+      await Promise.resolve();
+      if (finished) return;
       loadingRef.value = true;
-      await fn(...args).catch((e) => {
-        if (handler) {
-          handler(e);
-        }
-      });
-      await delay(miniInterval);
+      await task;
+      if (miniInterval > 0) {
+        await delay(miniInterval);
+      }
       loadingRef.value = false;
     },
   };
