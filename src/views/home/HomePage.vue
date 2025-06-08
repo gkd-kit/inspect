@@ -419,10 +419,10 @@ const inputImportRef = shallowRef();
     </div>
     <NDataTable
       striped
+      virtualScroll
       :data="filterSnapshots"
       :columns="columns"
       :scrollX="1800"
-      :pagination="pagination"
       v-model:checkedRowKeys="checkedRowKeys"
       :rowKey="(r:Snapshot)=>r.id"
       @update:sorter="handleSorterChange"
