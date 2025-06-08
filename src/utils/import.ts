@@ -65,12 +65,14 @@ export const importFromLocal = async (
   return importNum > 0;
 };
 
-export const importFromNetwork = async (urls: string[] | string = []) => {
+export const importFromNetwork = async (
+  urls: string[] | string = [],
+): Promise<number> => {
   if (typeof urls == 'string') {
     urls = [urls];
   }
   if (urls.length == 0) {
-    return;
+    return 0
   }
   urls = urls.map((url) => {
     const importId = getImportId(url);
@@ -83,7 +85,7 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   const limit = pLimit(2);
   let importNum = 0;
   await useStorageStore().waitInit();
-  const result = await Promise.allSettled(
+  await Promise.allSettled(
     urls.map((url) => {
       return limit(async () => {
         const snapshotId =
@@ -128,5 +130,5 @@ export const importFromNetwork = async (urls: string[] | string = []) => {
   } else if (importNum < urls.length) {
     message.success(`导入${importNum}条快照，失败${urls.length - importNum}`);
   }
-  return result;
+  return importNum;
 };

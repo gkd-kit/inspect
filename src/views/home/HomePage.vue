@@ -179,7 +179,8 @@ const importNetwork = useTask(async () => {
     .map((u) => u.trim())
     .filter((u) => toValidURL(u));
   if (urls.length == 0) return;
-  await importFromNetwork(urls);
+  const r = await importFromNetwork(urls);
+  if (!r) return;
   await updateSnapshots();
   textImportValue.value = ``;
 });
@@ -254,6 +255,8 @@ const batchShareZipUrl = useTask(async () => {
 });
 
 const settingsDlgShow = shallowRef(false);
+
+const inputImportRef = shallowRef();
 </script>
 <template>
   <div flex flex-col p-10px gap-10px h-full>
@@ -430,7 +433,7 @@ const settingsDlgShow = shallowRef(false);
     />
   </div>
   <NModal
-    v-model:show="showImportModal"
+    :show="showImportModal"
     preset="dialog"
     title="导入网络文件"
     :showIcon="false"
@@ -438,10 +441,15 @@ const settingsDlgShow = shallowRef(false);
     negativeText="取消"
     style="width: 800px"
     @positiveClick="importNetwork.invoke"
+    @negativeClick="showImportModal = false"
+    @close="showImportModal = false"
+    @esc="showImportModal = false"
     :loading="importNetwork.loading"
+    @afterEnter="inputImportRef?.focus()"
     @afterLeave="textImportValue = ``"
   >
     <NInput
+      ref="inputImportRef"
       :value="textImportValue"
       @update:value="
         if (!importNetwork.loading) {
