@@ -37,24 +37,25 @@ export const importFromLocal = async (
   }
   let importNum = 0;
   if (zipfiles.length > 0) {
-    await Promise.any(
-      zipfiles.map(async (file) => {
-        const zip = await loadAsync(file);
-        if (await parseZip(zip)) {
-          importNum++;
-        }
-        const subZips = zip.filter((s) => s.endsWith('.zip'));
-        if (subZips.length > 0) {
-          await Promise.any(
-            subZips.map(async (subZip) => {
-              const subFile = await loadAsync(subZip.async('blob'));
-              if (await parseZip(subFile)) {
-                importNum++;
-              }
-            }),
-          );
-        }
-      }),
+    await Promise.allSettled(
+      zipfiles
+        .map(async (file) => {
+          const zip = await loadAsync(file);
+          if (await parseZip(zip)) {
+            importNum++;
+          }
+          const subZips = zip.filter((s) => s.endsWith('.zip'));
+          if (subZips.length > 0) {
+            await Promise.allSettled(
+              subZips.map(async (subZip) => {
+                const subFile = await loadAsync(subZip.async('blob'));
+                if (await parseZip(subFile)) {
+                  importNum++;
+                }
+              }),
+            );
+          }
+        }),
     );
   }
   if (importNum > 0) {
@@ -72,7 +73,7 @@ export const importFromNetwork = async (
     urls = [urls];
   }
   if (urls.length == 0) {
-    return 0
+    return 0;
   }
   urls = urls.map((url) => {
     const importId = getImportId(url);
