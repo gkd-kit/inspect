@@ -38,24 +38,23 @@ export const importFromLocal = async (
   let importNum = 0;
   if (zipfiles.length > 0) {
     await Promise.allSettled(
-      zipfiles
-        .map(async (file) => {
-          const zip = await loadAsync(file);
-          if (await parseZip(zip)) {
-            importNum++;
-          }
-          const subZips = zip.filter((s) => s.endsWith('.zip'));
-          if (subZips.length > 0) {
-            await Promise.allSettled(
-              subZips.map(async (subZip) => {
-                const subFile = await loadAsync(subZip.async('blob'));
-                if (await parseZip(subFile)) {
-                  importNum++;
-                }
-              }),
-            );
-          }
-        }),
+      zipfiles.map(async (file) => {
+        const zip = await loadAsync(file);
+        if (await parseZip(zip)) {
+          importNum++;
+        }
+        const subZips = zip.filter((s) => s.endsWith('.zip'));
+        if (subZips.length > 0) {
+          await Promise.allSettled(
+            subZips.map(async (subZip) => {
+              const subFile = await loadAsync(subZip.async('blob'));
+              if (await parseZip(subFile)) {
+                importNum++;
+              }
+            }),
+          );
+        }
+      }),
     );
   }
   if (importNum > 0) {
@@ -66,14 +65,15 @@ export const importFromLocal = async (
   return importNum > 0;
 };
 
+const limit = pLimit(2);
 export const importFromNetwork = async (
   urls: string[] | string = [],
-): Promise<number> => {
+): Promise<Snapshot[] | undefined> => {
   if (typeof urls == 'string') {
     urls = [urls];
   }
   if (urls.length == 0) {
-    return 0;
+    return;
   }
   urls = urls.map((url) => {
     const importId = getImportId(url);
@@ -83,8 +83,7 @@ export const importFromNetwork = async (
     return url;
   });
   urls = [...new Set(urls)];
-  const limit = pLimit(2);
-  let importNum = 0;
+  const snapshots: Snapshot[] = [];
   await useStorageStore().waitInit();
   await Promise.allSettled(
     urls.map((url) => {
@@ -94,7 +93,7 @@ export const importFromNetwork = async (
         if (snapshotId) {
           const snapshot = await snapshotStorage.getItem(snapshotId);
           if (snapshot) {
-            importNum++;
+            snapshots.push(snapshot);
             return snapshot;
           }
         }
@@ -119,17 +118,19 @@ export const importFromNetwork = async (
           throw new Error(`file must be png or zip`);
         }
         await setSnapshot(snapshot, screenshotBf);
-        importNum++;
+        snapshots.push(snapshot);
         return snapshot;
       });
     }),
   );
-  if (importNum == 0) {
+  const num = snapshots.length;
+  if (num == 0) {
     message.warning(`没有发现可导入记录`);
-  } else if (importNum == urls.length) {
-    message.success(`导入${importNum}条快照`);
-  } else if (importNum < urls.length) {
-    message.success(`导入${importNum}条快照，失败${urls.length - importNum}`);
+    return;
+  } else if (num == urls.length) {
+    message.success(`导入${num}条快照`);
+  } else if (num < urls.length) {
+    message.success(`导入${num}条快照，失败${urls.length - num}`);
   }
-  return importNum;
+  return snapshots;
 };

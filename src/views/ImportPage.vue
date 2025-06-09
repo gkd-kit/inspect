@@ -48,13 +48,11 @@ onMounted(async () => {
   }
   loadingBar.start();
   try {
-    const [result] =
-      (await importFromNetwork(importId ? getImportFileUrl(importId) : url)) ??
+    const [snapshot] =
+      (await importFromNetwork(importId ? getImportFileUrl(importId) : url)) ||
       [];
-
-    if (result.status == 'fulfilled') {
+    if (snapshot) {
       loadingBar.finish();
-      const snapshot = result.value;
       if (snapshot?.id) {
         if (importId) {
           importSnapshotId[importId] = snapshot.id;
@@ -66,8 +64,6 @@ onMounted(async () => {
       } else {
         tip.value = `获取资源失败`;
       }
-    } else {
-      throw result.reason;
     }
   } catch {
     loadingBar.error();
