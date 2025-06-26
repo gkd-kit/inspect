@@ -38,7 +38,6 @@ export const showTextDLg = ({ title = `批量分享链接`, content = '' }) => {
 };
 
 const NoticeCheckbox = defineComponent(() => {
-  const settingsStore = useSettingsStore();
   return () => {
     return (
       <NCheckbox
@@ -55,8 +54,6 @@ const NoticeCheckbox = defineComponent(() => {
 });
 
 export const waitShareAgree = async () => {
-  const settingsStore = useSettingsStore();
-  await settingsStore.waitInit();
   if (settingsStore.ignoreUploadWarn) return;
   return new Promise((resolve, reject) => {
     dialog.warning({

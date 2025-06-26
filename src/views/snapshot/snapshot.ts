@@ -9,13 +9,13 @@ import { toInteger } from '@/utils/others';
 import type { ResolvedSelector } from '@/utils/selector';
 import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { useTask } from '@/utils/task';
-import type {
-  Position,
-  RawNode,
-  Snapshot,
-  TrackCardProps,
-} from '@/utils/types';
 import type { QueryResult } from '@gkd-kit/selector';
+
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    location.reload();
+  });
+}
 
 const getRemoteImportId = async (id: number): Promise<number> => {
   return fetch('https://detect.gkd.li/api/getImportId?id=' + id)
@@ -23,12 +23,9 @@ const getRemoteImportId = async (id: number): Promise<number> => {
     .catch(() => 0);
 };
 
-export const useSnapshotStore = defineStore('snapshot', () => {
+export const useSnapshotStore = createSharedComposable(() => {
   const route = useRoute();
   const router = useRouter();
-  const settingsStore = useSettingsStore();
-  const storageStore = useStorageStore();
-  const { snapshotImportId, snapshotImageId, importSnapshotId } = storageStore;
 
   const snapshotId = shallowRef<number>();
   watchImmediate(
@@ -97,7 +94,6 @@ export const useSnapshotStore = defineStore('snapshot', () => {
   watchEffect(() => {
     if (
       importId.value &&
-      storageStore.inited &&
       !importSnapshotId[importId.value] &&
       snapshotId.value
     ) {
@@ -107,12 +103,7 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     }
   });
   const autoUpload = computed(() => {
-    return (
-      gmOk() &&
-      settingsStore.inited &&
-      settingsStore.autoUploadImport &&
-      storageStore.inited
-    );
+    return gmOk() && settingsStore.autoUploadImport;
   });
   watchEffect(() => {
     if (autoUpload.value && snapshot.value && !imageId.value) {
@@ -126,7 +117,7 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     }
   });
   const nodes = computed(() => {
-    if (snapshot.value && settingsStore.inited) {
+    if (snapshot.value) {
       if (snapshot.value.nodes.length <= settingsStore.maxShowNodeSize) {
         return structuredClone(snapshot.value.nodes);
       } else {
@@ -215,9 +206,3 @@ export const useSnapshotStore = defineStore('snapshot', () => {
     showTrack,
   };
 });
-
-if (import.meta.hot) {
-  import.meta.hot.accept(() => {
-    location.reload();
-  });
-}

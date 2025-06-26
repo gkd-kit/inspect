@@ -7,11 +7,10 @@ import RuleCard from './RuleCard.vue';
 import ScreenshotCard from './ScreenshotCard.vue';
 import SearchCard from './SearchCard.vue';
 import WindowCard from './WindowCard.vue';
+import { useSnapshotStore } from './snapshot';
 
-const snapshotStore = useSnapshotStore();
-const snapshotRefs = storeToRefs(snapshotStore);
 const { snapshot, rootNode, loading, redirected, trackData, trackShow } =
-  snapshotRefs;
+  useSnapshotStore();
 
 watchEffect(() => {
   if (loading.value) {
@@ -31,7 +30,11 @@ const clickSettings = () => {
 </script>
 <template>
   <template v-if="snapshot && rootNode">
-    <div h-full flex gap-5px>
+    <div
+      h-full
+      flex
+      gap-5px
+    >
       <div
         w-40px
         py-12px
@@ -53,16 +56,22 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton @click="clickSettings" text>
+            <NButton
+              text
+              @click="clickSettings"
+            >
               <SvgIcon name="settings" />
             </NButton>
           </template>
           设置
         </NTooltip>
-        <div></div>
+        <div />
         <NTooltip placement="right">
           <template #trigger>
-            <NButton text @click="searchShow = !searchShow">
+            <NButton
+              text
+              @click="searchShow = !searchShow"
+            >
               <SvgIcon name="search-list" />
             </NButton>
           </template>
@@ -70,7 +79,10 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton @click="attrShow = !attrShow" text>
+            <NButton
+              text
+              @click="attrShow = !attrShow"
+            >
               <SvgIcon name="prop" />
             </NButton>
           </template>
@@ -78,13 +90,16 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton @click="ruleShow = !ruleShow" text>
+            <NButton
+              text
+              @click="ruleShow = !ruleShow"
+            >
               <SvgIcon name="test" />
             </NButton>
           </template>
           测试规则
         </NTooltip>
-        <div></div>
+        <div />
         <NTooltip placement="right">
           <template #trigger>
             <a
@@ -122,19 +137,33 @@ const clickSettings = () => {
       <WindowCard class="flex-1" />
     </div>
 
-    <SearchCard :show="searchShow" @updateShow="searchShow = $event" />
-    <RuleCard :show="ruleShow" @updateShow="ruleShow = $event" />
-    <AttrCard :show="attrShow" @updateShow="attrShow = $event" />
+    <SearchCard
+      :show="searchShow"
+      @update-show="searchShow = $event"
+    />
+    <RuleCard
+      :show="ruleShow"
+      @update-show="ruleShow = $event"
+    />
+    <AttrCard
+      :show="attrShow"
+      @update-show="attrShow = $event"
+    />
     <OverlapCard />
 
     <TrackModal
       :show="trackShow"
-      @updateShow="trackShow = $event"
       :data="trackData"
-      @updateData="trackData = $event"
+      @update-show="trackShow = $event"
+      @update-data="trackData = $event"
     />
   </template>
-  <div v-else-if="!loading && !redirected" flex justify-center pt-80px>
+  <div
+    v-else-if="!loading && !redirected"
+    flex
+    justify-center
+    pt-80px
+  >
     <div>快照数据缺失</div>
   </div>
 </template>

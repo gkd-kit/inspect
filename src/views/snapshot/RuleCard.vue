@@ -4,8 +4,9 @@ import { getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn } from '@/utils/others';
 import { parseSelector, type ResolvedSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
-import type { RawNode, Snapshot } from '@/utils/types';
 import type { ShallowRef } from 'vue';
+import JSON5 from 'json5';
+import { useSnapshotStore } from './snapshot';
 
 withDefaults(
   defineProps<{
@@ -18,9 +19,8 @@ withDefaults(
 );
 
 const snapshotStore = useSnapshotStore();
-const snapshotRefs = storeToRefs(snapshotStore);
-const { rootNode, focusNode } = snapshotRefs;
-const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
+const { rootNode, focusNode } = snapshotStore;
+const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
 
 const text = shallowRef('');
 const lazyText = refDebounced(text, 500);
@@ -189,22 +189,41 @@ const targetNode = computed(() => {
 </script>
 <template>
   <DraggableCard
-    :initialValue="{
+    v-slot="{ onRef }"
+    :initial-value="{
       top: 40,
       right: Math.max(315, 12 * vw + 135),
       width: Math.max(480, gkdWidth * 0.3),
     }"
-    :minWidth="300"
-    sizeDraggable
-    v-slot="{ onRef }"
+    :min-width="300"
+    size-draggable
     class="box-shadow-dim"
     :show="show"
   >
-    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
-      <div flex m-b-4px pr-4px>
+    <div
+      bg-white
+      b-1px
+      b-solid
+      b-gray-200
+      rounded-4px
+      p-8px
+    >
+      <div
+        flex
+        m-b-4px
+        pr-4px
+      >
         <div>测试规则</div>
-        <div flex-1 cursor-move :ref="onRef"></div>
-        <NButton @click="onUpdateShow(!show)" text title="最小化">
+        <div
+          :ref="onRef"
+          flex-1
+          cursor-move
+        />
+        <NButton
+          text
+          title="最小化"
+          @click="onUpdateShow(!show)"
+        >
           <template #icon>
             <SvgIcon name="minus" />
           </template>
@@ -222,13 +241,19 @@ const targetNode = computed(() => {
         }"
       />
       <div min-h-24px>
-        <div color-red whitespace-pre v-if="errorText">{{ errorText }}</div>
+        <div
+          v-if="errorText"
+          color-red
+          whitespace-pre
+        >
+          {{ errorText }}
+        </div>
 
         <NButton
           v-else-if="targetNode"
-          @click="snapshotStore.updateFocusNode(targetNode)"
           size="small"
           :style="getNodeStyle(targetNode, focusNode)"
+          @click="snapshotStore.updateFocusNode(targetNode)"
         >
           {{ getNodeLabel(targetNode) }}
         </NButton>

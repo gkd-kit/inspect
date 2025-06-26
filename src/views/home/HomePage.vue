@@ -15,12 +15,11 @@ import { getDragEventFiles } from '@/utils/others';
 import { shallowSnapshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { renderDevice, useSnapshotColumns } from '@/utils/table';
 import { useTask } from '@/utils/task';
-import type { Snapshot } from '@/utils/types';
 import { getImagUrl } from '@/utils/url';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 
-const settingsStore = useSettingsStore();
+const { settingsStore } = useStorageStore();
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const loading = shallowRef(true);
@@ -259,18 +258,24 @@ const settingsDlgShow = shallowRef(false);
 const inputImportRef = shallowRef();
 </script>
 <template>
-  <div flex flex-col p-10px gap-10px h-full>
+  <div
+    flex
+    flex-col
+    p-10px
+    gap-10px
+    h-full
+  >
     <div flex>
       <NSpace>
         <NInputGroup>
           <NInput
+            v-model:value="filterOption.query"
             placeholder="请输入应用名称/应用ID/界面ID"
             clearable
             class="min-w-320px"
-            v-model:value="filterOption.query"
             @keyup.enter="filterOption.updateQuery"
             @change="filterOption.updateQuery"
-          ></NInput>
+          />
           <NButton @click="filterOption.updateQuery">
             <template #icon>
               <SvgIcon name="search" />
@@ -284,14 +289,14 @@ const inputImportRef = shallowRef();
             </template>
             <NSpace vertical>
               <NButton
-                @click="batchDownloadZip.invoke"
                 :loading="batchDownloadZip.loading"
+                @click="batchDownloadZip.invoke"
               >
                 批量下载-快照
               </NButton>
               <NButton
-                @click="batchDownloadImage.invoke"
                 :loading="batchDownloadImage.loading"
+                @click="batchDownloadImage.invoke"
               >
                 批量下载-图片
               </NButton>
@@ -303,30 +308,45 @@ const inputImportRef = shallowRef();
             </template>
             <NSpace vertical>
               <NButton
-                @click="batchShareZipUrl.invoke"
                 :loading="batchShareZipUrl.loading"
+                @click="batchShareZipUrl.invoke"
               >
                 批量生成链接-快照
               </NButton>
               <NButton
-                @click="batchShareImageUrl.invoke"
                 :loading="batchShareImageUrl.loading"
+                @click="batchShareImageUrl.invoke"
               >
                 批量生成链接-图片
               </NButton>
             </NSpace>
           </NPopover>
-          <NButton @click="batchDelete.invoke"> 批量删除 </NButton>
-          <div h-full flex flex-items-center>
+          <NButton @click="batchDelete.invoke">
+            批量删除
+          </NButton>
+          <div
+            h-full
+            flex
+            flex-items-center
+          >
             {{ `已选中 ${checkedRowKeys.length} 个快照` }}
           </div>
         </template>
       </NSpace>
-      <div flex-1></div>
-      <div flex gap-24px items-center pr-8px class="[--svg-h:24px]">
+      <div flex-1 />
+      <div
+        flex
+        gap-24px
+        items-center
+        pr-8px
+        class="[--svg-h:24px]"
+      >
         <NTooltip>
           <template #trigger>
-            <NButton text @click="settingsDlgShow = true">
+            <NButton
+              text
+              @click="settingsDlgShow = true"
+            >
               <SvgIcon name="settings" />
             </NButton>
           </template>
@@ -334,7 +354,10 @@ const inputImportRef = shallowRef();
         </NTooltip>
         <NTooltip>
           <template #trigger>
-            <RouterLink flex to="/selector">
+            <RouterLink
+              flex
+              to="/selector"
+            >
               <NButton text>
                 <SvgIcon name="terminal" />
               </NButton>
@@ -352,19 +375,21 @@ const inputImportRef = shallowRef();
             <NTooltip placement="left">
               <template #trigger>
                 <NButton
-                  @click="importLocal.invoke()"
                   :loading="importLocal.loading"
+                  @click="importLocal.invoke()"
                 >
                   导入本地文件
                 </NButton>
               </template>
-              <div class="whitespace-nowrap">支持拖拽文件到页面任意位置</div>
+              <div class="whitespace-nowrap">
+                支持拖拽文件到页面任意位置
+              </div>
             </NTooltip>
             <NTooltip placement="left">
               <template #trigger>
                 <NButton
-                  @click="showImportModal = true"
                   :loading="importNetwork.loading"
+                  @click="showImportModal = true"
                 >
                   导入网络文件
                 </NButton>
@@ -377,7 +402,10 @@ const inputImportRef = shallowRef();
         </NPopover>
         <NTooltip>
           <template #trigger>
-            <RouterLink flex to="/device">
+            <RouterLink
+              flex
+              to="/device"
+            >
               <NButton text>
                 <SvgIcon name="device" />
               </NButton>
@@ -418,53 +446,53 @@ const inputImportRef = shallowRef();
       </div>
     </div>
     <NDataTable
+      v-model:checked-row-keys="checkedRowKeys"
       striped
-      virtualScroll
+      virtual-scroll
       :data="filterSnapshots"
       :columns="columns"
-      :scrollX="1800"
-      v-model:checkedRowKeys="checkedRowKeys"
-      :rowKey="(r:Snapshot)=>r.id"
-      @update:sorter="handleSorterChange"
+      :scroll-x="1800"
+      :row-key="(r:Snapshot)=>r.id"
       size="small"
       class="flex-1"
-      flexHeight
+      flex-height
       :loading="loading"
+      @update:sorter="handleSorterChange"
     />
   </div>
   <NModal
     :show="showImportModal"
     preset="dialog"
     title="导入网络文件"
-    :showIcon="false"
-    positiveText="确认"
-    negativeText="取消"
+    :show-icon="false"
+    positive-text="确认"
+    negative-text="取消"
     style="width: 800px"
-    @positiveClick="importNetwork.invoke"
-    @negativeClick="showImportModal = false"
+    :loading="importNetwork.loading"
+    @positive-click="importNetwork.invoke"
+    @negative-click="showImportModal = false"
     @close="showImportModal = false"
     @esc="showImportModal = false"
-    :loading="importNetwork.loading"
-    @afterEnter="inputImportRef?.focus()"
-    @afterLeave="textImportValue = ``"
+    @after-enter="inputImportRef?.focus()"
+    @after-leave="textImportValue = ``"
   >
     <NInput
       ref="inputImportRef"
       :value="textImportValue"
-      @update:value="
-        if (!importNetwork.loading) {
-          textImportValue = $event;
-        }
-      "
       type="textarea"
       :placeholder="`1.支持ZIP文件链接\n2.支持快照链接\n每行一个\n空白行自动忽略\n非法链接行自动忽略`"
       :autosize="{
         minRows: 8,
         maxRows: 16,
       }"
-      :inputProps="{
+      :input-props="{
         style: `white-space: nowrap;`,
       }"
+      @update:value="
+        if (!importNetwork.loading) {
+          textImportValue = $event;
+        }
+      "
     />
   </NModal>
 
@@ -472,20 +500,31 @@ const inputImportRef = shallowRef();
     v-model:show="settingsDlgShow"
     preset="dialog"
     title="设置"
-    :showIcon="false"
-    positiveText="关闭"
+    :show-icon="false"
+    positive-text="关闭"
     style="width: 600px"
-    @positiveClick="settingsDlgShow = false"
+    @positive-click="settingsDlgShow = false"
   >
     <NCheckbox v-model:checked="settingsStore.ignoreUploadWarn">
       关闭生成分享链接弹窗提醒
     </NCheckbox>
-    <div h-1px my-10px bg="#eee"></div>
+    <div
+      h-1px
+      my-10px
+      bg="#eee"
+    />
     <NCheckbox v-model:checked="settingsStore.ignoreWasmWarn">
       关闭浏览器版本正则表达式 WASM(GC) 提醒
     </NCheckbox>
-    <div h-1px my-10px bg="#eee"></div>
-    <div flex gap-10px>
+    <div
+      h-1px
+      my-10px
+      bg="#eee"
+    />
+    <div
+      flex
+      gap-10px
+    >
       <NSwitch v-model:value="settingsStore.autoUploadImport" />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
     </div>

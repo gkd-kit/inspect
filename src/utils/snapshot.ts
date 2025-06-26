@@ -1,5 +1,4 @@
 import localforage from 'localforage';
-import type { Snapshot } from './types';
 
 const useStorage = <T>(options: LocalForageOptions = {}) => {
   options.driver ??= localforage.INDEXEDDB;
@@ -51,7 +50,6 @@ snapshotStorage.setItem = async (key, value) => {
 
 const snapshotRemoveItem = snapshotStorage.removeItem;
 snapshotStorage.removeItem = async (key) => {
-  const { snapshotImportTime } = useStorageStore();
   await Promise.all([
     snapshotRemoveItem(key),
     shallowSnapshotStorage.removeItem(key),
@@ -71,12 +69,6 @@ export const screenshotStorage = useStorage<ArrayBuffer>({
 });
 
 export const setSnapshot = async (snapshot: Snapshot, bf: ArrayBuffer) => {
-  const {
-    importSnapshotId,
-    snapshotImageId,
-    snapshotImportId,
-    snapshotImportTime,
-  } = useStorageStore();
   Object.entries(importSnapshotId).forEach(([k, v]) => {
     if (v == snapshot.id) {
       delete importSnapshotId[k];

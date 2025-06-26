@@ -110,7 +110,11 @@ useEventListener('selectstart', (e) => {
 });
 </script>
 <template>
-  <div fixed z-2000 class="BodyScrollbar">
+  <div
+    fixed
+    z-2000
+    class="BodyScrollbar"
+  >
     <div
       v-show="yShow"
       scrollbar-y
@@ -123,7 +127,6 @@ useEventListener('selectstart', (e) => {
       @click="clickBoxY"
     >
       <div
-        @click.stop
         w-full
         bg="#909399"
         opacity-30
@@ -132,7 +135,8 @@ useEventListener('selectstart', (e) => {
         :class="{
           'opacity-50': yDragging,
         }"
-      ></div>
+        @click.stop
+      />
     </div>
     <div
       v-if="xShow"
@@ -146,7 +150,6 @@ useEventListener('selectstart', (e) => {
       @click="clickBoxX"
     >
       <div
-        @click.stop
         h-full
         bg="#909399"
         opacity-30
@@ -155,7 +158,8 @@ useEventListener('selectstart', (e) => {
         :class="{
           'opacity-50': xDragging,
         }"
-      ></div>
+        @click.stop
+      />
     </div>
   </div>
 </template>

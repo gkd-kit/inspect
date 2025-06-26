@@ -7,17 +7,13 @@ import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import { parseSelector, wasmLoadTask } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
-import type {
-  RawNode,
-  SearchResult,
-  SelectorSearchResult,
-  Snapshot,
-} from '@/utils/types';
 import { getImagUrl, getImportUrl } from '@/utils/url';
 import { FastQuery, GkdException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
 import * as base64url from 'universal-base64url';
 import type { ShallowRef } from 'vue';
+import JSON5 from 'json5';
+import { useSnapshotStore } from './snapshot';
 
 withDefaults(
   defineProps<{
@@ -33,11 +29,9 @@ const route = useRoute();
 const { snapshotImportId, snapshotImageId } = useStorageStore();
 
 const snapshotStore = useSnapshotStore();
-const { updateFocusNode } = snapshotStore;
-const snapshotRefs = storeToRefs(snapshotStore);
-const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
-const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
-const { focusNode } = snapshotRefs;
+const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
+const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
+const { focusNode, updateFocusNode } = snapshotStore;
 
 const searchText = shallowRef(``);
 
@@ -220,27 +214,50 @@ const shareResult = (result: SearchResult) => {
 </script>
 <template>
   <DraggableCard
-    :initialValue="{
+    v-slot="{ onRef }"
+    :initial-value="{
       top: 40,
       right: Math.max(315, 12 * vw + 135),
       width: Math.max(480, gkdWidth * 0.3),
     }"
-    :minWidth="300"
-    sizeDraggable
-    v-slot="{ onRef }"
+    :min-width="300"
+    size-draggable
     class="box-shadow-dim"
     :show="show"
   >
-    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
-      <div flex m-b-4px pr-4px>
+    <div
+      bg-white
+      b-1px
+      b-solid
+      b-gray-200
+      rounded-4px
+      p-8px
+    >
+      <div
+        flex
+        m-b-4px
+        pr-4px
+      >
         <NRadioGroup v-model:value="enableSearchBySelector">
           <NSpace>
-            <NRadio :value="false"> 字符搜索 </NRadio>
-            <NRadio :value="true"> 选择器查询 </NRadio>
+            <NRadio :value="false">
+              字符搜索
+            </NRadio>
+            <NRadio :value="true">
+              选择器查询
+            </NRadio>
           </NSpace>
         </NRadioGroup>
-        <div flex-1 cursor-move :ref="onRef"></div>
-        <NButton @click="onUpdateShow(!show)" text title="最小化">
+        <div
+          :ref="onRef"
+          flex-1
+          cursor-move
+        />
+        <NButton
+          text
+          title="最小化"
+          @click="onUpdateShow(!show)"
+        >
           <template #icon>
             <SvgIcon name="minus" />
           </template>
@@ -250,17 +267,17 @@ const shareResult = (result: SearchResult) => {
         <NInput
           v-model:value="searchText"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
+          :input-props="{ class: 'gkd_code' }"
           @keyup.enter="searchBySelector"
-          :inputProps="{ class: 'gkd_code' }"
-        ></NInput>
+        />
         <NButton @click="searchBySelector">
           <template #icon>
             <SvgIcon name="search" />
           </template>
         </NButton>
       </NInputGroup>
-      <div p-5px></div>
-      <NCollapse v-model:expandedNames="expandedKeys">
+      <div p-5px />
+      <NCollapse v-model:expanded-names="expandedKeys">
         <NCollapseItem
           v-for="(result, index) in selectorResults"
           :key="result.key"
@@ -293,15 +310,15 @@ const shareResult = (result: SearchResult) => {
               />
               <template v-else>{{ result.selector }}</template>
             </span>
-            <span pl-4px></span>
+            <span pl-4px />
           </template>
           <template #header-extra>
             <NButtonGroup>
               <NButton
-                size="small"
                 v-if="result.gkd && result.selector.canCopy"
-                @click.stop="generateRules(result as SelectorSearchResult)"
+                size="small"
                 title="复制规则"
+                @click.stop="generateRules(result as SelectorSearchResult)"
               >
                 <template #icon>
                   <SvgIcon name="copy" />
@@ -319,8 +336,8 @@ const shareResult = (result: SearchResult) => {
               </NButton>
               <NButton
                 size="small"
-                @click.stop="selectorResults.splice(index, 1)"
                 title="删除记录"
+                @click.stop="selectorResults.splice(index, 1)"
               >
                 <template #icon>
                   <SvgIcon name="delete" />
@@ -328,32 +345,39 @@ const shareResult = (result: SearchResult) => {
               </NButton>
             </NButtonGroup>
           </template>
-          <NScrollbar xScrollable style="max-height: 400px">
-            <div flex gap-8px flex-wrap>
+          <NScrollbar
+            x-scrollable
+            style="max-height: 400px"
+          >
+            <div
+              flex
+              gap-8px
+              flex-wrap
+            >
               <template
                 v-if="!result.gkd || result.selector.connectKeys.length === 0"
               >
                 <NButton
                   v-for="resultNode in result.nodes"
                   :key="resultNode.id"
-                  @click="updateFocusNode(resultNode)"
                   size="small"
                   :style="getNodeStyle(resultNode, focusNode)"
+                  @click="updateFocusNode(resultNode)"
                 >
                   {{ getNodeLabel(resultNode) }}
                 </NButton>
               </template>
               <template v-else>
                 <NButtonGroup
-                  v-for="(resultNode, index) in result.nodes"
-                  :key="index"
+                  v-for="(resultNode, i) in result.nodes"
+                  :key="i"
                 >
                   <NButton
                     size="small"
                     @click="
                       snapshotStore.showTrack(
                         result.selector,
-                        result.results[index],
+                        result.results[i],
                       )
                     "
                   >
@@ -362,16 +386,16 @@ const shareResult = (result: SearchResult) => {
                     </NIcon>
                   </NButton>
                   <NButton
-                    @click="updateFocusNode(resultNode)"
                     size="small"
                     :style="getNodeStyle(resultNode, focusNode)"
+                    @click="updateFocusNode(resultNode)"
                   >
                     {{ getNodeLabel(resultNode) }}
                   </NButton>
                 </NButtonGroup>
               </template>
             </div>
-            <div un="h-10px"></div>
+            <div un="h-10px" />
           </NScrollbar>
         </NCollapseItem>
       </NCollapse>

@@ -1,22 +1,23 @@
-// @ts-check
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import unusedImports from 'eslint-plugin-unused-imports';
 import vue from 'eslint-plugin-vue';
 import ts from 'typescript-eslint';
 import autoImport from './.eslintrc-auto-import.json' with { type: 'json' };
+import globals from 'globals';
 
 export default ts.config(
-  js.configs.recommended,
-  ...ts.configs.recommended,
-  // @ts-ignore
-  ...vue.configs['flat/essential'],
   prettier,
   {
-    files: ['*.vue', '**/*.vue'],
+    extends: [
+      js.configs.recommended,
+      ...ts.configs.recommended,
+      ...vue.configs['flat/recommended'],
+    ],
+    files: ['**/*.{ts,vue}'],
     languageOptions: {
       parserOptions: {
-        parser: '@typescript-eslint/parser',
+        parser: ts.parser,
         jsx: true,
       },
     },
@@ -27,8 +28,12 @@ export default ts.config(
     },
   },
   {
-    // @ts-ignore
-    languageOptions: autoImport,
+    languageOptions: {
+      globals: {
+        ...(autoImport.globals as Record<string, 'readonly'>),
+        ...globals.browser,
+      },
+    },
   },
   {
     rules: {
@@ -41,9 +46,10 @@ export default ts.config(
       'no-empty': 'off',
       'prefer-const': 'off',
       'unused-imports/no-unused-imports': 'error',
+      'vue/require-default-prop': 'off',
     },
   },
   {
-    ignores: ['*.d.ts', '*.cjs'],
+    ignores: ['dist'],
   },
-);
+) as any;

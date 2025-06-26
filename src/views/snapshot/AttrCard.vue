@@ -2,6 +2,7 @@
 import DraggableCard from '@/components/DraggableCard.vue';
 import { getNodeSelectorText } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
+import { useSnapshotStore } from './snapshot';
 
 withDefaults(
   defineProps<{
@@ -13,7 +14,7 @@ withDefaults(
   },
 );
 
-const { focusNode } = storeToRefs(useSnapshotStore());
+const { focusNode } = useSnapshotStore();
 
 type AttrTipMap = Record<
   string,
@@ -97,13 +98,23 @@ const selectText = computed(() => {
 
 <template>
   <DraggableCard
-    :initialValue="{ top: 40, right: 10 }"
     v-slot="{ onRef }"
+    :initial-value="{ top: 40, right: 10 }"
     class="box-shadow-dim"
     :show="show && Boolean(focusNode)"
   >
-    <div absolute top-0 right-0 pt-4px pr-8px>
-      <NButton @click="onUpdateShow(!show)" text title="最小化">
+    <div
+      absolute
+      top-0
+      right-0
+      pt-4px
+      pr-8px
+    >
+      <NButton
+        text
+        title="最小化"
+        @click="onUpdateShow(!show)"
+      >
         <template #icon>
           <SvgIcon name="minus" />
         </template>
@@ -113,29 +124,44 @@ const selectText = computed(() => {
       v-if="focusNode"
       size="small"
       striped
-      :singleLine="false"
+      :single-line="false"
       class="gkd_code"
-      :themeOverrides="{
+      :theme-overrides="{
         thPaddingSmall: '1px 3px',
         tdPaddingSmall: '0px 3px',
       }"
-      ><thead>
-        <tr :ref="onRef" cursor-move>
+    >
+      <thead>
+        <tr
+          :ref="onRef"
+          cursor-move
+        >
           <th>Name</th>
           <th>Value</th>
         </tr>
       </thead>
       <NTbody>
-        <NTr v-for="attrx in attrs" :key="attrx.name">
+        <NTr
+          v-for="attrx in attrs"
+          :key="attrx.name"
+        >
           <NTd @click="copy(`${attrx.name}=${attrx.desc}`)">
-            <div v-if="attrx.tip" flex justify-between items-center>
+            <div
+              v-if="attrx.tip"
+              flex
+              justify-between
+              items-center
+            >
               <div>
                 {{ attrx.name }}
               </div>
               <NTooltip>
                 <template #trigger>
                   <NIcon size="16">
-                    <SvgIcon name="info" v-if="attrx.tip.type == 'info'" />
+                    <SvgIcon
+                      v-if="attrx.tip.type == 'info'"
+                      name="info"
+                    />
                     <SvgIcon
                       v-else-if="attrx.tip.type == 'quickFind'"
                       name="ok"
@@ -163,10 +189,18 @@ const selectText = computed(() => {
         </NTr>
         <NTr>
           <NTd colspan="2">
-            <div flex items-center h-24px px-2px>
+            <div
+              flex
+              items-center
+              h-24px
+              px-2px
+            >
               <NTooltip>
                 <template #trigger>
-                  <NButton text @click="copy(selectText)">
+                  <NButton
+                    text
+                    @click="copy(selectText)"
+                  >
                     <template #icon>
                       <NIcon size="20">
                         <SvgIcon name="path" />
@@ -174,7 +208,9 @@ const selectText = computed(() => {
                     </template>
                   </NButton>
                 </template>
-                <div max-w-500px>{{ selectText }}</div>
+                <div max-w-500px>
+                  {{ selectText }}
+                </div>
               </NTooltip>
             </div>
           </NTd>

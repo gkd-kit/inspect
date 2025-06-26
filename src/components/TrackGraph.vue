@@ -2,7 +2,6 @@
 import { getNodeQf, getTrackTreeContext } from '@/utils/node';
 import { colorList } from '@/utils/others';
 import { transform } from '@/utils/selector';
-import type { RawNode } from '@/utils/types';
 import type { EdgeData, TreeData } from '@antv/g6';
 import { Graph, treeToGraphData } from '@antv/g6';
 import { QueryPath, QueryResult } from '@gkd-kit/selector';
@@ -276,5 +275,8 @@ watch(
 );
 </script>
 <template>
-  <div class="TrackGraph" ref="el"></div>
+  <div
+    ref="el"
+    class="TrackGraph"
+  />
 </template>

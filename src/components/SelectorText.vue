@@ -95,12 +95,15 @@ const getDataValue = (str: string) => {
     :style="getNodeStyle?.(node)"
   >
     <template v-if="node.outChildren.length">
-      <template v-for="child in children" :key="child.start">
+      <template
+        v-for="child in children"
+        :key="child.start"
+      >
         <SelectorText
           v-if="isAstNode(child)"
           :source="source"
           :node="child"
-          :getNodeStyle="getNodeStyle"
+          :get-node-style="getNodeStyle"
         />
         <span
           v-else

@@ -10,18 +10,16 @@ import {
   getNodeStyle,
 } from '@/utils/node';
 import { copy, delay } from '@/utils/others';
-import type { RawNode, Snapshot } from '@/utils/types';
 import type { TreeInst } from 'naive-ui';
 import type { HTMLAttributes, ShallowRef } from 'vue';
+import { useSnapshotStore } from './snapshot';
 
 const router = useRouter();
 
 const snapshotStore = useSnapshotStore();
-const { updateFocusNode } = snapshotStore;
-const snapshotRefs = storeToRefs(snapshotStore);
-const snapshot = snapshotRefs.snapshot as ShallowRef<Snapshot>;
-const rootNode = snapshotRefs.rootNode as ShallowRef<RawNode>;
-const { focusNode, focusTime } = snapshotRefs;
+const { updateFocusNode, focusNode, focusTime } = snapshotStore;
+const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
+const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
 
 let lastClickId = Number.NaN;
 const expandedKeys = shallowRef<number[]>([]);
@@ -119,14 +117,36 @@ const onDelete = async () => {
     path: `/`,
   });
 };
+const gkdVersionName = computed(() => {
+  const v = getGkdAppInfo(snapshot.value).versionName;
+  return v ? `GKD@${v}` : undefined;
+});
 </script>
 
 <template>
-  <div flex flex-col overflow-hidden>
-    <div flex items-center px-8px>
-      <GapList flex flex-wrap items-center gap-8px gkd_code>
+  <div
+    flex
+    flex-col
+    overflow-hidden
+  >
+    <div
+      flex
+      items-center
+      px-8px
+    >
+      <GapList
+        flex
+        flex-wrap
+        items-center
+        gap-8px
+        gkd_code
+      >
         <template #gap>
-          <div w-1px bg-gray h-12px></div>
+          <div
+            w-1px
+            bg-gray
+            h-12px
+          />
         </template>
         <NTooltip>
           <template #trigger>
@@ -141,16 +161,21 @@ const onDelete = async () => {
           <template #trigger>
             <div
               :class="{
-                'opacity-50': !getGkdAppInfo(snapshot).versionName,
+                'opacity-50': !gkdVersionName,
               }"
             >
-              {{ getGkdAppInfo(snapshot).versionName || 'null' }}
+              {{ gkdVersionName || 'null' }}
             </div>
           </template>
           GKD 版本
         </NTooltip>
 
-        <div flex items-center gap-2px max-w-120px>
+        <div
+          flex
+          items-center
+          gap-2px
+          max-w-120px
+        >
           <NTooltip v-if="isSystem">
             <template #trigger>
               <SvgIcon name="system" />
@@ -197,10 +222,10 @@ const onDelete = async () => {
         <NTooltip>
           <template #trigger>
             <div
-              @click="copy(activityId)"
               :class="{
                 'opacity-50': !activityId,
               }"
+              @click="copy(activityId)"
             >
               {{ activityId || 'null' }}
             </div>
@@ -208,30 +233,37 @@ const onDelete = async () => {
           界面ID
         </NTooltip>
       </GapList>
-      <div flex-1></div>
+      <div flex-1 />
       <ActionCard
         class="ml-8px"
         :snapshot="snapshot"
+        :show-preview="false"
         @delete="onDelete"
-        :showPreview="false"
       />
     </div>
-    <div h-1px mt-4px bg="#efeff5"></div>
+    <div
+      h-1px
+      mt-4px
+      bg="#efeff5"
+    />
 
-    <NScrollbar xScrollable class="flex-1">
+    <NScrollbar
+      x-scrollable
+      class="flex-1"
+    >
       <NTree
-        class="mb-24px mr-24px"
         ref="treeRef"
-        virtualScroll
-        showLine
-        blockLine
-        keyField="id"
-        v-model:expandedKeys="expandedKeys"
-        v-model:selectedKeys="selectedKeys"
+        v-model:expanded-keys="expandedKeys"
+        v-model:selected-keys="selectedKeys"
+        class="mb-24px mr-24px"
+        virtual-scroll
+        show-line
+        block-line
+        key-field="id"
         :data="[rootNode as any]"
         :filter="(treeFilter as any)"
-        :nodeProps="(treeNodeProps as any)"
-        :renderLabel="(renderLabel as any)"
+        :node-props="(treeNodeProps as any)"
+        :render-label="(renderLabel as any)"
       />
     </NScrollbar>
   </div>

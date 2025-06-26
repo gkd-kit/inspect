@@ -5,7 +5,6 @@ import { JSZipAsync } from './chunk';
 import { uploadAsset } from './github';
 import { delay, obj2usp } from './others';
 import { screenshotStorage, snapshotStorage } from './snapshot';
-import type { Snapshot } from './types';
 import { getImageId } from './url';
 
 const snapshotAsZip = async (snapshot: Snapshot) => {
@@ -85,7 +84,6 @@ const comporessPngToJpg = async (imgBf: ArrayBuffer): Promise<Blob> => {
 };
 
 export const exportSnapshotAsImageId = async (snapshot: Snapshot) => {
-  const { snapshotImageId } = useStorageStore();
   return (
     snapshotImageId[snapshot.id] ??
     uploadAsset(
@@ -103,7 +101,6 @@ export const exportSnapshotAsImageId = async (snapshot: Snapshot) => {
 };
 
 export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
-  const { snapshotImportId, importSnapshotId } = useStorageStore();
   return (
     snapshotImportId[snapshot.id] ||
     uploadAsset(
@@ -163,8 +160,6 @@ export const detectSnapshot = async (
   if (!Number.isSafeInteger(+importId)) {
     return;
   }
-  const { importSnapshotId, waitInit } = useStorageStore();
-  await waitInit();
   if (importSnapshotId[importId]) {
     return;
   }

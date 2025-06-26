@@ -2,27 +2,21 @@ import autoImport from 'unplugin-auto-import/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
 import components from 'unplugin-vue-components/vite';
 import type { Plugin } from 'vite';
-import naiveComponents from './naive-components.json';
 import process from 'node:process';
+import { getExportsStatic } from 'pkg-exports';
 
-export const unAutoImport = (): Plugin[] => {
+export const unAutoImport = async (): Promise<Plugin[]> => {
   return [
     autoImport({
-      dts: 'auto-import.d.ts',
+      dts: process.cwd() + '/src/types/auto-import.d.ts',
       imports: [
         'vue',
         'vue-router',
         '@vueuse/core',
-        'pinia',
         {
-          'naive-ui': [
-            'useDialog',
-            'useMessage',
-            'useNotification',
-            'useLoadingBar',
-            ...naiveComponents,
-          ],
-          json5: [['default', 'JSON5']],
+          'naive-ui': (await getExportsStatic('naive-ui')).filter(
+            (v) => v.startsWith('N') || v.startsWith('use'),
+          ),
         },
       ],
       eslintrc: {
@@ -34,7 +28,7 @@ export const unAutoImport = (): Plugin[] => {
     }),
     components({
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],
-      dts: 'auto-import-components.d.ts',
+      dts: process.cwd() + '/src/types/auto-import-components.d.ts',
       resolvers: [NaiveUiResolver()],
       dirs: [],
     }),

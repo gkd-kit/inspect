@@ -3,7 +3,7 @@ import { useDragMove, useZindex } from '@/utils/draggable';
 
 const props = withDefaults(
   defineProps<{
-    initialValue: {
+    initialValue?: {
       left?: number;
       right?: number;
       top?: number;
@@ -165,14 +165,17 @@ watch(
   <Teleport to="body">
     <div
       v-if="show"
-      fixed
       ref="box"
+      fixed
       class="DraggableCard"
       :style="[currentStyle, { zIndex }]"
       :class="props.class"
       @mousedown="setTop"
     >
-      <slot :onRef="updateTarget" :moved="moved"></slot>
+      <slot
+        :on-ref="updateTarget"
+        :moved="moved"
+      />
 
       <template v-if="sizeDraggable">
         <div
@@ -183,7 +186,7 @@ watch(
           bottom-0
           w-5px
           cursor-ew-resize
-        ></div>
+        />
         <div
           :ref="rightDragBar.target"
           absolute
@@ -192,7 +195,7 @@ watch(
           bottom-0
           w-5px
           cursor-ew-resize
-        ></div>
+        />
       </template>
     </div>
   </Teleport>

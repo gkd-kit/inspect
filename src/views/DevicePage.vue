@@ -7,10 +7,10 @@ import { delay } from '@/utils/others';
 import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { useSnapshotColumns } from '@/utils/table';
 import { useBatchTask, useTask } from '@/utils/task';
-import type { Device, Snapshot } from '@/utils/types';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
+import JSON5 from 'json5';
 
 const router = useRouter();
 const { api, origin } = useDeviceApi();
@@ -307,7 +307,7 @@ const placeholder = `
     style="width: 800px"
     title="修改内存订阅"
     positive-text="确认"
-    :positiveButtonProps="{
+    :positive-button-props="{
       loading: updateSubs.loading,
       onClick() {
         updateSubs.invoke();
@@ -332,7 +332,7 @@ const placeholder = `
     style="width: 800px"
     title="执行选择器"
     positive-text="确认"
-    :positiveButtonProps="{
+    :positive-button-props="{
       loading: execSelector.loading,
       onClick() {
         execSelector.invoke();
@@ -350,9 +350,11 @@ const placeholder = `
       }"
       placeholder="请输入合法的选择器"
     />
-    <div h-15px></div>
+    <div h-15px />
     <NSpace>
-      <NCheckbox v-model:checked="clickAction.quickFind"> 快速查找 </NCheckbox>
+      <NCheckbox v-model:checked="clickAction.quickFind">
+        快速查找
+      </NCheckbox>
       <a
         href="https://gkd.li/api/interfaces/RawCommonProps.html#quickfind"
         target="_blank"
@@ -361,8 +363,12 @@ const placeholder = `
         查找说明
       </a>
     </NSpace>
-    <div h-10px></div>
-    <div flex gap-10px flex-items-center>
+    <div h-10px />
+    <div
+      flex
+      gap-10px
+      flex-items-center
+    >
       <NSelect
         v-model:value="clickAction.action"
         :options="actionOptions"
@@ -377,10 +383,28 @@ const placeholder = `
       </a>
     </div>
   </NModal>
-  <div flex flex-col p-10px gap-10px h-full>
-    <div flex items-center gap-24px>
-      <RouterLink to="/" flex ml-12px title="首页">
-        <NButton text style="--n-icon-size: 24px">
+  <div
+    flex
+    flex-col
+    p-10px
+    gap-10px
+    h-full
+  >
+    <div
+      flex
+      items-center
+      gap-24px
+    >
+      <RouterLink
+        to="/"
+        flex
+        ml-12px
+        title="首页"
+      >
+        <NButton
+          text
+          style="--n-icon-size: 24px"
+        >
           <template #icon>
             <SvgIcon name="home" />
           </template>
@@ -392,8 +416,11 @@ const placeholder = `
           placeholder="请输入设备地址"
           :style="{ width: `320px` }"
           @keyup.enter="connect.invoke"
-        ></NInput>
-        <NButton @click="connect.invoke" :loading="connect.loading">
+        />
+        <NButton
+          :loading="connect.loading"
+          @click="connect.invoke"
+        >
           刷新连接
         </NButton>
       </NInputGroup>
@@ -402,31 +429,35 @@ const placeholder = `
           {{ `已连接 ${device.manufacturer} Android ${device.release}` }}
         </div>
         <NButton
-          @click="captureSnapshot.invoke"
           :loading="captureSnapshot.loading"
+          @click="captureSnapshot.invoke"
         >
           快照
         </NButton>
         <NButton
-          @click="downloadAllSnapshot.invoke"
           :loading="downloadAllSnapshot.loading"
+          @click="downloadAllSnapshot.invoke"
         >
           下载设备所有快照
         </NButton>
-        <NButton @click="showSubsModel = true"> 修改内存订阅 </NButton>
-        <NButton @click="showSelectorModel = true"> 执行选择器 </NButton>
+        <NButton @click="showSubsModel = true">
+          修改内存订阅
+        </NButton>
+        <NButton @click="showSelectorModel = true">
+          执行选择器
+        </NButton>
       </template>
     </div>
     <NDataTable
       striped
-      flexHeight
+      flex-height
       :data="snapshots"
       :columns="columns"
       :pagination="pagination"
-      @update:sorter="handleSorterChange"
       size="small"
       class="flex-1"
-      :scrollX="1200"
+      :scroll-x="1200"
+      @update:sorter="handleSorterChange"
     />
   </div>
 </template>

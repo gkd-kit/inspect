@@ -2,13 +2,12 @@
 import dayjs from 'dayjs';
 import MiniHoverImg from './MiniHoverImg.vue';
 import { toFixedNumber } from '@/utils/others';
+import type { ShallowRef } from 'vue';
+import { useSnapshotStore } from './snapshot';
 
-const snapshotStore = useSnapshotStore();
-const { updatePosition } = snapshotStore;
-const snapshotRefs = storeToRefs(snapshotStore);
-const { focusNode, screenshotUrl } = snapshotRefs;
+const { updatePosition, focusNode, screenshotUrl } = useSnapshotStore();
 
-const snapshot = computed(() => snapshotStore.snapshot!);
+const snapshot = useSnapshotStore().snapshot as ShallowRef<Snapshot>;
 
 const imgRef = shallowRef<HTMLImageElement>();
 const imgLoadTime = shallowRef(false);
@@ -130,17 +129,23 @@ const imgMove = (ev: MouseEvent) => {
     <img
       ref="imgRef"
       :src="screenshotUrl"
-      @click="clickImg"
       cursor-crosshair
       object-contain
       h-full
       class="max-w-[calc(var(--gkd-w)*0.35)]"
+      @click="clickImg"
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
       @load="imgLoadTime = true"
-    />
-    <div pointer-events-none absolute left-2px top-2px size="[calc(100%-4px)]">
+    >
+    <div
+      pointer-events-none
+      absolute
+      left-2px
+      top-2px
+      size="[calc(100%-4px)]"
+    >
       <div
         :style="positionStyle"
         absolute
@@ -149,7 +154,16 @@ const imgMove = (ev: MouseEvent) => {
         b-blue
         b-solid
       >
-        <div absolute left-0 top-0 bottom-0 right-0 b-solid b-1px b-red></div>
+        <div
+          absolute
+          left-0
+          top-0
+          bottom-0
+          right-0
+          b-solid
+          b-1px
+          b-red
+        />
       </div>
     </div>
     <div
@@ -163,22 +177,32 @@ const imgMove = (ev: MouseEvent) => {
       flex
       gap-4px
     >
-      <div py-1px px-2px bg="#ffffff90" title="尺寸">
+      <div
+        py-1px
+        px-2px
+        bg="#ffffff90"
+        title="尺寸"
+      >
         {{ `${snapshot.screenWidth}x${snapshot.screenHeight}` }}
       </div>
-      <div py-1px px-2px bg="#ffffff90" title="创建时间">
+      <div
+        py-1px
+        px-2px
+        bg="#ffffff90"
+        title="创建时间"
+      >
         {{ dayjs(snapshot.id).format('YYYY-MM-DD HH:mm:ss') }}
       </div>
     </div>
     <MiniHoverImg
       v-if="imgRef"
-      :imgHover="imgHover"
-      :imgRef="imgRef"
-      :boxHoverPerPosition="boxHoverPerPosition"
-      :boxHoverPosition="boxHoverPosition"
-      :hoverPositionStyle="hoverPositionStyle"
-      :hoverPosition="hoverPosition"
-      :screenshotUrl="screenshotUrl"
+      :img-hover="imgHover"
+      :img-ref="imgRef"
+      :box-hover-per-position="boxHoverPerPosition"
+      :box-hover-position="boxHoverPosition"
+      :hover-position-style="hoverPositionStyle"
+      :hover-position="hoverPosition"
+      :screenshot-url="screenshotUrl"
     />
   </div>
 </template>

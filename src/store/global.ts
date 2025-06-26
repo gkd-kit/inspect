@@ -1,13 +1,8 @@
-export const useGlobalStore = defineStore('global', () => {
-  const networkErrorDlgVisible = shallowRef(false);
-  const githubErrorDlgVisible = shallowRef(false);
-  const wasmErrorDlgVisible = shallowRef(false);
-  const wasmSupported = shallowRef<boolean>();
-
-  return {
-    networkErrorDlgVisible,
-    githubErrorDlgVisible,
-    wasmErrorDlgVisible,
-    wasmSupported,
-  };
+export const useGlobalStore = createGlobalState(() => {
+  return shallowReactive<GlobalStore>({
+    networkErrorDlgVisible: false,
+    githubErrorDlgVisible: false,
+    wasmErrorDlgVisible: false,
+    wasmSupported: undefined as boolean | undefined,
+  }) as GlobalStore;
 });

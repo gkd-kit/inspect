@@ -1,6 +1,5 @@
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
-import type { Device, RpcError, Snapshot } from './types';
 
 type RpcOptions = {
   query?: Record<string, unknown>;

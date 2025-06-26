@@ -4,7 +4,6 @@ import { message } from './discrete';
 import { enhanceFetch } from './fetch';
 import { isZipBf } from './file_type';
 import { setSnapshot, snapshotStorage } from './snapshot';
-import type { Snapshot } from './types';
 import { getImportFileUrl, getImportId } from './url';
 import { loadAsync } from './chunk';
 import type { JSZipType } from './chunk';
@@ -84,12 +83,10 @@ export const importFromNetwork = async (
   });
   urls = [...new Set(urls)];
   const snapshots: Snapshot[] = [];
-  await useStorageStore().waitInit();
   await Promise.allSettled(
     urls.map((url) => {
       return limit(async () => {
-        const snapshotId =
-          useStorageStore().importSnapshotId[getImportId(url) || ''];
+        const snapshotId = importSnapshotId[getImportId(url) || ''];
         if (snapshotId) {
           const snapshot = await snapshotStorage.getItem(snapshotId);
           if (snapshot) {

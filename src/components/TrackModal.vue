@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TrackCardProps } from '@/utils/types';
 import TrackCard from './TrackCard.vue';
 import { buildEmptyFn } from '@/utils/others';
 
@@ -60,7 +59,11 @@ useEventListener('keyup', (e) => {
       'track-model-exit': showStatus === 1,
     }"
   >
-    <TrackCard v-if="data" v-bind="data" @close="onUpdateShow(false)" />
+    <TrackCard
+      v-if="data"
+      v-bind="data"
+      @close="onUpdateShow(false)"
+    />
   </div>
 </template>
 

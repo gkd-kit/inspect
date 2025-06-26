@@ -1,15 +1,12 @@
-import type { ResolvedSelector } from '@/utils/selector';
-import type { QueryResult } from '@gkd-kit/selector';
+type PrimitiveType = boolean | string | number | null | undefined;
 
-export type PrimitiveType = boolean | string | number | null | undefined;
-
-export interface RpcError {
+interface RpcError {
   message: string;
   code: number;
   __error: true;
 }
 
-export interface Device {
+interface Device {
   device: string;
   model: string;
   manufacturer: string;
@@ -27,7 +24,7 @@ export interface Device {
   gkdVersionName?: string;
 }
 
-export interface RawNode {
+interface RawNode {
   id: number;
   pid: number;
   quickFind?: boolean;
@@ -40,7 +37,7 @@ export interface RawNode {
   children: RawNode[];
 }
 
-export interface RawAttr {
+interface RawAttr {
   id?: string;
   vid?: string;
   name: string;
@@ -63,7 +60,7 @@ export interface RawAttr {
   _pid?: number;
 }
 
-export interface Overview {
+interface Overview {
   id: number;
 
   appId: string;
@@ -90,12 +87,12 @@ export interface Overview {
   appVersionCode?: number;
 }
 
-export interface Snapshot extends Overview {
+interface Snapshot extends Overview {
   device: Device;
   nodes: RawNode[];
 }
 
-export interface AppInfo {
+interface AppInfo {
   id: string;
   name: string;
   versionCode: number;
@@ -105,41 +102,55 @@ export interface AppInfo {
   hidden: boolean;
 }
 
-export interface RectX {
+interface RectX {
   bottom: number;
   left: number;
   right: number;
   top: number;
 }
 
-export interface SizeExt {
+interface SizeExt {
   height: number;
   width: number;
 }
 
-export interface Position {
+interface Position {
   x: number;
   y: number;
 }
 
-export interface TrackCardProps {
+interface TrackCardProps {
   nodes: RawNode[];
-  queryResult: QueryResult<RawNode>;
-  selector: ResolvedSelector;
+  queryResult: import('@gkd-kit/selector').QueryResult<RawNode>;
+  selector: import('@/utils/selector').ResolvedSelector;
 }
 
-export interface SelectorSearchResult {
+interface SelectorSearchResult {
   gkd: true;
   key: number;
-  selector: ResolvedSelector;
+  selector: import('@/utils/selector').ResolvedSelector;
   nodes: RawNode[];
-  results: QueryResult<RawNode>[];
+  results: import('@gkd-kit/selector').QueryResult<RawNode>[];
 }
-export interface StringSearchResult {
+interface StringSearchResult {
   gkd: false;
   key: number;
   selector: string;
   nodes: RawNode[];
 }
 
-export type SearchResult = SelectorSearchResult | StringSearchResult;
+type SearchResult = SelectorSearchResult | StringSearchResult;
+
+interface SettingsStore {
+  autoUploadImport: boolean;
+  ignoreUploadWarn: boolean;
+  ignoreWasmWarn: boolean;
+  maxShowNodeSize: number;
+}
+
+interface GlobalStore {
+  networkErrorDlgVisible: boolean;
+  githubErrorDlgVisible: boolean;
+  wasmErrorDlgVisible: boolean;
+  wasmSupported?: boolean;
+}

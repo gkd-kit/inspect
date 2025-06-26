@@ -37,7 +37,6 @@ import {
 import matchesInstantiate from '@gkd-kit/wasm_matches';
 import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
 import { isRawNode } from './node';
-import type { RawNode } from './types';
 
 export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
   .then((mod) => {
@@ -203,7 +202,7 @@ export const parseSelector = (source: string): ResolvedSelector => {
   };
   for (const exp of binaryExpressionList) {
     if (exp.operator.key == '~=' && !useGlobalStore().wasmSupported) {
-      if (!useSettingsStore().ignoreWasmWarn) {
+      if (!settingsStore.ignoreWasmWarn) {
         useGlobalStore().wasmErrorDlgVisible = true;
         break;
       }

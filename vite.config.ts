@@ -8,6 +8,11 @@ import { defineConfig } from 'vite';
 import type { ESBuildOptions } from 'vite';
 import { mirror, unAutoImport } from './plugins';
 
+// support top-level-await
+const chromeVersion = 89;
+const host = '127.0.0.1';
+const port = 8444;
+
 export default defineConfig(() => {
   return {
     plugins: [
@@ -15,8 +20,12 @@ export default defineConfig(() => {
       vueJsx(),
       unocss({ inspector: false }),
       unAutoImport(),
-      legacy({ renderLegacyChunks: false, modernPolyfills: true }),
       data(),
+      legacy({
+        renderLegacyChunks: false,
+        modernPolyfills: true,
+        modernTargets: `chrome>=${chromeVersion}`,
+      }),
       mirror(),
     ],
     resolve: {
@@ -25,15 +34,15 @@ export default defineConfig(() => {
       },
     },
     server: {
-      host: '127.0.0.1',
-      port: 8444,
+      host,
+      port,
     },
     preview: {
-      host: '127.0.0.1',
-      port: 8444,
+      host,
+      port,
     },
     build: {
-      target: `chrome70`,
+      target: `chrome${chromeVersion}`,
       sourcemap: true,
       chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
     },

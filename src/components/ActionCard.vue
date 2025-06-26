@@ -10,7 +10,6 @@ import {
 import { buildEmptyFn, delay } from '@/utils/others';
 import { snapshotStorage } from '@/utils/snapshot';
 import { useTask } from '@/utils/task';
-import type { Snapshot } from '@/utils/types';
 import { getImportUrl, getImagUrl } from '@/utils/url';
 
 const props = withDefaults(
@@ -80,9 +79,20 @@ const copy = async (content: string) => {
 };
 </script>
 <template>
-  <div flex gap-16px>
-    <a v-if="showPreview" flex target="_blank" :href="previewUrl">
-      <NButton text title="查看">
+  <div
+    flex
+    gap-16px
+  >
+    <a
+      v-if="showPreview"
+      flex
+      target="_blank"
+      :href="previewUrl"
+    >
+      <NButton
+        text
+        title="查看"
+      >
         <template #icon>
           <SvgIcon name="code" />
         </template>
@@ -98,10 +108,16 @@ const copy = async (content: string) => {
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton @click="exportZip.invoke" :loading="exportZip.loading">
+        <NButton
+          :loading="exportZip.loading"
+          @click="exportZip.invoke"
+        >
           下载-快照
         </NButton>
-        <NButton @click="exportJpg.invoke" :loading="exportJpg.loading">
+        <NButton
+          :loading="exportJpg.loading"
+          @click="exportJpg.invoke"
+        >
           下载-图片
         </NButton>
       </NSpace>
@@ -124,8 +140,8 @@ const copy = async (content: string) => {
         </NButton>
         <NButton
           v-else
-          @click="exportZipUrl.invoke"
           :loading="exportZipUrl.loading"
+          @click="exportZipUrl.invoke"
         >
           生成链接-快照
         </NButton>
@@ -137,15 +153,18 @@ const copy = async (content: string) => {
         </NButton>
         <NButton
           v-else
-          @click="exportJpgUrl.invoke"
           :loading="exportJpgUrl.loading"
+          @click="exportJpgUrl.invoke"
         >
           生成链接-图片
         </NButton>
       </NSpace>
     </NPopover>
 
-    <NPopconfirm v-if="showDelete" @positive-click="deleteSnapshot">
+    <NPopconfirm
+      v-if="showDelete"
+      @positive-click="deleteSnapshot"
+    >
       是否删除快照?
       <template #trigger>
         <NTooltip>

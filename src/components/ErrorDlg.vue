@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const globalStore = useGlobalStore();
-const settingsStore = useSettingsStore();
+const { settingsStore } = useStorageStore();
 </script>
 <template>
   <NModal
@@ -12,7 +12,11 @@ const settingsStore = useSettingsStore();
     <div>生成分享链接需要以下条件</div>
     <div>
       在当前浏览器登录
-      <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+      <a
+        href="https://github.com"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         github.com
       </a>
     </div>
@@ -47,7 +51,11 @@ const settingsStore = useSettingsStore();
     <div>3. 在当前网站启用上述油猴脚本的API注入功能</div>
     <div>
       4. 分享文件或导入快照额外需浏览器登录
-      <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+      <a
+        href="https://github.com"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         github.com
       </a>
     </div>
@@ -57,7 +65,7 @@ const settingsStore = useSettingsStore();
     preset="dialog"
     title="浏览器不支持或版本过低"
     type="warning"
-    positiveText="确定"
+    positive-text="确定"
   >
     <div>
       选择器的正则表达式一致性需要使用
@@ -65,11 +73,15 @@ const settingsStore = useSettingsStore();
         href="https://developer.chrome.com/blog/wasmgc?hl=zh-cn"
         target="_blank"
         rel="noopener noreferrer"
-        >WASM(GC)</a
-      >
+      >WASM(GC)</a>
     </div>
-    <div mt-10px>请使用 Chrome119/Edge119/Firefox120 或最新版本</div>
-    <NCheckbox class="mt-10px" v-model:checked="settingsStore.ignoreWasmWarn">
+    <div mt-10px>
+      请使用 Chrome119/Edge119/Firefox120 或最新版本
+    </div>
+    <NCheckbox
+      v-model:checked="settingsStore.ignoreWasmWarn"
+      class="mt-10px"
+    >
       不关注一致性, 不再提醒
     </NCheckbox>
   </NModal>

@@ -10,7 +10,6 @@ setTimeout(TrackGraphLoader, 3000);
 import SelectorText from '@/components/SelectorText.vue';
 import { buildEmptyFn, colorList } from '@/utils/others';
 import { type ResolvedSelector } from '@/utils/selector';
-import type { RawNode } from '@/utils/types';
 import type { AstNode, QueryResult } from '@gkd-kit/selector';
 import { UnitSelectorExpression } from '@gkd-kit/selector';
 import type { StyleValue } from 'vue';
@@ -79,41 +78,94 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
     gap-8px
     overflow-hidden
   >
-    <div flex justify-between items-center>
-      <div flex items-center gap-4px>
-        <SvgIcon name="path" h="24px" />
-        <div text="20px/28px" font-bold>选择器路径视图</div>
+    <div
+      flex
+      justify-between
+      items-center
+    >
+      <div
+        flex
+        items-center
+        gap-4px
+      >
+        <SvgIcon
+          name="path"
+          h="24px"
+        />
+        <div
+          text="20px/28px"
+          font-bold
+        >
+          选择器路径视图
+        </div>
       </div>
-      <NButton text @click="onClose">
-        <SvgIcon name="close" h="20px" />
+      <NButton
+        text
+        @click="onClose"
+      >
+        <SvgIcon
+          name="close"
+          h="20px"
+        />
       </NButton>
     </div>
-    <div flex-1 flex gap-12px overflow-hidden>
-      <div self-stretch flex="[2]">
+    <div
+      flex-1
+      flex
+      gap-12px
+      overflow-hidden
+    >
+      <div
+        self-stretch
+        flex="[2]"
+      >
         <TrackGraph
           v-if="nodes.length && queryResult"
           :nodes="nodes"
-          :queryResult="queryResult"
-          :showUnitResults="showUnitResults"
-          :filterUnitResults="filterUnitResults"
+          :query-result="queryResult"
+          :show-unit-results="showUnitResults"
+          :filter-unit-results="filterUnitResults"
           class="h-[calc(100%-2px)] b-1px b-solid"
         />
-        <div relative pointer-events-none z-1>
-          <div absolute left-8px bottom-8px text="14px/14px #6C6E71">
+        <div
+          relative
+          pointer-events-none
+          z-1
+        >
+          <div
+            absolute
+            left-8px
+            bottom-8px
+            text="14px/14px #6C6E71"
+          >
             *为简化视图已隐藏无关节点
           </div>
         </div>
       </div>
       <NScrollbar class="self-stretch flex-1 text-20px leading-28px gkd_code">
-        <div mb-24px break-all px-4px py-2px bg="#eee">
+        <div
+          mb-24px
+          break-all
+          px-4px
+          py-2px
+          bg="#eee"
+        >
           <SelectorText
             :source="selector.source"
             :node="selector.ast"
-            :getNodeStyle="getNodeStyle"
+            :get-node-style="getNodeStyle"
           />
         </div>
-        <div flex flex-col gap-12px>
-          <div v-if="singleUnitResults.length" flex gap-8px>
+        <div
+          flex
+          flex-col
+          gap-12px
+        >
+          <div
+            v-if="singleUnitResults.length"
+            flex
+            gap-8px
+          >
             <div
               v-for="(unitResult, i) in singleUnitResults"
               :key="i"
@@ -140,13 +192,13 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
             b-1px
             b-solid
             transition-colors
-            @click="switchUnitResult(unitResult)"
             :style="{
               borderColor: colorList[i % colorList.length],
               backgroundColor: filterUnitResults.includes(unitResult)
                 ? '#eee'
                 : undefined,
             }"
+            @click="switchUnitResult(unitResult)"
           >
             <div
               inline-block
@@ -155,8 +207,8 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
               :style="{
                 backgroundColor: colorList[i % colorList.length],
               }"
-            ></div>
-            <span pl-4px></span>
+            />
+            <span pl-4px />
             <SelectorText
               :source="selector.source"
               :node="selector.findAst(unitResult.expression)"

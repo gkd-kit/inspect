@@ -22,6 +22,7 @@ const goToSnapshot = async (snapshotId: number) => {
 
 const url = String(route.query.url || ``);
 const importId = getImportId(url);
+const { importSnapshotId, snapshotImportId } = useStorageStore();
 
 onMounted(async () => {
   if (!isValidUrl(url)) {
@@ -32,8 +33,6 @@ onMounted(async () => {
     });
     return;
   }
-  const { importSnapshotId, snapshotImportId, waitInit } = useStorageStore();
-  await waitInit();
   if (importId) {
     const snapshotId = importSnapshotId[importId];
     if (snapshotId) {
@@ -80,7 +79,10 @@ onMounted(async () => {
     flex-col
     flex-items-center
   >
-    <div v-if="!gmOk()" mb-20px>
+    <div
+      v-if="!gmOk()"
+      mb-20px
+    >
       建议安装并启用
       <a
         href="https://github.com/gkd-kit/network-extension"

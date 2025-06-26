@@ -3,7 +3,6 @@ import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';
 import { vRect } from './directives';
 import { getAppInfo, getDevice } from './node';
 import { copy } from './others';
-import type { Snapshot } from './types';
 import { withDirectives } from 'vue';
 
 const useAutoWrapWidthColumn = <T,>(data: TableBaseColumn<T>) => {
@@ -39,7 +38,6 @@ export const renderDevice = (row: Snapshot) => {
 };
 
 export const useSnapshotColumns = () => {
-  const { snapshotImportTime } = useStorageStore();
   const ctimeCol = shallowReactive<TableBaseColumn<Snapshot>>({
     key: `id`,
     title: `创建时间`,

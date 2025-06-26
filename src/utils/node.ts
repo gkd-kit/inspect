@@ -1,12 +1,3 @@
-import type {
-  AppInfo,
-  Device,
-  Position,
-  RawNode,
-  SizeExt,
-  Snapshot,
-} from './types';
-
 // 获取元素id最后一个.后面的内容
 const getShortName = (fullName: string): string => {
   let lstIndex = fullName.lastIndexOf('.');
