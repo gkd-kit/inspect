@@ -21,6 +21,13 @@ export default ts.config(
         jsx: true,
       },
     },
+    rules: {
+      'vue/require-default-prop': 'off',
+      'vue/attribute-hyphenation': 'off', //['error', 'never'], 无法识别 :name 和 name
+      'vue/v-on-event-hyphenation': ['error', 'never', { autofix: true }],
+      'vue/custom-event-name-casing': ['error', 'camelCase'],
+      'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+    },
   },
   {
     plugins: {
@@ -46,7 +53,6 @@ export default ts.config(
       'no-empty': 'off',
       'prefer-const': 'off',
       'unused-imports/no-unused-imports': 'error',
-      'vue/require-default-prop': 'off',
     },
   },
   {

@@ -30,11 +30,7 @@ const clickSettings = () => {
 </script>
 <template>
   <template v-if="snapshot && rootNode">
-    <div
-      h-full
-      flex
-      gap-5px
-    >
+    <div h-full flex gap-5px>
       <div
         w-40px
         py-12px
@@ -56,10 +52,7 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton
-              text
-              @click="clickSettings"
-            >
+            <NButton text @click="clickSettings">
               <SvgIcon name="settings" />
             </NButton>
           </template>
@@ -68,10 +61,7 @@ const clickSettings = () => {
         <div />
         <NTooltip placement="right">
           <template #trigger>
-            <NButton
-              text
-              @click="searchShow = !searchShow"
-            >
+            <NButton text @click="searchShow = !searchShow">
               <SvgIcon name="search-list" />
             </NButton>
           </template>
@@ -79,10 +69,7 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton
-              text
-              @click="attrShow = !attrShow"
-            >
+            <NButton text @click="attrShow = !attrShow">
               <SvgIcon name="prop" />
             </NButton>
           </template>
@@ -90,10 +77,7 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton
-              text
-              @click="ruleShow = !ruleShow"
-            >
+            <NButton text @click="ruleShow = !ruleShow">
               <SvgIcon name="test" />
             </NButton>
           </template>
@@ -137,33 +121,19 @@ const clickSettings = () => {
       <WindowCard class="flex-1" />
     </div>
 
-    <SearchCard
-      :show="searchShow"
-      @update-show="searchShow = $event"
-    />
-    <RuleCard
-      :show="ruleShow"
-      @update-show="ruleShow = $event"
-    />
-    <AttrCard
-      :show="attrShow"
-      @update-show="attrShow = $event"
-    />
+    <SearchCard :show="searchShow" @updateShow="searchShow = $event" />
+    <RuleCard :show="ruleShow" @updateShow="ruleShow = $event" />
+    <AttrCard :show="attrShow" @updateShow="attrShow = $event" />
     <OverlapCard />
 
     <TrackModal
       :show="trackShow"
       :data="trackData"
-      @update-show="trackShow = $event"
-      @update-data="trackData = $event"
+      @updateShow="trackShow = $event"
+      @updateData="trackData = $event"
     />
   </template>
-  <div
-    v-else-if="!loading && !redirected"
-    flex
-    justify-center
-    pt-80px
-  >
+  <div v-else-if="!loading && !redirected" flex justify-center pt-80px>
     <div>快照数据缺失</div>
   </div>
 </template>

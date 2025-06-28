@@ -78,94 +78,41 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
     gap-8px
     overflow-hidden
   >
-    <div
-      flex
-      justify-between
-      items-center
-    >
-      <div
-        flex
-        items-center
-        gap-4px
-      >
-        <SvgIcon
-          name="path"
-          h="24px"
-        />
-        <div
-          text="20px/28px"
-          font-bold
-        >
-          选择器路径视图
-        </div>
+    <div flex justify-between items-center>
+      <div flex items-center gap-4px>
+        <SvgIcon name="path" h="24px" />
+        <div text="20px/28px" font-bold>选择器路径视图</div>
       </div>
-      <NButton
-        text
-        @click="onClose"
-      >
-        <SvgIcon
-          name="close"
-          h="20px"
-        />
+      <NButton text @click="onClose">
+        <SvgIcon name="close" h="20px" />
       </NButton>
     </div>
-    <div
-      flex-1
-      flex
-      gap-12px
-      overflow-hidden
-    >
-      <div
-        self-stretch
-        flex="[2]"
-      >
+    <div flex-1 flex gap-12px overflow-hidden>
+      <div self-stretch flex="[2]">
         <TrackGraph
           v-if="nodes.length && queryResult"
           :nodes="nodes"
-          :query-result="queryResult"
-          :show-unit-results="showUnitResults"
-          :filter-unit-results="filterUnitResults"
+          :queryResult="queryResult"
+          :showUnitResults="showUnitResults"
+          :filterUnitResults="filterUnitResults"
           class="h-[calc(100%-2px)] b-1px b-solid"
         />
-        <div
-          relative
-          pointer-events-none
-          z-1
-        >
-          <div
-            absolute
-            left-8px
-            bottom-8px
-            text="14px/14px #6C6E71"
-          >
+        <div relative pointer-events-none z-1>
+          <div absolute left-8px bottom-8px text="14px/14px #6C6E71">
             *为简化视图已隐藏无关节点
           </div>
         </div>
       </div>
       <NScrollbar class="self-stretch flex-1 text-20px leading-28px gkd_code">
-        <div
-          mb-24px
-          break-all
-          px-4px
-          py-2px
-          bg="#eee"
-        >
+        <div mb-24px break-all px-4px py-2px bg="#eee">
           <SelectorText
             :source="selector.source"
             :node="selector.ast"
-            :get-node-style="getNodeStyle"
+            :getNodeStyle="getNodeStyle"
           />
         </div>
-        <div
-          flex
-          flex-col
-          gap-12px
-        >
-          <div
-            v-if="singleUnitResults.length"
-            flex
-            gap-8px
-          >
+        <div flex flex-col gap-12px>
+          <div v-if="singleUnitResults.length" flex gap-8px>
             <div
               v-for="(unitResult, i) in singleUnitResults"
               :key="i"

@@ -172,10 +172,7 @@ watch(
       :class="props.class"
       @mousedown="setTop"
     >
-      <slot
-        :on-ref="updateTarget"
-        :moved="moved"
-      />
+      <slot :onRef="updateTarget" :moved="moved" />
 
       <template v-if="sizeDraggable">
         <div

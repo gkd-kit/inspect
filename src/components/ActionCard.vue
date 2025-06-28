@@ -79,20 +79,9 @@ const copy = async (content: string) => {
 };
 </script>
 <template>
-  <div
-    flex
-    gap-16px
-  >
-    <a
-      v-if="showPreview"
-      flex
-      target="_blank"
-      :href="previewUrl"
-    >
-      <NButton
-        text
-        title="查看"
-      >
+  <div flex gap-16px>
+    <a v-if="showPreview" flex target="_blank" :href="previewUrl">
+      <NButton text title="查看">
         <template #icon>
           <SvgIcon name="code" />
         </template>
@@ -108,16 +97,10 @@ const copy = async (content: string) => {
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton
-          :loading="exportZip.loading"
-          @click="exportZip.invoke"
-        >
+        <NButton :loading="exportZip.loading" @click="exportZip.invoke">
           下载-快照
         </NButton>
-        <NButton
-          :loading="exportJpg.loading"
-          @click="exportJpg.invoke"
-        >
+        <NButton :loading="exportJpg.loading" @click="exportJpg.invoke">
           下载-图片
         </NButton>
       </NSpace>
@@ -161,10 +144,7 @@ const copy = async (content: string) => {
       </NSpace>
     </NPopover>
 
-    <NPopconfirm
-      v-if="showDelete"
-      @positive-click="deleteSnapshot"
-    >
+    <NPopconfirm v-if="showDelete" @positiveClick="deleteSnapshot">
       是否删除快照?
       <template #trigger>
         <NTooltip>

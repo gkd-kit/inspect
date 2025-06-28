@@ -215,49 +215,26 @@ const shareResult = (result: SearchResult) => {
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initial-value="{
+    :initialValue="{
       top: 40,
       right: Math.max(315, 12 * vw + 135),
       width: Math.max(480, gkdWidth * 0.3),
     }"
-    :min-width="300"
-    size-draggable
+    :minWidth="300"
+    sizeDraggable
     class="box-shadow-dim"
     :show="show"
   >
-    <div
-      bg-white
-      b-1px
-      b-solid
-      b-gray-200
-      rounded-4px
-      p-8px
-    >
-      <div
-        flex
-        m-b-4px
-        pr-4px
-      >
+    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
+      <div flex m-b-4px pr-4px>
         <NRadioGroup v-model:value="enableSearchBySelector">
           <NSpace>
-            <NRadio :value="false">
-              字符搜索
-            </NRadio>
-            <NRadio :value="true">
-              选择器查询
-            </NRadio>
+            <NRadio :value="false"> 字符搜索 </NRadio>
+            <NRadio :value="true"> 选择器查询 </NRadio>
           </NSpace>
         </NRadioGroup>
-        <div
-          :ref="onRef"
-          flex-1
-          cursor-move
-        />
-        <NButton
-          text
-          title="最小化"
-          @click="onUpdateShow(!show)"
-        >
+        <div :ref="onRef" flex-1 cursor-move />
+        <NButton text title="最小化" @click="onUpdateShow(!show)">
           <template #icon>
             <SvgIcon name="minus" />
           </template>
@@ -267,7 +244,7 @@ const shareResult = (result: SearchResult) => {
         <NInput
           v-model:value="searchText"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
-          :input-props="{ class: 'gkd_code' }"
+          :inputProps="{ class: 'gkd_code' }"
           @keyup.enter="searchBySelector"
         />
         <NButton @click="searchBySelector">
@@ -277,7 +254,7 @@ const shareResult = (result: SearchResult) => {
         </NButton>
       </NInputGroup>
       <div p-5px />
-      <NCollapse v-model:expanded-names="expandedKeys">
+      <NCollapse v-model:expandedNames="expandedKeys">
         <NCollapseItem
           v-for="(result, index) in selectorResults"
           :key="result.key"
@@ -345,15 +322,8 @@ const shareResult = (result: SearchResult) => {
               </NButton>
             </NButtonGroup>
           </template>
-          <NScrollbar
-            x-scrollable
-            style="max-height: 400px"
-          >
-            <div
-              flex
-              gap-8px
-              flex-wrap
-            >
+          <NScrollbar xScrollable style="max-height: 400px">
+            <div flex gap-8px flex-wrap>
               <template
                 v-if="!result.gkd || result.selector.connectKeys.length === 0"
               >
@@ -368,10 +338,7 @@ const shareResult = (result: SearchResult) => {
                 </NButton>
               </template>
               <template v-else>
-                <NButtonGroup
-                  v-for="(resultNode, i) in result.nodes"
-                  :key="i"
-                >
+                <NButtonGroup v-for="(resultNode, i) in result.nodes" :key="i">
                   <NButton
                     size="small"
                     @click="

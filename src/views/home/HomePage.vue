@@ -258,13 +258,7 @@ const settingsDlgShow = shallowRef(false);
 const inputImportRef = shallowRef();
 </script>
 <template>
-  <div
-    flex
-    flex-col
-    p-10px
-    gap-10px
-    h-full
-  >
+  <div flex flex-col p-10px gap-10px h-full>
     <div flex>
       <NSpace>
         <NInputGroup>
@@ -321,32 +315,17 @@ const inputImportRef = shallowRef();
               </NButton>
             </NSpace>
           </NPopover>
-          <NButton @click="batchDelete.invoke">
-            批量删除
-          </NButton>
-          <div
-            h-full
-            flex
-            flex-items-center
-          >
+          <NButton @click="batchDelete.invoke"> 批量删除 </NButton>
+          <div h-full flex flex-items-center>
             {{ `已选中 ${checkedRowKeys.length} 个快照` }}
           </div>
         </template>
       </NSpace>
       <div flex-1 />
-      <div
-        flex
-        gap-24px
-        items-center
-        pr-8px
-        class="[--svg-h:24px]"
-      >
+      <div flex gap-24px items-center pr-8px class="[--svg-h:24px]">
         <NTooltip>
           <template #trigger>
-            <NButton
-              text
-              @click="settingsDlgShow = true"
-            >
+            <NButton text @click="settingsDlgShow = true">
               <SvgIcon name="settings" />
             </NButton>
           </template>
@@ -354,10 +333,7 @@ const inputImportRef = shallowRef();
         </NTooltip>
         <NTooltip>
           <template #trigger>
-            <RouterLink
-              flex
-              to="/selector"
-            >
+            <RouterLink flex to="/selector">
               <NButton text>
                 <SvgIcon name="terminal" />
               </NButton>
@@ -381,9 +357,7 @@ const inputImportRef = shallowRef();
                   导入本地文件
                 </NButton>
               </template>
-              <div class="whitespace-nowrap">
-                支持拖拽文件到页面任意位置
-              </div>
+              <div class="whitespace-nowrap">支持拖拽文件到页面任意位置</div>
             </NTooltip>
             <NTooltip placement="left">
               <template #trigger>
@@ -402,10 +376,7 @@ const inputImportRef = shallowRef();
         </NPopover>
         <NTooltip>
           <template #trigger>
-            <RouterLink
-              flex
-              to="/device"
-            >
+            <RouterLink flex to="/device">
               <NButton text>
                 <SvgIcon name="device" />
               </NButton>
@@ -446,13 +417,13 @@ const inputImportRef = shallowRef();
       </div>
     </div>
     <NDataTable
-      v-model:checked-row-keys="checkedRowKeys"
+      v-model:checkedRowKeys="checkedRowKeys"
       striped
-      virtual-scroll
+      virtualScroll
       :data="filterSnapshots"
       :columns="columns"
-      :scroll-x="1800"
-      :row-key="(r:Snapshot)=>r.id"
+      :scrollX="1800"
+      :rowKey="(r:Snapshot)=>r.id"
       size="small"
       class="flex-1"
       flex-height
@@ -464,17 +435,17 @@ const inputImportRef = shallowRef();
     :show="showImportModal"
     preset="dialog"
     title="导入网络文件"
-    :show-icon="false"
-    positive-text="确认"
-    negative-text="取消"
+    :showIcon="false"
+    positiveText="确认"
+    negativeText="取消"
     style="width: 800px"
     :loading="importNetwork.loading"
-    @positive-click="importNetwork.invoke"
-    @negative-click="showImportModal = false"
+    @positiveClick="importNetwork.invoke"
+    @negativeClick="showImportModal = false"
     @close="showImportModal = false"
     @esc="showImportModal = false"
-    @after-enter="inputImportRef?.focus()"
-    @after-leave="textImportValue = ``"
+    @afterEnter="inputImportRef?.focus()"
+    @afterLeave="textImportValue = ``"
   >
     <NInput
       ref="inputImportRef"
@@ -485,7 +456,7 @@ const inputImportRef = shallowRef();
         minRows: 8,
         maxRows: 16,
       }"
-      :input-props="{
+      :inputProps="{
         style: `white-space: nowrap;`,
       }"
       @update:value="
@@ -500,31 +471,20 @@ const inputImportRef = shallowRef();
     v-model:show="settingsDlgShow"
     preset="dialog"
     title="设置"
-    :show-icon="false"
-    positive-text="关闭"
+    :showIcon="false"
+    positiveText="关闭"
     style="width: 600px"
-    @positive-click="settingsDlgShow = false"
+    @positiveClick="settingsDlgShow = false"
   >
     <NCheckbox v-model:checked="settingsStore.ignoreUploadWarn">
       关闭生成分享链接弹窗提醒
     </NCheckbox>
-    <div
-      h-1px
-      my-10px
-      bg="#eee"
-    />
+    <div h-1px my-10px bg="#eee" />
     <NCheckbox v-model:checked="settingsStore.ignoreWasmWarn">
       关闭浏览器版本正则表达式 WASM(GC) 提醒
     </NCheckbox>
-    <div
-      h-1px
-      my-10px
-      bg="#eee"
-    />
-    <div
-      flex
-      gap-10px
-    >
+    <div h-1px my-10px bg="#eee" />
+    <div flex gap-10px>
       <NSwitch v-model:value="settingsStore.autoUploadImport" />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
     </div>

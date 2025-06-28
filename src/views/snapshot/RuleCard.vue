@@ -190,40 +190,21 @@ const targetNode = computed(() => {
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initial-value="{
+    :initialValue="{
       top: 40,
       right: Math.max(315, 12 * vw + 135),
       width: Math.max(480, gkdWidth * 0.3),
     }"
-    :min-width="300"
-    size-draggable
+    :minWidth="300"
+    sizeDraggable
     class="box-shadow-dim"
     :show="show"
   >
-    <div
-      bg-white
-      b-1px
-      b-solid
-      b-gray-200
-      rounded-4px
-      p-8px
-    >
-      <div
-        flex
-        m-b-4px
-        pr-4px
-      >
+    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
+      <div flex m-b-4px pr-4px>
         <div>测试规则</div>
-        <div
-          :ref="onRef"
-          flex-1
-          cursor-move
-        />
-        <NButton
-          text
-          title="最小化"
-          @click="onUpdateShow(!show)"
-        >
+        <div :ref="onRef" flex-1 cursor-move />
+        <NButton text title="最小化" @click="onUpdateShow(!show)">
           <template #icon>
             <SvgIcon name="minus" />
           </template>
@@ -241,11 +222,7 @@ const targetNode = computed(() => {
         }"
       />
       <div min-h-24px>
-        <div
-          v-if="errorText"
-          color-red
-          whitespace-pre
-        >
+        <div v-if="errorText" color-red whitespace-pre>
           {{ errorText }}
         </div>
 

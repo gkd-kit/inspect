@@ -99,22 +99,12 @@ const selectText = computed(() => {
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initial-value="{ top: 40, right: 10 }"
+    :initialValue="{ top: 40, right: 10 }"
     class="box-shadow-dim"
     :show="show && Boolean(focusNode)"
   >
-    <div
-      absolute
-      top-0
-      right-0
-      pt-4px
-      pr-8px
-    >
-      <NButton
-        text
-        title="最小化"
-        @click="onUpdateShow(!show)"
-      >
+    <div absolute top-0 right-0 pt-4px pr-8px>
+      <NButton text title="最小化" @click="onUpdateShow(!show)">
         <template #icon>
           <SvgIcon name="minus" />
         </template>
@@ -124,44 +114,30 @@ const selectText = computed(() => {
       v-if="focusNode"
       size="small"
       striped
-      :single-line="false"
+      :singleLine="false"
       class="gkd_code"
-      :theme-overrides="{
+      :themeOverrides="{
         thPaddingSmall: '1px 3px',
         tdPaddingSmall: '0px 3px',
       }"
     >
       <thead>
-        <tr
-          :ref="onRef"
-          cursor-move
-        >
+        <tr :ref="onRef" cursor-move>
           <th>Name</th>
           <th>Value</th>
         </tr>
       </thead>
       <NTbody>
-        <NTr
-          v-for="attrx in attrs"
-          :key="attrx.name"
-        >
+        <NTr v-for="attrx in attrs" :key="attrx.name">
           <NTd @click="copy(`${attrx.name}=${attrx.desc}`)">
-            <div
-              v-if="attrx.tip"
-              flex
-              justify-between
-              items-center
-            >
+            <div v-if="attrx.tip" flex justify-between items-center>
               <div>
                 {{ attrx.name }}
               </div>
               <NTooltip>
                 <template #trigger>
                   <NIcon size="16">
-                    <SvgIcon
-                      v-if="attrx.tip.type == 'info'"
-                      name="info"
-                    />
+                    <SvgIcon v-if="attrx.tip.type == 'info'" name="info" />
                     <SvgIcon
                       v-else-if="attrx.tip.type == 'quickFind'"
                       name="ok"
@@ -189,18 +165,10 @@ const selectText = computed(() => {
         </NTr>
         <NTr>
           <NTd colspan="2">
-            <div
-              flex
-              items-center
-              h-24px
-              px-2px
-            >
+            <div flex items-center h-24px px-2px>
               <NTooltip>
                 <template #trigger>
-                  <NButton
-                    text
-                    @click="copy(selectText)"
-                  >
+                  <NButton text @click="copy(selectText)">
                     <template #icon>
                       <NIcon size="20">
                         <SvgIcon name="path" />

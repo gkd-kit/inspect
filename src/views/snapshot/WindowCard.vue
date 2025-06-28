@@ -124,29 +124,11 @@ const gkdVersionName = computed(() => {
 </script>
 
 <template>
-  <div
-    flex
-    flex-col
-    overflow-hidden
-  >
-    <div
-      flex
-      items-center
-      px-8px
-    >
-      <GapList
-        flex
-        flex-wrap
-        items-center
-        gap-8px
-        gkd_code
-      >
+  <div flex flex-col overflow-hidden>
+    <div flex items-center px-8px>
+      <GapList class="flex flex-wrap items-center gap-8px gkd_code">
         <template #gap>
-          <div
-            w-1px
-            bg-gray
-            h-12px
-          />
+          <div w-1px bg-gray h-12px />
         </template>
         <NTooltip>
           <template #trigger>
@@ -170,12 +152,7 @@ const gkdVersionName = computed(() => {
           GKD 版本
         </NTooltip>
 
-        <div
-          flex
-          items-center
-          gap-2px
-          max-w-120px
-        >
+        <div flex items-center gap-2px max-w-120px>
           <NTooltip v-if="isSystem">
             <template #trigger>
               <SvgIcon name="system" />
@@ -237,33 +214,26 @@ const gkdVersionName = computed(() => {
       <ActionCard
         class="ml-8px"
         :snapshot="snapshot"
-        :show-preview="false"
+        :showPreview="false"
         @delete="onDelete"
       />
     </div>
-    <div
-      h-1px
-      mt-4px
-      bg="#efeff5"
-    />
+    <div h-1px mt-4px bg="#efeff5" />
 
-    <NScrollbar
-      x-scrollable
-      class="flex-1"
-    >
+    <NScrollbar xScrollable class="flex-1">
       <NTree
         ref="treeRef"
-        v-model:expanded-keys="expandedKeys"
-        v-model:selected-keys="selectedKeys"
+        v-model:expandedKeys="expandedKeys"
+        v-model:selectedKeys="selectedKeys"
         class="mb-24px mr-24px"
-        virtual-scroll
-        show-line
-        block-line
-        key-field="id"
+        virtualScroll
+        showLine
+        blockLine
+        keyField="id"
         :data="[rootNode as any]"
         :filter="(treeFilter as any)"
-        :node-props="(treeNodeProps as any)"
-        :render-label="(renderLabel as any)"
+        :nodeProps="(treeNodeProps as any)"
+        :renderLabel="(renderLabel as any)"
       />
     </NScrollbar>
   </div>

@@ -24,8 +24,8 @@ useEventListener('click', () => {
   <NConfigProvider
     abstract
     :locale="zhCN"
-    :date-locale="dateZhCN"
-    :theme-overrides="themeOverrides"
+    :dateLocale="dateZhCN"
+    :themeOverrides="themeOverrides"
   >
     <ErrorDlg />
     <RouterView />

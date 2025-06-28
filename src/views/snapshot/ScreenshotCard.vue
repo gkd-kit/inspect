@@ -138,14 +138,8 @@ const imgMove = (ev: MouseEvent) => {
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
       @load="imgLoadTime = true"
-    >
-    <div
-      pointer-events-none
-      absolute
-      left-2px
-      top-2px
-      size="[calc(100%-4px)]"
-    >
+    />
+    <div pointer-events-none absolute left-2px top-2px size="[calc(100%-4px)]">
       <div
         :style="positionStyle"
         absolute
@@ -154,16 +148,7 @@ const imgMove = (ev: MouseEvent) => {
         b-blue
         b-solid
       >
-        <div
-          absolute
-          left-0
-          top-0
-          bottom-0
-          right-0
-          b-solid
-          b-1px
-          b-red
-        />
+        <div absolute left-0 top-0 bottom-0 right-0 b-solid b-1px b-red />
       </div>
     </div>
     <div
@@ -177,32 +162,22 @@ const imgMove = (ev: MouseEvent) => {
       flex
       gap-4px
     >
-      <div
-        py-1px
-        px-2px
-        bg="#ffffff90"
-        title="尺寸"
-      >
+      <div py-1px px-2px bg="#ffffff90" title="尺寸">
         {{ `${snapshot.screenWidth}x${snapshot.screenHeight}` }}
       </div>
-      <div
-        py-1px
-        px-2px
-        bg="#ffffff90"
-        title="创建时间"
-      >
+      <div py-1px px-2px bg="#ffffff90" title="创建时间">
         {{ dayjs(snapshot.id).format('YYYY-MM-DD HH:mm:ss') }}
       </div>
     </div>
     <MiniHoverImg
       v-if="imgRef"
-      :img-hover="imgHover"
-      :img-ref="imgRef"
-      :box-hover-per-position="boxHoverPerPosition"
-      :box-hover-position="boxHoverPosition"
-      :hover-position-style="hoverPositionStyle"
-      :hover-position="hoverPosition"
-      :screenshot-url="screenshotUrl"
+      :imgHover="imgHover"
+      :imgRef="imgRef"
+      :boxHoverPerPosition="boxHoverPerPosition"
+      :boxHoverPosition="boxHoverPosition"
+      :hoverPositionStyle="hoverPositionStyle"
+      :hoverPosition="hoverPosition"
+      :screenshotUrl="screenshotUrl"
     />
   </div>
 </template>
