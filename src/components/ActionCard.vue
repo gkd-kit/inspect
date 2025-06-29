@@ -67,6 +67,17 @@ const deleteSnapshot = async () => {
   props.onDelete();
 };
 
+const snapshotImportUrl = computed(() => {
+  const t = snapshotImportId[props.snapshot.id];
+  if (!t) return '';
+  return getImportUrl(t);
+});
+const snapshotImageUrl = computed(() => {
+  const t = snapshotImageId[props.snapshot.id];
+  if (!t) return '';
+  return getImagUrl(t);
+});
+
 const copy = async (content: string) => {
   return navigator.clipboard
     .writeText(content)
@@ -115,12 +126,15 @@ const copy = async (content: string) => {
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton
-          v-if="snapshotImportId[snapshot.id]"
-          @click="copy(getImportUrl(snapshotImportId[snapshot.id]))"
+        <a
+          v-if="snapshotImportUrl"
+          flex
+          decoration-none
+          :href="snapshotImportUrl"
+          @click.prevent
         >
-          复制链接-快照
-        </NButton>
+          <NButton @click="copy(snapshotImportUrl)"> 复制链接-快照 </NButton>
+        </a>
         <NButton
           v-else
           :loading="exportZipUrl.loading"
@@ -128,12 +142,15 @@ const copy = async (content: string) => {
         >
           生成链接-快照
         </NButton>
-        <NButton
-          v-if="snapshotImageId[snapshot.id]"
-          @click="copy(getImagUrl(snapshotImageId[snapshot.id]))"
+        <a
+          v-if="snapshotImageUrl"
+          flex
+          decoration-none
+          :href="snapshotImageUrl"
+          @click.prevent
         >
-          复制链接-图片
-        </NButton>
+          <NButton @click="copy(snapshotImageUrl)"> 复制链接-图片 </NButton>
+        </a>
         <NButton
           v-else
           :loading="exportJpgUrl.loading"
