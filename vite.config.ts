@@ -6,7 +6,7 @@ import unocss from 'unocss/vite';
 import data from 'unplugin-data/vite';
 import { defineConfig } from 'vite';
 import type { ESBuildOptions } from 'vite';
-import { mirror, unAutoImport } from './plugins';
+import { mirror, unAutoImport, _404Page } from './plugins';
 
 // support top-level-await
 const chromeVersion = 89;
@@ -27,6 +27,7 @@ export default defineConfig(() => {
         modernTargets: `chrome>=${chromeVersion}`,
       }),
       mirror(),
+      _404Page(),
     ],
     resolve: {
       alias: {
