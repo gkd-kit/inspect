@@ -42,3 +42,9 @@ GKD 网页端审查工具,
 - <https://i.gkd.li/i/14018243>
 - <https://i.gkd.li/i/14011298>
 - <https://i.gkd.li/i/13999908>
+
+## 其它
+
+[本项目 CDN 加速及安全防护由 Tencent EdgeOne 赞助](https://edgeone.ai/zh?from=github)
+
+<img src="https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png" alt="" width="75%" />
