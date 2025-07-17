@@ -57,7 +57,7 @@ const imgBounding = useElementBounding(computed(() => props.imgRef));
         top-0
         :style="hoverPositionStyle"
         w-1000px
-      >
+      />
       <div
         absolute
         left-2px
@@ -86,8 +86,8 @@ const imgBounding = useElementBounding(computed(() => props.imgRef));
         <div>
           {{
             boxHoverPosition.left.toFixed(0) +
-              ', ' +
-              boxHoverPosition.right.toFixed(0)
+            ', ' +
+            boxHoverPosition.right.toFixed(0)
           }}
         </div>
         <div>{{ boxHoverPosition.bottom.toFixed(0) }}</div>

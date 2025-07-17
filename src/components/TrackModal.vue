@@ -59,11 +59,7 @@ useEventListener('keyup', (e) => {
       'track-model-exit': showStatus === 1,
     }"
   >
-    <TrackCard
-      v-if="data"
-      v-bind="data"
-      @close="onUpdateShow(false)"
-    />
+    <TrackCard v-if="data" v-bind="data" @close="onUpdateShow(false)" />
   </div>
 </template>
 

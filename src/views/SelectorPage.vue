@@ -68,21 +68,12 @@ const error = computed(() => {
 });
 </script>
 <template>
-  <div
-    flex
-    items-center
-    gap-16px
-    pt-12px
-    px-12px
-  >
+  <div flex items-center gap-16px pt-12px px-12px>
     <NTooltip placement="right">
       <template #trigger>
         <NButton text>
           <template #icon>
-            <RouterLink
-              to="/"
-              color="inherit"
-            >
+            <RouterLink to="/" color="inherit">
               <NIcon size="24">
                 <SvgIcon name="home" />
               </NIcon>
@@ -92,23 +83,12 @@ const error = computed(() => {
       </template>
       回到首页
     </NTooltip>
-    <div
-      flex
-      gap-16px
-    >
-      <div text-18px>
-        测试选择器
-      </div>
+    <div flex gap-16px>
+      <div text-18px>测试选择器</div>
       <div>语法高亮/错误解析</div>
     </div>
   </div>
-  <div
-    flex
-    flex-col
-    items-center
-    p-8px
-    text="40px/52px"
-  >
+  <div flex flex-col items-center p-8px text="40px/52px">
     <NInput
       v-model:value="inputText"
       type="textarea"
@@ -129,30 +109,14 @@ const error = computed(() => {
       transition-colors
       :class="error ? `bg-red-200` : `bg-light-600`"
     >
-      <div
-        v-if="ast"
-        overflow-x-scroll
-        scrollbar-hidden
-      >
-        <SelectorText
-          :source="text"
-          :node="ast"
-        />
+      <div v-if="ast" overflow-x-scroll scrollbar-hidden>
+        <SelectorText :source="text" :node="ast" />
       </div>
-      <span
-        v-else-if="error"
-        whitespace-pre-wrap
-      >
+      <span v-else-if="error" whitespace-pre-wrap>
         <span v-if="error.headText">{{ error.headText }}</span>
-        <span
-          bg-red
-          relative
-        >
+        <span bg-red relative>
           <span v-if="error.errorText">{{ error.errorText }}</span>
-          <span
-            v-else
-            pl-20px
-          />
+          <span v-else pl-20px />
           <div
             absolute
             left-0
@@ -164,21 +128,13 @@ const error = computed(() => {
             animate-bounce
             pointer-events-none
           >
-            <SvgIcon
-              name="arrow"
-              class="text-18px color-dark"
-            />
+            <SvgIcon name="arrow" class="text-18px color-dark" />
           </div>
         </span>
         <span v-if="error.tailText">{{ error.tailText }}</span>
       </span>
     </div>
-    <div
-      v-if="error"
-      p-4px
-      bg-red-300
-      gkd_code
-    >
+    <div v-if="error" p-4px bg-red-300 gkd_code>
       {{ error.message }}
     </div>
   </div>

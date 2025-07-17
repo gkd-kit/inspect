@@ -275,8 +275,5 @@ watch(
 );
 </script>
 <template>
-  <div
-    ref="el"
-    class="TrackGraph"
-  />
+  <div ref="el" class="TrackGraph" />
 </template>
