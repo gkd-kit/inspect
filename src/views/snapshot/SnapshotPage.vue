@@ -133,7 +133,22 @@ const clickSettings = () => {
       @updateData="trackData = $event"
     />
   </template>
-  <div v-else-if="!loading && !redirected" flex justify-center pt-80px>
-    <div>快照数据缺失</div>
+  <div
+    v-else-if="!loading && !redirected"
+    pt-80px
+    flex
+    flex-col
+    items-center
+    justify-center
+  >
+    <div mb-8px>
+      <span>快照数据缺失，</span>
+      <a
+        href="https://gkd.li/guide/snapshot#share-note"
+        target="_blank"
+        referrerpolicy="no-referrer"
+        >分享须知</a
+      >
+    </div>
   </div>
 </template>
