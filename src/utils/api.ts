@@ -1,28 +1,26 @@
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
 
-type RpcOptions = {
-  query?: Record<string, unknown>;
-  init?: RequestInit;
-};
+interface Reqid {
+  id: number;
+}
 
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = shallowRef(initOrigin);
-  const rpc = async (rpcName: string, options: RpcOptions = {}) => {
+  const serverInfo = shallowRef<ServerInfo>();
+  const request = async (name: string, init?: RequestInit) => {
     if (!origin.value) {
       throw new Error(`origin must exist`);
     }
-    const u = new URL(`/api/` + rpcName, origin.value);
-    Object.entries(options.query || {}).forEach(([key, value]) => {
-      if (value === undefined) return;
-      u.searchParams.set(key, String(value));
-    });
-    const response = await enhanceFetch(u, options.init).catch((e) => {
-      message.error(`网络错误:/` + rpcName);
+    const u = new URL(`/api/` + name, origin.value);
+    console.log(`RPC:`, name, init);
+    const response = await enhanceFetch(u, init).catch((e) => {
+      message.error(`网络错误:` + name);
       throw e;
     });
+    console.log(`RPC Response:`, name, response);
     if (!response.ok) {
-      message.error(`接口错误:/` + rpcName + `:` + response.status);
+      message.error(`接口错误:` + name + `:` + response.status);
       throw response;
     }
     if (response.headers.get(`Content-Type`)?.includes(`application/json`)) {
@@ -34,80 +32,53 @@ export const useDeviceApi = (initOrigin?: string) => {
     }
     return response;
   };
-  const jsonRpc = async <T>(...args: Parameters<typeof rpc>) => {
-    const response = await rpc(...args);
-    return (await response.json()) as T;
+  const baseRpc = async (name: string, data: object = {}) => {
+    return request(name, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
   };
-  const blobRpc = async (...args: Parameters<typeof rpc>) => {
-    const response = await rpc(...args);
-    return await response.blob();
-  };
-  const arrayBufferRpc = async (...args: Parameters<typeof rpc>) => {
-    const response = await rpc(...args);
-    return await response.arrayBuffer();
+  const jsonRpc = async <T>(name: string, data: object = {}): Promise<T> => {
+    return baseRpc(name, data).then((r) => r.json());
   };
   const api = {
-    device: async () => jsonRpc<Device>(`device`),
-    snapshot: async (query?: { id?: string | number }) => {
-      return jsonRpc<Snapshot>(`snapshot`, { query });
+    getServerInfo: async () => jsonRpc<ServerInfo>(`getServerInfo`),
+    getSnapshot: async (data: Reqid): Promise<Snapshot> => {
+      if (serverInfo.value?.gkdAppInfo?.versionName === '1.10.4') {
+        // 兼容旧版本 BUG
+        // https://github.com/gkd-kit/gkd/blob/v1.10.4/app/src/main/kotlin/li/songe/gkd/debug/HttpService.kt#L198
+        return request('snapshot?id=' + data.id).then((r) => r.json());
+      }
+      return jsonRpc(`getSnapshot`, data);
     },
-    screenshot: async (query: { id: string | number }) => {
-      return arrayBufferRpc(`screenshot`, { query });
+    getScreenshot: async (data: Reqid) => {
+      return baseRpc(`getScreenshot`, data).then((r) => r.arrayBuffer());
     },
-    captureSnapshot: async () => {
-      return jsonRpc<Snapshot>(`captureSnapshot`);
-    },
-    snapshots: async () => {
-      return jsonRpc<Snapshot[]>(`snapshots`);
-    },
-    updateSubsApps: async (data: unknown[]) => {
-      return blobRpc(`updateSubsApps`, {
-        init: {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      });
-    },
+    captureSnapshot: async () => jsonRpc<Snapshot>(`captureSnapshot`),
+    getSnapshots: async () => jsonRpc<Snapshot[]>(`getSnapshots`),
     updateSubscription: async (data: any) => {
-      return blobRpc(`updateSubscription`, {
-        init: {
-          method: 'POST',
-          body: JSON.stringify({
-            ...data,
-            id: -1,
-            name: '内存订阅',
-            version: 0,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
+      return jsonRpc(`updateSubscription`, {
+        ...data,
+        id: -1,
+        name: '内存订阅',
+        version: 0,
       });
     },
     execSelector: async (data: {
       selector: string;
       action?: string;
-      quickFind?: boolean;
       fastQuery?: boolean;
     }) => {
       data = structuredClone(data);
       data.action ||= undefined;
       return jsonRpc<{ message: string; action: string; result: boolean }>(
         `execSelector`,
-        {
-          init: {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        },
+        data,
       );
     },
   };
-  return { origin, api };
+  return { origin, api, serverInfo };
 };

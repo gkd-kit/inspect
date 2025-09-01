@@ -13,9 +13,8 @@ import pLimit from 'p-limit';
 import JSON5 from 'json5';
 
 const router = useRouter();
-const { api, origin } = useDeviceApi();
+const { api, origin, serverInfo } = useDeviceApi();
 const link = useStorage(`device_link`, ``);
-const device = shallowRef<Device>();
 const connect = useTask(async () => {
   if (!link.value) return;
   origin.value = errorWrap(
@@ -23,8 +22,16 @@ const connect = useTask(async () => {
     () => `非法设备地址`,
   ).origin;
   link.value = origin.value;
-  device.value = await api.device();
+  serverInfo.value = await api.getServerInfo();
 });
+
+const serverTitle = computed(() => {
+  if (!serverInfo.value) return '未连接设备';
+  const d = serverInfo.value.device;
+  const g = serverInfo.value.gkdAppInfo;
+  return `${d.manufacturer} Android${d.release} - GKD${g.versionName}`;
+});
+
 onMounted(async () => {
   await delay(500);
   if (toValidURL(link.value)) {
@@ -34,9 +41,9 @@ onMounted(async () => {
 
 const snapshots = shallowRef<Snapshot[]>([]);
 watchEffect(async () => {
-  if (!device.value) return;
-  document.title = `已连接 ` + device.value.manufacturer;
-  const result = await api.snapshots();
+  if (!serverInfo.value) return;
+  document.title = serverTitle.value;
+  const result = await api.getSnapshots();
   result.sort((a, b) => b.id - a.id);
   snapshots.value = result;
   subsText.value = '';
@@ -44,16 +51,16 @@ watchEffect(async () => {
 
 const captureSnapshot = useTask(async () => {
   const snapshot = await api.captureSnapshot();
-  const screenshot = await api.screenshot({ id: snapshot.id });
+  const screenshot = await api.getScreenshot({ id: snapshot.id });
   await snapshotStorage.setItem(snapshot.id, snapshot);
   await screenshotStorage.setItem(snapshot.id, screenshot);
-  message.success(`保存快照成功`);
-  const result = await api.snapshots();
+  message.success(`捕获并保存快照成功`);
+  const result = await api.getSnapshots();
   result.sort((a, b) => b.id - a.id);
   snapshots.value = result;
 });
 const downloadAllSnapshot = useTask(async () => {
-  const snapshotIds = (await api.snapshots()).map((s) => s.id);
+  const snapshotIds = (await api.getSnapshots()).map((s) => s.id);
   const existSnapshotIds = new Set(
     (await screenshotStorage.keys()).map((s) => parseInt(s)),
   );
@@ -70,8 +77,8 @@ const downloadAllSnapshot = useTask(async () => {
     unimportSnapshotIds.map((snapshotId) =>
       limit(async () => {
         const [newSnapshot, newScreenshot] = await Promise.all([
-          api.snapshot({ id: snapshotId }),
-          api.screenshot({ id: snapshotId }),
+          api.getSnapshot({ id: snapshotId }),
+          api.getScreenshot({ id: snapshotId }),
         ] as const);
         if (!newSnapshot.nodes) return;
         await Promise.all([
@@ -101,12 +108,21 @@ const handleSorterChange = (sorter: SortState) => {
 };
 const previewSnapshot = useBatchTask(
   async (row: Snapshot) => {
+    let wait = false;
     if (!(await snapshotStorage.hasItem(row.id))) {
-      await snapshotStorage.setItem(row.id, await api.snapshot({ id: row.id }));
+      await snapshotStorage.setItem(
+        row.id,
+        await api.getSnapshot({ id: row.id }),
+      );
+      wait = true;
     }
     if (!(await screenshotStorage.hasItem(row.id))) {
-      const bf = await api.screenshot({ id: row.id });
+      const bf = await api.getScreenshot({ id: row.id });
       await screenshotStorage.setItem(row.id, bf);
+      wait = true;
+    }
+    if (wait) {
+      await delay(1000);
     }
     window.open(
       router.resolve({
@@ -390,28 +406,36 @@ const placeholder = `
         <NInput
           v-model:value="link"
           placeholder="请输入设备地址"
-          :style="{ width: `320px` }"
+          class="gkd_code"
+          :style="{ width: `240px` }"
           @keyup.enter="connect.invoke"
         />
         <NButton :loading="connect.loading" @click="connect.invoke">
           刷新连接
         </NButton>
-      </NInputGroup>
-      <template v-if="device">
-        <div whitespace-nowrap>
-          {{ `已连接 ${device.manufacturer} Android ${device.release}` }}
+        <div
+          v-if="serverInfo"
+          gkd_code
+          pl-16px
+          whitespace-nowrap
+          flex
+          items-center
+        >
+          {{ serverTitle }}
         </div>
+      </NInputGroup>
+      <template v-if="serverInfo">
         <NButton
           :loading="captureSnapshot.loading"
           @click="captureSnapshot.invoke"
         >
-          快照
+          捕获快照
         </NButton>
         <NButton
           :loading="downloadAllSnapshot.loading"
           @click="downloadAllSnapshot.invoke"
         >
-          下载设备所有快照
+          下载所有快照
         </NButton>
         <NButton @click="showSubsModel = true"> 修改内存订阅 </NButton>
         <NButton @click="showSelectorModel = true"> 执行选择器 </NButton>

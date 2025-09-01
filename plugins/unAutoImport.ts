@@ -1,11 +1,10 @@
+import process from 'node:process';
+import { getExportsStatic } from 'pkg-exports';
 import autoImport from 'unplugin-auto-import/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
 import components from 'unplugin-vue-components/vite';
-import type { Plugin } from 'vite';
-import process from 'node:process';
-import { getExportsStatic } from 'pkg-exports';
 
-export const unAutoImport = async (): Promise<Plugin[]> => {
+export const unAutoImport = async () => {
   return [
     autoImport({
       dts: process.cwd() + '/src/types/auto-import.d.ts',
@@ -24,7 +23,7 @@ export const unAutoImport = async (): Promise<Plugin[]> => {
         globalsPropValue: 'readonly',
         filepath: '.eslintrc-auto-import.json',
       },
-      dirs: [process.cwd() + '/src/store'],
+      dirs: [process.cwd() + '/src/store/**'],
     }),
     components({
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],

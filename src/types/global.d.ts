@@ -6,7 +6,7 @@ interface RpcError {
   __error: true;
 }
 
-interface Device {
+interface DeviceInfo {
   device: string;
   model: string;
   manufacturer: string;
@@ -22,6 +22,11 @@ interface Device {
    * @deprecated use gkdAppInfo instead
    */
   gkdVersionName?: string;
+}
+
+interface ServerInfo {
+  device: DeviceInfo;
+  gkdAppInfo: AppInfo;
 }
 
 interface RawNode {
@@ -88,7 +93,7 @@ interface Overview {
 }
 
 interface Snapshot extends Overview {
-  device: Device;
+  device: DeviceInfo;
   nodes: RawNode[];
 }
 

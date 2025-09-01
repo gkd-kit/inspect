@@ -238,11 +238,11 @@ export const getLimitLabel = (node: RawNode, limit = 15): string => {
   return label;
 };
 
-export const getDevice = (snapshot: Snapshot): Device => {
+export const getDevice = (snapshot: Snapshot): DeviceInfo => {
   if (typeof snapshot.device == 'object' && snapshot.device) {
     return snapshot.device;
   }
-  return snapshot as unknown as Device;
+  return snapshot as unknown as DeviceInfo;
 };
 
 export const getAppInfo = (snapshot: Snapshot): AppInfo => {
