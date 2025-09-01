@@ -1,4 +1,4 @@
-import { GM_fetch, gmOk } from './gm';
+import { GM_fetch, gmOk, type GmXhrOptions } from './gm';
 import { isCanProxyImportFileUrl, isAllowCorsUrl } from './url';
 
 const isGetReq = (req: Request, init?: RequestInit) => {
@@ -8,14 +8,15 @@ const isGetReq = (req: Request, init?: RequestInit) => {
 export const enhanceFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
+  xhrDetails?: (arg: GmXhrOptions) => GmXhrOptions,
 ): Promise<Response> => {
   const req = new Request(input);
   const u = new URL(req.url);
-  if (isAllowCorsUrl(u)) return fetch(input, init);
+  if (import.meta.env.PROD && isAllowCorsUrl(u)) return fetch(input, init);
   if (gmOk()) {
     // with cookie
     // export snapshot need
-    return GM_fetch(input, init);
+    return GM_fetch(input, init, xhrDetails);
   } else if (isGetReq(req, init) && isCanProxyImportFileUrl(u.href)) {
     const proxyUrl = new URL(`https://proxy.gkd.li`);
     proxyUrl.searchParams.set(`proxyUrl`, u.href);

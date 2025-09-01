@@ -1,9 +1,9 @@
 import { delay } from './others';
 import { headers2obj } from './others';
 
-type GmXhrOptions =
+export type GmXhrOptions =
   import('vite-plugin-monkey/dist/client').GmXmlhttpRequestOption<
-    'blob',
+    'blob' | 'arraybuffer',
     undefined
   >;
 const proxyFc = <T extends (...args: any[]) => any>(getFc: () => T) => {
@@ -79,9 +79,7 @@ const fixUrl = (url = '') => {
 export const GM_fetch = async (
   input: RequestInfo | URL,
   init: RequestInit = {},
-  xhrDetails:
-    | Partial<GmXhrOptions>
-    | ((arg: GmXhrOptions) => GmXhrOptions) = {},
+  xhrDetails?: (arg: GmXhrOptions) => GmXhrOptions,
 ): Promise<Response> => {
   const request = new Request(input, init).clone();
   if (request.signal?.aborted) {
@@ -131,6 +129,7 @@ export const GM_fetch = async (
         if (e.response instanceof Blob) {
           useNull = e.response.size === 0;
         }
+        // 返回数据为二进制时，必须指定 responseType 为 'blob' 或 'arraybuffer'，否则编码错误
         const resp = new Response((useNull ? null : e.response) || null, {
           status: e.status,
           statusText: e.statusText,
@@ -159,8 +158,6 @@ export const GM_fetch = async (
     };
     if (typeof xhrDetails == 'function') {
       initXhrDetails = xhrDetails(initXhrDetails);
-    } else {
-      initXhrDetails = { ...initXhrDetails, ...xhrDetails };
     }
     const handle = GM_xmlhttpRequest(initXhrDetails);
     function abortXhr() {

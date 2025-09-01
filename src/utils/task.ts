@@ -34,7 +34,7 @@ export const useTask = <T extends (...args: any[]) => Promise<void>>(
           finished = true;
         });
       // 避免界面渲染闪烁
-      await delay(50);
+      await delay();
       if (finished) return;
       loadingRef.value = true;
       await task;

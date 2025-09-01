@@ -1,5 +1,6 @@
 import { message } from './discrete';
 import { enhanceFetch } from './fetch';
+import type { GmXhrOptions } from './gm';
 
 interface Reqid {
   id: number;
@@ -8,17 +9,19 @@ interface Reqid {
 export const useDeviceApi = (initOrigin?: string) => {
   const origin = shallowRef(initOrigin);
   const serverInfo = shallowRef<ServerInfo>();
-  const request = async (name: string, init?: RequestInit) => {
+  const request = async (
+    name: string,
+    init?: RequestInit,
+    xhrDetails?: (arg: GmXhrOptions) => GmXhrOptions,
+  ) => {
     if (!origin.value) {
       throw new Error(`origin must exist`);
     }
     const u = new URL(`/api/` + name, origin.value);
-    console.log(`RPC:`, name, init);
-    const response = await enhanceFetch(u, init).catch((e) => {
+    const response = await enhanceFetch(u, init, xhrDetails).catch((e) => {
       message.error(`网络错误:` + name);
       throw e;
     });
-    console.log(`RPC Response:`, name, response);
     if (!response.ok) {
       message.error(`接口错误:` + name + `:` + response.status);
       throw response;
@@ -32,17 +35,35 @@ export const useDeviceApi = (initOrigin?: string) => {
     }
     return response;
   };
-  const baseRpc = async (name: string, data: object = {}) => {
-    return request(name, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
+  const baseRpc = async (
+    name: string,
+    data: object = {},
+    xhrDetails?: (arg: GmXhrOptions) => GmXhrOptions,
+  ) => {
+    return request(
+      name,
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+      xhrDetails,
+    );
   };
   const jsonRpc = async <T>(name: string, data: object = {}): Promise<T> => {
     return baseRpc(name, data).then((r) => r.json());
+  };
+  const bfRpc = async (
+    name: string,
+    data: object = {},
+  ): Promise<ArrayBuffer> => {
+    return baseRpc(name, data, (v) => {
+      // must set responseType to get binary data
+      v.responseType = 'arraybuffer';
+      return v;
+    }).then((r) => r.arrayBuffer());
   };
   const api = {
     getServerInfo: async () => jsonRpc<ServerInfo>(`getServerInfo`),
@@ -55,7 +76,7 @@ export const useDeviceApi = (initOrigin?: string) => {
       return jsonRpc(`getSnapshot`, data);
     },
     getScreenshot: async (data: Reqid) => {
-      return baseRpc(`getScreenshot`, data).then((r) => r.arrayBuffer());
+      return bfRpc(`getScreenshot`, data);
     },
     captureSnapshot: async () => jsonRpc<Snapshot>(`captureSnapshot`),
     getSnapshots: async () => jsonRpc<Snapshot[]>(`getSnapshots`),

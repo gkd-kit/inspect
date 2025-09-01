@@ -108,28 +108,20 @@ const handleSorterChange = (sorter: SortState) => {
 };
 const previewSnapshot = useBatchTask(
   async (row: Snapshot) => {
-    let wait = false;
     if (!(await snapshotStorage.hasItem(row.id))) {
       const obj = await api.getSnapshot({ id: row.id });
-      console.log(obj);
-      // await snapshotStorage.setItem(row.id, obj);
-      wait = true;
+      await snapshotStorage.setItem(row.id, obj);
     }
     if (!(await screenshotStorage.hasItem(row.id))) {
       const bf = await api.getScreenshot({ id: row.id });
-      console.log(bf);
-      // await screenshotStorage.setItem(row.id, bf);
-      wait = true;
+      await screenshotStorage.setItem(row.id, bf);
     }
-    if (wait) {
-      await delay(1000);
-    }
-    // window.open(
-    //   router.resolve({
-    //     name: 'snapshot',
-    //     params: { snapshotId: row.id },
-    //   }).href,
-    // );
+    window.open(
+      router.resolve({
+        name: 'snapshot',
+        params: { snapshotId: row.id },
+      }).href,
+    );
   },
   (r) => r.id,
 );
