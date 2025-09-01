@@ -110,26 +110,26 @@ const previewSnapshot = useBatchTask(
   async (row: Snapshot) => {
     let wait = false;
     if (!(await snapshotStorage.hasItem(row.id))) {
-      await snapshotStorage.setItem(
-        row.id,
-        await api.getSnapshot({ id: row.id }),
-      );
+      const obj = await api.getSnapshot({ id: row.id });
+      console.log(obj);
+      // await snapshotStorage.setItem(row.id, obj);
       wait = true;
     }
     if (!(await screenshotStorage.hasItem(row.id))) {
       const bf = await api.getScreenshot({ id: row.id });
-      await screenshotStorage.setItem(row.id, bf);
+      console.log(bf);
+      // await screenshotStorage.setItem(row.id, bf);
       wait = true;
     }
     if (wait) {
       await delay(1000);
     }
-    window.open(
-      router.resolve({
-        name: 'snapshot',
-        params: { snapshotId: row.id },
-      }).href,
-    );
+    // window.open(
+    //   router.resolve({
+    //     name: 'snapshot',
+    //     params: { snapshotId: row.id },
+    //   }).href,
+    // );
   },
   (r) => r.id,
 );
