@@ -171,15 +171,6 @@ export function* traverseNode(node: RawNode, skipKeys: number[] = []) {
   }
 }
 
-function* traverseDescendants(node: RawNode) {
-  const stack = node.children.toReversed();
-  while (stack.length > 0) {
-    const top = stack.pop()!;
-    yield top;
-    stack.push(...top.children.toReversed());
-  }
-}
-
 export const getImageSize = async (src: string) => {
   return new Promise<SizeExt>((res, rej) => {
     const img = new Image();
@@ -294,10 +285,6 @@ export const getNodeStyle = (node: RawNode, focusNode?: RawNode) => {
     fontWeight,
     color,
   };
-};
-
-const nodeCompareFn = (a: RawNode, b: RawNode) => {
-  return a.id - b.id;
 };
 
 const getTopNode = (nodes: RawNode[], subNodes: RawNode[]): RawNode => {

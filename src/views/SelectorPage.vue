@@ -20,7 +20,7 @@ const getTextFromRoute = () => {
   if (!t) return t;
   try {
     return base64url.decode(t);
-  } catch (e) {
+  } catch {
     setTextToRoute('');
     return '';
   }

@@ -9,6 +9,7 @@
     "lib": ["ESNext"],
     "baseUrl": ".",
     "erasableSyntaxOnly": true,
+    "noUncheckedIndexedAccess": false,
     "paths": {
       "@/*": ["./src/*"]
     }

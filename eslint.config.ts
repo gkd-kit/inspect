@@ -2,19 +2,20 @@ import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import unusedImports from 'eslint-plugin-unused-imports';
 import vue from 'eslint-plugin-vue';
+import { defineConfig } from 'eslint/config';
+import globals from 'globals';
 import ts from 'typescript-eslint';
 import autoImport from './.eslintrc-auto-import.json' with { type: 'json' };
-import globals from 'globals';
 
-export default ts.config(
-  prettier,
+export default defineConfig(
+  { ignores: ['**/dist'] },
   {
     extends: [
       js.configs.recommended,
       ...ts.configs.recommended,
       ...vue.configs['flat/recommended'],
     ],
-    files: ['**/*.{ts,vue}'],
+    files: ['**/*.{ts,tsx,vue}'],
     languageOptions: {
       parserOptions: {
         parser: ts.parser,
@@ -27,35 +28,38 @@ export default ts.config(
       'vue/v-on-event-hyphenation': ['error', 'never', { autofix: true }],
       'vue/custom-event-name-casing': ['error', 'camelCase'],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+
+      'no-undef': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
   {
     plugins: {
-      'unused-imports': unusedImports,
+      'unused-imports': unusedImports as any,
     },
   },
   {
     languageOptions: {
       globals: {
-        ...(autoImport.globals as Record<string, 'readonly'>),
+        ...(autoImport.globals as any),
         ...globals.browser,
       },
     },
   },
   {
     rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-empty-object-type': 'off',
       'no-empty': 'off',
       'prefer-const': 'off',
       'unused-imports/no-unused-imports': 'error',
     },
   },
-  {
-    ignores: ['dist'],
-  },
+  prettier,
 ) as any;
