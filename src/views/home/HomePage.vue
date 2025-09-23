@@ -198,8 +198,10 @@ useEventListener(document.body, 'paste', (e) => {
   if (!dataTransfer) return;
   const text = (dataTransfer.getData('text') || '').trim();
   if (text.startsWith('https://') || text.startsWith('http://')) {
-    textImportValue.value = text;
     showImportModal.value = true;
+    setTimeout(() => {
+      textImportValue.value = text;
+    });
   }
 });
 
