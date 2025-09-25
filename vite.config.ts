@@ -47,8 +47,8 @@ export default defineConfig(() => {
       sourcemap: true,
       chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
     },
-    esbuild: <ESBuildOptions>{
+    esbuild: {
       legalComments: 'none',
-    },
+    } as ESBuildOptions,
   };
 });
