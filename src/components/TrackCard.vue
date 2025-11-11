@@ -78,17 +78,17 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
     gap-8px
     overflow-hidden
   >
-    <div flex justify-between items-center>
+    <div flex justify-between items-center class="[--svg-h:24px]">
       <div flex items-center gap-4px>
-        <SvgIcon name="path" h="24px" />
+        <SvgIcon name="path" />
         <div text="20px/28px" font-bold>选择器路径视图</div>
       </div>
       <NButton text @click="onClose">
-        <SvgIcon name="close" h="20px" />
+        <SvgIcon name="close" />
       </NButton>
     </div>
-    <div flex-1 flex gap-12px overflow-hidden>
-      <div self-stretch flex="[2]">
+    <div flex-1 flex gap-12px overflow-hidden scale-y-1>
+      <div self-stretch flex="[2]" scale-x-1>
         <TrackGraph
           v-if="nodes.length && queryResult"
           :nodes="nodes"
