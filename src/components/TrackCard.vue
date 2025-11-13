@@ -87,8 +87,8 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
         <SvgIcon name="close" />
       </NButton>
     </div>
-    <div flex-1 flex gap-12px overflow-hidden scale-y-1>
-      <div self-stretch flex="[2]" scale-x-1>
+    <div flex-1 flex gap-12px overflow-hidden>
+      <div self-stretch flex="[2]">
         <TrackGraph
           v-if="nodes.length && queryResult"
           :nodes="nodes"
