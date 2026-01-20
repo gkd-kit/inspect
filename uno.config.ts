@@ -6,6 +6,6 @@ import {
 } from 'unocss';
 
 export default defineConfig({
-  presets: [presetWind4({ preflight: 'on-demand' }), presetAttributify()],
+  presets: [presetWind4(), presetAttributify()],
   transformers: [transformerAttributifyJsx()],
 });

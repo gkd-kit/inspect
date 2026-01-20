@@ -1,39 +1,24 @@
 <script lang="ts" setup>
-const props = defineProps<{
-  imgRef: HTMLElement;
-  imgHover: boolean;
-  screenshotUrl: string;
-  hoverPosition: {
-    ox: number;
-    oy: number;
-  };
-  hoverPositionStyle?: {
-    left: string;
-    top: string;
-  };
-  boxHoverPosition?: {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-  };
-  boxHoverPerPosition?: {
-    left: string;
-    right: string;
-    top: string;
-    bottom: string;
-  };
-}>();
+import { useSharedSnapshotHoverImg, useSnapshotStore } from './snapshot';
 
-const imgBounding = useElementBounding(computed(() => props.imgRef));
+const { screenshotUrl } = useSnapshotStore();
+const {
+  imgHover,
+  imgBounding,
+  hoverPositionStyle,
+  boxHoverPosition,
+  hoverPosition,
+  boxHoverPerPosition,
+} = useSharedSnapshotHoverImg();
 </script>
 
 <template>
   <!-- Teleport 需要单独一个组件否则 hmr 错误 -->
-  <Teleport to="body">
+  <Teleport v-if="screenshotUrl" to="body">
     <!-- 渲染在外部防止被遮挡 -->
     <div
       v-show="imgHover"
+      class="MiniHoverImg"
       :style="{
         left: imgBounding.right.value + 4 + 'px',
         top: imgBounding.top.value + 'px',
@@ -51,12 +36,12 @@ const imgBounding = useElementBounding(computed(() => props.imgRef));
     >
       <img
         :src="screenshotUrl"
+        :style="hoverPositionStyle"
         object-contain
         absolute
         left-0
         top-0
-        :style="hoverPositionStyle"
-        w-1000px
+        class="max-w-none!"
       />
       <div
         absolute
