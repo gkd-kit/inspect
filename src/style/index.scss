@@ -1,12 +1,10 @@
+@use './var.scss';
 @use './html-reset.scss';
 @use './atom.scss';
 
-$winMinWidth: 1200px;
-$winMinHeight: 700px;
-
-:root {
-  --gkd-w: max(#{$winMinWidth}, 100vw);
-  --gkd-h: max(#{$winMinHeight}, 100vh);
+html {
+  width: var(--win-w);
+  height: var(--win-h);
 }
 
 body {
@@ -14,4 +12,10 @@ body {
   &.body-auto-w {
     --gkd-w: 100vw;
   }
+}
+
+.page-size,
+[page-size] {
+  width: var(--gkd-w);
+  height: var(--gkd-h);
 }

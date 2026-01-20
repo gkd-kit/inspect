@@ -71,14 +71,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div
-    class="h-[calc(100%-10px)]"
-    flex
-    gap-5px
-    pt-40px
-    flex-col
-    flex-items-center
-  >
+  <div page-size flex gap-5px pt-40px flex-col flex-items-center>
     <div v-if="!gmOk()" mb-20px>
       建议安装并启用
       <a

@@ -171,7 +171,7 @@ export const useSnapshotStore = createSharedComposable(() => {
     }
   };
 
-  const trackShow = ref(false);
+  const trackShow = shallowRef(false);
   const trackData = shallowRef<TrackCardProps>();
   const showTrack = (
     selector: ResolvedSelector,

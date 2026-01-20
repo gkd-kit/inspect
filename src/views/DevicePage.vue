@@ -385,7 +385,7 @@ const placeholder = `
       </a>
     </div>
   </NModal>
-  <div flex flex-col p-10px gap-10px h-full>
+  <div page-size flex flex-col p-10px gap-10px>
     <div flex items-center gap-24px>
       <RouterLink to="/" class="flex ml-12px" title="首页">
         <NButton text style="--n-icon-size: 24px">

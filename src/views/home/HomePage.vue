@@ -260,7 +260,7 @@ const settingsDlgShow = shallowRef(false);
 const inputImportRef = shallowRef();
 </script>
 <template>
-  <div flex flex-col p-10px gap-10px h-full>
+  <div flex flex-col p-10px gap-10px page-size>
     <div flex>
       <NSpace>
         <NInputGroup>

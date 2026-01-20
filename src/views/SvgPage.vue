@@ -39,7 +39,7 @@ const copy = async (text: string) => {
 };
 </script>
 <template>
-  <div class="SvgPage">
+  <div page-size>
     <div px-16px pt-16px flex items-center gap-16px>
       <NInput
         v-model="search"

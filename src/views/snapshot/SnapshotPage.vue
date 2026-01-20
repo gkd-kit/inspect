@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import TrackModal from '@/components/TrackModal.vue';
 import { loadingBar, message } from '@/utils/discrete';
 import AttrCard from './AttrCard.vue';
 import OverlapCard from './OverlapCard.vue';
@@ -8,6 +7,8 @@ import ScreenshotCard from './ScreenshotCard.vue';
 import SearchCard from './SearchCard.vue';
 import WindowCard from './WindowCard.vue';
 import { useSnapshotStore } from './snapshot';
+import TrackCard from '@/components/TrackCard.vue';
+import FullScreenDialog from '@/components/FullScreenDialog.vue';
 
 const { snapshot, rootNode, loading, redirected, trackData, trackShow } =
   useSnapshotStore();
@@ -30,7 +31,7 @@ const clickSettings = () => {
 </script>
 <template>
   <template v-if="snapshot && rootNode">
-    <div h-full flex gap-5px>
+    <div page-size flex gap-5px>
       <div
         w-40px
         py-12px
@@ -125,16 +126,18 @@ const clickSettings = () => {
     <RuleCard :show="ruleShow" @updateShow="ruleShow = $event" />
     <AttrCard :show="attrShow" @updateShow="attrShow = $event" />
     <OverlapCard />
-
-    <TrackModal
-      :show="trackShow"
-      :data="trackData"
-      @updateShow="trackShow = $event"
-      @updateData="trackData = $event"
-    />
+    <FullScreenDialog v-model:show="trackShow" @closed="trackData = undefined">
+      <TrackCard
+        v-if="trackData"
+        class="bg-white"
+        v-bind="trackData"
+        @close="trackShow = false"
+      />
+    </FullScreenDialog>
   </template>
   <div
     v-else-if="!loading && !redirected"
+    page-size
     pt-80px
     flex
     flex-col

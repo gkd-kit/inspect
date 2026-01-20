@@ -32,13 +32,3 @@ useEventListener('click', () => {
   </NConfigProvider>
   <ScrollbarWrapper />
 </template>
-<style lang="scss">
-#app {
-  display: flex;
-  flex-direction: column;
-  height: var(--gkd-h);
-  &.app-auto-h {
-    --gkd-h: auto;
-  }
-}
-</style>

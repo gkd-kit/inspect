@@ -68,7 +68,7 @@ const error = computed(() => {
 });
 </script>
 <template>
-  <div flex items-center gap-16px pt-12px px-12px>
+  <div page-size flex items-center gap-16px pt-12px px-12px>
     <NTooltip placement="right">
       <template #trigger>
         <NButton text>

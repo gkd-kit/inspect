@@ -43,7 +43,6 @@ export default defineConfig(() => {
       port,
     },
     build: {
-      target: `chrome${chromeVersion}`,
       sourcemap: true,
       chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
     },

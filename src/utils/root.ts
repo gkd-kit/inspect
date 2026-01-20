@@ -1,3 +1,2 @@
-const root = document.querySelector<HTMLElement>('#app')!;
-
+const root = document.body.appendChild(document.createElement('div'));
 export default root;
