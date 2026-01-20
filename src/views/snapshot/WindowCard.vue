@@ -35,13 +35,8 @@ watch([() => focusNode.value, () => focusTime.value], async () => {
         lastClickId = Number.NaN;
         return;
       }
-      // NTree 被 virtualScroll 包裹后, treeRef.value?.scrollTo 无效, 使用 scrollIntoView
-      const item = document.querySelector<HTMLElement>(
-        `[data-node-id="${key}"]`,
-      );
-      if (!item) return;
       selectedKeys.value = [key];
-      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      treeRef.value?.scrollTo({ key, behavior: 'smooth', debounce: true });
     }
   });
   let parent = focusNode.value.parent;
@@ -219,13 +214,12 @@ const gkdVersionName = computed(() => {
       />
     </div>
     <div h-1px mt-4px bg="#efeff5" />
-
-    <NScrollbar xScrollable class="flex-1">
+    <div flex-1 min-h-0>
       <NTree
         ref="treeRef"
         v-model:expandedKeys="expandedKeys"
         v-model:selectedKeys="selectedKeys"
-        class="mb-24px mr-24px"
+        class="h-full"
         virtualScroll
         showLine
         blockLine
@@ -235,6 +229,6 @@ const gkdVersionName = computed(() => {
         :nodeProps="(treeNodeProps as any)"
         :renderLabel="(renderLabel as any)"
       />
-    </NScrollbar>
+    </div>
   </div>
 </template>
