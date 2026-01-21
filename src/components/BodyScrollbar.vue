@@ -3,18 +3,22 @@ import type { CSSProperties } from 'vue';
 
 const { y, x } = useWindowScroll();
 const { height: winH, width: winW } = useWindowSize();
-const body = useElementBounding(document.body);
+const [bodyH, bodyW] = (() => {
+  const body = useElementSize(document.body);
+  // 不知道为什么得到的 w/h 比实际 clientHeight/clientWidth 多出 0.2 或 0.4, 使用 Math.floor 去除
+  return [
+    computed(() => Math.floor(body.height.value)),
+    computed(() => Math.floor(body.width.value)),
+  ];
+})();
 
-const yShow = computed(() => body.height.value > winH.value);
+const yShow = computed(() => bodyH.value > winH.value);
 const yHeight = computed(() => {
-  const clientHeight = body.height.value;
-  const bodyHeight = clientHeight;
-  return (winH.value / bodyHeight) * winH.value;
+  return (winH.value / bodyH.value) * winH.value;
 });
 const translateY = computed(() => {
-  const clientHeight = body.height.value;
   const height = yHeight.value;
-  return (y.value / (clientHeight - winH.value)) * (winH.value - height);
+  return (y.value / (bodyH.value - winH.value)) * (winH.value - height);
 });
 const yStyle = computed<CSSProperties>(() => {
   if (!yShow.value) return {};
@@ -28,10 +32,8 @@ const clickBoxY = async (e: MouseEvent) => {
     yHeight.value *
     0.9 *
     (e.clientY < yHeight.value + translateY.value ? -1 : 1);
-  const clientHeight = body.height.value;
-  const bodyHeight = clientHeight;
-  const height = (winH.value / bodyHeight) * winH.value;
-  y.value += (deltaY / (winH.value - height)) * (clientHeight - winH.value);
+  const height = (winH.value / bodyH.value) * winH.value;
+  y.value += (deltaY / (winH.value - height)) * (bodyH.value - winH.value);
 };
 const yDragging = shallowRef(false);
 let lastYEvent: MouseEvent | undefined = undefined;
@@ -43,27 +45,21 @@ useEventListener('pointermove', (e) => {
   if (!lastYEvent) return;
   const deltaY = e.clientY - lastYEvent.clientY;
   lastYEvent = e;
-  const clientHeight = body.height.value;
-  const bodyHeight = clientHeight;
-  const height = (winH.value / bodyHeight) * winH.value;
-  y.value += (deltaY / (winH.value - height)) * (clientHeight - winH.value);
+  const height = (winH.value / bodyH.value) * winH.value;
+  y.value += (deltaY / (winH.value - height)) * (bodyH.value - winH.value);
 });
 useEventListener('pointerup', () => {
   lastYEvent = undefined;
   yDragging.value = false;
 });
 
-// 不知道为什么 body_width 比 win_width 多出 0.2 或 0.4, 使用 Math.floor 去除
-const xShow = computed(() => Math.floor(body.width.value) > winW.value);
+const xShow = computed(() => bodyW.value > winW.value);
 const xWidth = computed(() => {
-  const clientWidth = body.width.value;
-  const bodyWidth = clientWidth;
-  return (winW.value / bodyWidth) * winW.value;
+  return (winW.value / bodyW.value) * winW.value;
 });
 const translateX = computed(() => {
-  const clientWidth = body.width.value;
   const width = xWidth.value;
-  return (x.value / (clientWidth - winW.value)) * (winW.value - width);
+  return (x.value / (bodyW.value - winW.value)) * (winW.value - width);
 });
 const xStyle = computed<CSSProperties>(() => {
   if (!xShow.value) return {};
@@ -76,11 +72,10 @@ const xStyle = computed<CSSProperties>(() => {
 const clickBoxX = (e: MouseEvent) => {
   const deltaX =
     xWidth.value * 0.9 * (e.clientX < xWidth.value + translateX.value ? -1 : 1);
-  const clientWidth = body.width.value;
-  const bodyWidth = clientWidth;
-  const width = (winW.value / bodyWidth) * winW.value;
+
+  const width = (winW.value / bodyW.value) * winW.value;
   const newX =
-    x.value + (deltaX / (winW.value - width)) * (clientWidth - winW.value);
+    x.value + (deltaX / (winW.value - width)) * (bodyW.value - winW.value);
   x.value = newX;
 };
 const xDragging = shallowRef(false);
@@ -93,10 +88,9 @@ useEventListener('pointermove', (e) => {
   if (!lastXEvent) return;
   const deltaX = e.clientX - lastXEvent.clientX;
   lastXEvent = e;
-  const clientWidth = body.width.value;
-  const bodyWidth = clientWidth;
-  const width = (winW.value / bodyWidth) * winW.value;
-  x.value += (deltaX / (winW.value - width)) * (clientWidth - winW.value);
+
+  const width = (winW.value / bodyW.value) * winW.value;
+  x.value += (deltaX / (winW.value - width)) * (bodyW.value - winW.value);
 });
 useEventListener('pointerup', () => {
   lastXEvent = undefined;
@@ -108,28 +102,33 @@ useEventListener('selectstart', (e) => {
     e.preventDefault();
   }
 });
+const bodyHoverd = useElementHover(document.body);
 </script>
 <template>
-  <div fixed z-2000 class="BodyScrollbar">
+  <div v-if="yShow || xShow" class="BodyScrollbar" fixed z-2000>
     <div
-      v-show="yShow"
+      v-if="yShow"
       scrollbar-y
       fixed
       right-2px
       top-0
       bottom-0
       w-8px
+      :data-win-h="winH"
+      :data-body-h="bodyW"
       @pointerdown="pointerdownY"
       @click="clickBoxY"
     >
       <div
         w-full
-        bg="#909399"
-        opacity-30
-        hover:opacity="50"
+        rounded-4px
+        transition-colors
+        bg="#9093994c"
+        hover:bg="#9093997f"
         :style="yStyle"
         :class="{
-          'opacity-50': yDragging,
+          'bg-#9093997f': yDragging,
+          'bg-#0000!': !bodyHoverd,
         }"
         @click.stop
       />
@@ -142,17 +141,21 @@ useEventListener('selectstart', (e) => {
       left-0
       right-0
       h-8px
+      :data-win-w="winW"
+      :data-body-w="bodyW"
       @pointerdown="pointerdownX"
       @click="clickBoxX"
     >
       <div
         h-full
-        bg="#909399"
-        opacity-30
-        hover:opacity="50"
+        rounded-4px
+        transition-colors
+        bg="#9093994c"
+        hover:bg="#9093997f"
         :style="xStyle"
         :class="{
-          'opacity-50': xDragging,
+          'bg-#9093997f': xDragging,
+          'bg-#0000!': !bodyHoverd,
         }"
         @click.stop
       />
