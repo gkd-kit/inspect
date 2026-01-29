@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import SelectorText from '@/components/SelectorText.vue';
-import { useAutoHeight, useAutoWidth } from '@/utils/others';
 import {
   AstNode,
-  Selector,
   GkdException,
+  Selector,
   SyntaxException,
 } from '@gkd-kit/selector';
 import * as base64url from 'universal-base64url';
-
-useAutoHeight();
-useAutoWidth();
 
 const route = useRoute();
 const router = useRouter();
@@ -68,7 +64,7 @@ const error = computed(() => {
 });
 </script>
 <template>
-  <div page-size flex items-center gap-16px pt-12px px-12px>
+  <div flex items-center gap-16px pt-12px px-12px>
     <NTooltip placement="right">
       <template #trigger>
         <NButton text>
@@ -83,7 +79,7 @@ const error = computed(() => {
       </template>
       回到首页
     </NTooltip>
-    <div flex gap-16px>
+    <div flex gap-16px items-center>
       <div text-18px>测试选择器</div>
       <div>语法高亮/错误解析</div>
     </div>

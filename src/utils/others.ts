@@ -1,6 +1,5 @@
 import type { LocationQuery } from 'vue-router';
 import { message } from './discrete';
-import root from './root';
 import { Teleport } from 'vue';
 import BodyScrollbar from '@/components/BodyScrollbar.vue';
 
@@ -65,24 +64,6 @@ export const copy = (() => {
     }
   };
 })();
-
-const useAutoCls = (el: Element, cls: string) => {
-  el.classList.add(cls);
-  onMounted(() => {
-    el.classList.add(cls);
-  });
-  onUnmounted(() => {
-    el.classList.remove(cls);
-  });
-};
-
-export const useAutoHeight = () => {
-  useAutoCls(root, 'app-auto-h');
-};
-
-export const useAutoWidth = () => {
-  useAutoCls(document.body, 'body-auto-w');
-};
 
 export const timeAgo = (date: number) => {
   const seconds = Math.floor((Date.now() - date) / 1000);

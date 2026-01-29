@@ -7,13 +7,6 @@ html {
   height: var(--win-h);
 }
 
-body {
-  width: var(--gkd-w);
-  &.body-auto-w {
-    --gkd-w: 100vw;
-  }
-}
-
 .page-size,
 [page-size] {
   width: var(--gkd-w);

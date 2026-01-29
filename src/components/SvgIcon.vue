@@ -46,14 +46,12 @@ watchEffect(() => {
   ></svg>
 </template>
 <style>
-:root {
-  --svg-h: 1em;
-}
 .SvgIcon {
   display: block;
   overflow: hidden;
-  fill: currentColor;
-  height: var(--svg-h);
+  height: var(--svg-h, 1em);
 }
-/* --svg-h:initial */
+.SvgIcon:not([fill]) {
+  fill: currentColor;
+}
 </style>
