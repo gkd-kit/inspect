@@ -1,28 +1,11 @@
 <script setup lang="ts">
 import { message } from '@/utils/discrete';
 
-const getIds = () => {
-  return Array.from(
-    document.querySelectorAll('#__svg_icon_container__ > *'),
-  ).map((v) => v.getAttribute('id')!.substring('svg-icon-'.length));
-};
-
-const svgIds = ref(getIds());
-
-const observer = new MutationObserver(() => {
-  svgIds.value = getIds();
-});
-onMounted(() => {
-  observer.observe(
-    document.querySelector('#__svg_icon_container__') as HTMLElement,
-    {
-      attributes: true,
-    },
-  );
-});
-onUnmounted(() => {
-  observer.disconnect();
-});
+const svgElMap = computedAsync(
+  async () => (await import('@/utils/svg')).default,
+  {},
+);
+const svgIds = computed(() => Object.keys(svgElMap.value));
 
 const search = ref('');
 const filterSvgIds = computed(() => {

@@ -6,7 +6,7 @@ import unocss from 'unocss/vite';
 import data from 'unplugin-data/vite';
 import { defineConfig } from 'vite';
 import type { ESBuildOptions } from 'vite';
-import { mirror, unAutoImport, _404Page } from './plugins';
+import { mirror, unAutoImport, _404Page, svgMinify } from './plugins';
 
 // support top-level-await
 const chromeVersion = 89;
@@ -16,6 +16,7 @@ const port = 8444;
 export default defineConfig(() => {
   return {
     plugins: [
+      svgMinify(),
       vue(),
       vueJsx(),
       unocss({ inspector: false }),
