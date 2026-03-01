@@ -245,6 +245,8 @@ const shareResult = (result: SearchResult) => {
           v-model:value="searchText"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
           :inputProps="{ class: 'gkd_code' }"
+          type="textarea"
+          :autosize="{ minRows: 1, maxRows: 10 }"
           @keyup.enter="searchBySelector"
         />
         <NButton @click="searchBySelector">
