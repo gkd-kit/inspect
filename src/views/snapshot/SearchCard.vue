@@ -151,7 +151,8 @@ onMounted(async () => {
   };
 
   const gkdParams = toArray(route.query.gkd);
-  for (const item of gkdParams) {
+  const uniqueGkdParams = [...new Set(gkdParams)];
+  for (const item of uniqueGkdParams) {
     try {
       const decoded = base64url.decode(item);
       count += searchSelector(decoded, true) || 0;
@@ -162,7 +163,8 @@ onMounted(async () => {
   }
 
   const strParams = toArray(route.query.str);
-  for (const item of strParams) {
+  const uniqueStrParams = [...new Set(strParams)];
+  for (const item of uniqueStrParams) {
     count += searchString(item) || 0;
   }
 
