@@ -37,7 +37,11 @@ const searchText = shallowRef(``);
 
 const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
-const searchSelector = (text: string) => {
+const searchSelector = (text: string, skipDuplicateCheck: boolean = false) => {
+  if (!rootNode.value) {
+    message.error('当前无可用节点树, 请尝试刷新页面');
+    return;
+  }
   const selector = errorWrap(
     () => parseSelector(text),
     (e) => {
@@ -51,6 +55,7 @@ const searchSelector = (text: string) => {
     },
   );
   if (
+    !skipDuplicateCheck &&
     selectorResults.find(
       (s) =>
         typeof s.selector == 'object' &&
@@ -134,12 +139,33 @@ const searchBySelector = errorTry(() => {
 onMounted(async () => {
   await wasmLoadTask;
   let count = 0;
-  if (route.query.gkd) {
-    count += searchSelector(base64url.decode(route.query.gkd as string)) || 0;
+
+  const toArray = (param: any): string[] => {
+    if (Array.isArray(param)) {
+      return param.filter((item) => typeof item === 'string');
+    }
+    if (typeof param === 'string') {
+      return [param];
+    }
+    return [];
+  };
+
+  const gkdParams = toArray(route.query.gkd);
+  for (const item of gkdParams) {
+    try {
+      const decoded = base64url.decode(item);
+      count += searchSelector(decoded, true) || 0;
+    } catch (e) {
+      // 忽略非法 Base64
+      console.warn('Invalid gkd parameter:', item, e);
+    }
   }
-  if (route.query.str) {
-    count += searchString(route.query.str as string) || 0;
+
+  const strParams = toArray(route.query.str);
+  for (const item of strParams) {
+    count += searchString(item) || 0;
   }
+
   if (count > 0) {
     refreshExpandedKeys();
   }
