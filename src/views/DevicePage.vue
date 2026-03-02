@@ -11,6 +11,8 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
 import JSON5 from 'json5';
+import SvgIcon from '@/components/SvgIcon.vue';
+import { dialog } from '@/utils/discrete';
 
 const router = useRouter();
 const { api, origin, serverInfo } = useDeviceApi();
@@ -137,7 +139,7 @@ const columns: DataTableColumns<Snapshot> = [
     key: `actions`,
     title: `操作`,
     fixed: 'right',
-    width: `120px`,
+    width: `180px`, // 搞宽点要不然装不下
     render(row) {
       return (
         <NSpace size="small">
@@ -148,11 +150,48 @@ const columns: DataTableColumns<Snapshot> = [
           >
             查看
           </NButton>
+          <NButton
+            size="small"
+            type="error"
+            secondary
+            loading={deleteSnapshot.loading[row.id]}
+            onClick={() => deleteSnapshot.invoke(row)}
+          >
+            {{
+              icon: () => <SvgIcon name="delete" />,
+              default: () => '删除',
+            }}
+          </NButton>
         </NSpace>
       );
     },
   },
 ];
+
+const deleteSnapshot = useBatchTask(
+  async (row: Snapshot) => {
+    const confirmed = await new Promise<boolean>((res) => {
+      dialog.warning({
+        title: '删除快照',
+        content: `是否确认删除快照 ID: ${row.id}？此操作不可恢复。`,
+        positiveText: '确认删除',
+        negativeText: '取消',
+        onPositiveClick: () => res(true),
+        onNegativeClick: () => res(false),
+        onClose: () => res(false),
+      });
+    });
+    if (!confirmed) return;
+    await api.deleteSnapshot({ id: row.id });
+    await Promise.all([
+      snapshotStorage.removeItem(row.id),
+      screenshotStorage.removeItem(row.id),
+    ]);
+    snapshots.value = snapshots.value.filter((s) => s.id !== row.id);
+    message.success('删除成功');
+  },
+  (r) => r.id,
+);
 
 const pagination = shallowReactive<PaginationProps>({
   page: 1,
