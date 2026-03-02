@@ -100,6 +100,9 @@ export const useDeviceApi = (initOrigin?: string) => {
         data,
       );
     },
+    deleteSnapshot: async (data: Reqid) => {
+      return jsonRpc<{ message: string }>(`deleteSnapshot`, data);
+    },
   };
   return { origin, api, serverInfo };
 };
