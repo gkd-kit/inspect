@@ -24,8 +24,8 @@ watchEffect(() => {
     ref="actualEl"
     class="SvgIcon"
     :name="name"
-    :viewBox="svgEl.getAttributeNS(null, 'viewBox') || undefined"
-    :fill="svgEl.getAttribute('fill') || undefined"
+    :viewBox="svgEl.getAttribute('viewBox') ?? undefined"
+    :fill="svgEl.getAttribute('fill') ?? undefined"
   ></svg>
 </template>
 <style>
