@@ -6,7 +6,7 @@
     "skipLibCheck": false,
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
     "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": false,

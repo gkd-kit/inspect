@@ -5,12 +5,9 @@ const svgElMap = computedAsync(
 );
 </script>
 <script setup lang="ts">
-const props = withDefaults(
-  defineProps<{
-    name: string;
-  }>(),
-  {},
-);
+const props = defineProps<{
+  name: string;
+}>();
 
 const svgEl = computed(() => svgElMap.value[props.name]);
 const actualEl = shallowRef<SVGSVGElement>();
@@ -18,7 +15,7 @@ watchEffect(() => {
   const s = svgEl.value;
   const a = actualEl.value;
   if (!s || !a) return;
-  a.replaceChildren(...Array.from(s.cloneNode(true).childNodes));
+  a.replaceChildren(...s.cloneNode(true).childNodes);
 });
 </script>
 <template>
