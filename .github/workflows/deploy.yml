@@ -8,6 +8,7 @@ on:
       - 'README.md'
 
 permissions:
+  id-token: write
   contents: write
 
 jobs:
@@ -22,14 +23,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
       - run: pnpm exec tsx ./scripts/updateVersion.ts
       - run: pnpm run build:mirror
-      - name: Publish package
-        run: |
-          pnpm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
-          pnpm publish --no-git-checks
+      - run: pnpm publish --no-git-checks
 
       - uses: cloudflare/wrangler-action@v3
         with:

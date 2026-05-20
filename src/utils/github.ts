@@ -10,78 +10,8 @@ interface GithubGraphqlCommentResult {
     addComment: {
       timelineEdge: {
         node: {
-          __typename: string;
           id: string;
-          databaseId: number;
-          body: string;
-          bodyHTML: string;
-          bodyVersion: string;
-          viewerCanUpdate: boolean;
-          url: string;
-          createdAt: string;
-          authorAssociation: string;
-          viewerCanDelete: boolean;
-          viewerCanMinimize: boolean;
-          viewerCanReport: boolean;
-          viewerCanReportToMaintainer: boolean;
-          viewerCanBlockFromOrg: boolean;
-          viewerCanUnblockFromOrg: boolean;
-          isHidden: boolean;
-          minimizedReason: any;
-          showSpammyBadge: boolean;
-          createdViaEmail: boolean;
-          viewerDidAuthor: boolean;
-          authorToRepoOwnerSponsorship: any;
-          author: {
-            __typename: string;
-            id: string;
-            login: string;
-            avatarUrl: string;
-          };
-          repository: {
-            id: string;
-            name: string;
-            owner: {
-              __typename: string;
-              id: string;
-              login: string;
-              url: string;
-            };
-            isPrivate: boolean;
-            slashCommandsEnabled: boolean;
-            nameWithOwner: string;
-            databaseId: number;
-          };
-          issue: {
-            number: number;
-            id: string;
-            locked: boolean;
-            databaseId: number;
-            author: {
-              __typename: string;
-              login: string;
-              id: string;
-            };
-          };
-          __isComment: string;
-          viewerCanReadUserContentEdits: boolean;
-          lastEditedAt: any;
-          lastUserContentEdit: any;
-          __isReactable: string;
-          reactionGroups: Array<{
-            content: string;
-            viewerHasReacted: boolean;
-            reactors: {
-              totalCount: number;
-              nodes: Array<any>;
-            };
-          }>;
-          __isNode: string;
         };
-      };
-      subject: {
-        __typename: string;
-        id: string;
       };
     };
   };
@@ -129,7 +59,8 @@ export const uploadAsset = async (
   });
   // send file url text to github comment
   const commentResult = await graphqlFetch({
-    query: '50e7774b5a519b88858e02e46e0348da',
+    persistedQueryName: 'addCommentMutation',
+    query: 'edafa18ab5734f05c9893cbc92d0dfb1',
     variables: {
       connections: [
         'client:I_kwDOJ3SWBc6viUWN:__Issue__backTimelineItems_connection(visibleEventsOnly:true)',
@@ -144,6 +75,7 @@ export const uploadAsset = async (
   await delay(1000);
   // unsubscribe the comment
   await graphqlFetch({
+    persistedQueryName: 'updateIssueSubscriptionMutation',
     query: 'd0752b2e49295017f67c84f21bfe41a3',
     variables: {
       input: { state: 'UNSUBSCRIBED', subscribableId: 'I_kwDOJ3SWBc6viUWN' },
@@ -151,9 +83,13 @@ export const uploadAsset = async (
   });
   // delete the comment
   await graphqlFetch({
+    persistedQueryName: 'deleteIssueCommentMutation',
     query: 'b0f125991160e607a64d9407db9c01b3',
     variables: {
-      connections: [],
+      connections: [
+        'client:I_kwDOJ3SWBc6viUWN:__Issue__frontTimelineItems_connection(visibleEventsOnly:true)',
+        'client:I_kwDOJ3SWBc6viUWN:__Issue__backTimelineItems_connection(visibleEventsOnly:true)',
+      ],
       input: { id: commentResult.data.addComment.timelineEdge.node.id },
     },
   });

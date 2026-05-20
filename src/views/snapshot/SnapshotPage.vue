@@ -135,23 +135,19 @@ const clickSettings = () => {
       />
     </FullScreenDialog>
   </template>
-  <div
-    v-else-if="!loading && !redirected"
-    page-size
-    pt-80px
-    flex
-    flex-col
-    items-center
-    justify-center
-  >
-    <div mb-8px>
+  <div v-else-if="!loading && !redirected" page-size flex flex-col items-center>
+    <div mt-160px>
       <span>快照数据缺失，</span>
       <a
         href="https://gkd.li/guide/snapshot#share-note"
         target="_blank"
         referrerpolicy="no-referrer"
-        >分享须知</a
+        color-blue
+        transition-colors
+        hover="color-[rgb(from_currentColor_r_g_b_/_50%)]"
       >
+        查看分享须知
+      </a>
     </div>
   </div>
 </template>
