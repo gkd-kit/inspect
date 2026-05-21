@@ -21,14 +21,14 @@ jobs:
         with:
           node-version: latest
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm run build:mirror
       - run: pnpm publish --no-git-checks
 
-      - uses: cloudflare/wrangler-action@v3
+      - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
