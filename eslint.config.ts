@@ -1,25 +1,63 @@
-import js from '@eslint/js';
-import prettier from 'eslint-config-prettier';
-import unusedImports from 'eslint-plugin-unused-imports';
-import vue from 'eslint-plugin-vue';
 import { defineConfig } from 'eslint/config';
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import pluginVue from 'eslint-plugin-vue';
+import pluginPrettier from 'eslint-plugin-prettier/recommended';
+import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
-import ts from 'typescript-eslint';
-import autoImport from './.eslintrc-auto-import.json' with { type: 'json' };
+import autoImportGlobals from './.eslintrc-auto-import.json' with { type: 'json' };
 
 export default defineConfig(
-  { ignores: ['**/dist'] },
   {
-    extends: [
-      js.configs.recommended,
-      ...ts.configs.recommended,
-      ...vue.configs['flat/recommended'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'public',
+      'auto-imports.d.ts',
+      'components.d.ts',
+      'auto-import-components.d.ts',
     ],
-    files: ['**/*.{ts,tsx,vue}'],
+  },
+  js.configs.recommended,
+  tseslint.configs.recommended,
+  ...pluginVue.configs['flat/recommended'],
+
+  // Vue SFC + TypeScript parser
+  {
+    files: ['**/*.vue'],
     languageOptions: {
       parserOptions: {
-        parser: ts.parser,
-        jsx: true,
+        parser: tseslint.parser,
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+
+  // https://typescript-eslint.io/troubleshooting/faqs/eslint/
+  {
+    files: ['**/*.{ts,tsx,mts,cts,vue}'],
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+
+  // for JS/TS/Vue
+  {
+    files: ['**/*.{js,mjs,cjs,ts,mts,cts,vue}'],
+    plugins: {
+      'unused-imports': unusedImports,
+    },
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...autoImportGlobals.globals,
       },
     },
     rules: {
@@ -28,38 +66,27 @@ export default defineConfig(
       'vue/v-on-event-hyphenation': ['error', 'never', { autofix: true }],
       'vue/custom-event-name-casing': ['error', 'camelCase'],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
-
-      'no-undef': 'off',
+      'no-empty': 'off',
+      'no-useless-assignment': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_' },
-      ],
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'warn',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   },
-  {
-    plugins: {
-      'unused-imports': unusedImports as any,
-    },
-  },
-  {
-    languageOptions: {
-      globals: {
-        ...(autoImport.globals as any),
-        ...globals.browser,
-      },
-    },
-  },
-  {
-    rules: {
-      'no-empty': 'off',
-      'prefer-const': 'off',
-      'unused-imports/no-unused-imports': 'error',
-    },
-  },
-  prettier,
-) as any;
+
+  // Prettier finally
+  pluginPrettier,
+);

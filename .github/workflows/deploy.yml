@@ -25,7 +25,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm exec tsx ./scripts/updateVersion.ts
       - run: pnpm run build:mirror
       - run: pnpm publish --no-git-checks
 

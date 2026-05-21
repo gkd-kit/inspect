@@ -34,11 +34,12 @@ export function obj2usp(...objs: Record<string, unknown>[]) {
 }
 
 export const headers2obj = (headers: Headers) => {
-  const h: Record<string, string> = {};
+  // https://github.com/unplugin/unplugin-auto-import/issues/618
+  const h2: Record<string, string> = {};
   headers.forEach((v, k) => {
-    h[k] = v;
+    h2[k] = v;
   });
-  return h;
+  return h2;
 };
 
 export const delay = async (n = 0) => {

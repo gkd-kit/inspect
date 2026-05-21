@@ -1,6 +1,6 @@
 // 获取元素id最后一个.后面的内容
 const getShortName = (fullName: string): string => {
-  let lstIndex = fullName.lastIndexOf('.');
+  const lstIndex = fullName.lastIndexOf('.');
   if (lstIndex === -1) {
     return fullName;
   }
@@ -154,8 +154,9 @@ export const findNodesByXy = (
 
 const getNodeArea = (node: RawNode) => {
   const w = node.attr.width ?? node.attr.right - node.attr.left;
-  const h = node.attr.height ?? node.attr.bottom - node.attr.top;
-  return w * h;
+  // https://github.com/unplugin/unplugin-auto-import/issues/618
+  const h2 = node.attr.height ?? node.attr.bottom - node.attr.top;
+  return w * h2;
 };
 
 export function* traverseNode(node: RawNode, skipKeys: number[] = []) {

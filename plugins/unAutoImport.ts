@@ -7,7 +7,7 @@ import components from 'unplugin-vue-components/vite';
 export const unAutoImport = async () => {
   return [
     autoImport({
-      dts: process.cwd() + '/src/types/auto-import.d.ts',
+      dts: process.cwd() + '/auto-import.d.ts',
       imports: [
         'vue',
         'vue-router',
@@ -27,7 +27,7 @@ export const unAutoImport = async () => {
     }),
     components({
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],
-      dts: process.cwd() + '/src/types/auto-import-components.d.ts',
+      dts: process.cwd() + '/auto-import-components.d.ts',
       resolvers: [NaiveUiResolver()],
       dirs: [],
     }),

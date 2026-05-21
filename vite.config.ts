@@ -1,10 +1,9 @@
 import legacy from '@vitejs/plugin-legacy';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import process from 'node:process';
 import unocss from 'unocss/vite';
 import data from 'unplugin-data/vite';
-import { defineConfig, type ESBuildOptions } from 'vite';
+import { defineConfig } from 'vite';
 import { _404Page, mirror, svgMinify, unAutoImport } from './plugins';
 
 // support top-level-await
@@ -14,6 +13,9 @@ const port = 8444;
 
 export default defineConfig(() => {
   return {
+    resolve: {
+      tsconfigPaths: true,
+    },
     plugins: [
       svgMinify(),
       vue(),
@@ -29,11 +31,6 @@ export default defineConfig(() => {
       mirror(),
       _404Page(),
     ],
-    resolve: {
-      alias: {
-        '@': process.cwd() + '/src',
-      },
-    },
     server: {
       host,
       port,
@@ -46,8 +43,5 @@ export default defineConfig(() => {
       sourcemap: true,
       chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
     },
-    esbuild: {
-      legalComments: 'none',
-    } as ESBuildOptions,
   };
 });

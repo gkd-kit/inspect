@@ -1,5 +1,3 @@
-# Logs
-logs
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -14,12 +12,7 @@ dist-ssr
 coverage
 *.local
 
-/cypress/videos/
-/cypress/screenshots/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode
 .idea
 *.suo
 *.ntvs*
@@ -28,13 +21,8 @@ coverage
 *.sw?
 .env
 
-vite.config.{js,ts}.timestamp-*.mjs
-
-/public/service-worker.js
-/public/service-worker.js.map
-
-/.eslintcache
-
+.eslintcache
 .eslintrc-auto-import.json
 auto-import.d.ts
 auto-import-components.d.ts
+vite.config.{js,ts}.timestamp-*.mjs

@@ -1,4 +1,4 @@
-const modules = import.meta.glob<string>('@/assets/svg/*.svg', {
+const modules = import.meta.glob<string>('../assets/svg/*.svg', {
   eager: true,
   query: 'raw',
   import: 'default',

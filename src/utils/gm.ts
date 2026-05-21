@@ -35,10 +35,10 @@ export const parseHeaders = (rawHeaders = '') => {
       return header.startsWith(`\n`) ? header.substring(1) : header;
     })
     .forEach(function (line) {
-      let parts = line.split(':');
-      let key = parts.shift()?.trim();
+      const parts = line.split(':');
+      const key = parts.shift()?.trim();
       if (key) {
-        let value = parts.join(':').trim();
+        const value = parts.join(':').trim();
         try {
           // https://github.com/gkd-kit/subscription/pull/762#discussion_r1349695154
           headers.append(key, value);

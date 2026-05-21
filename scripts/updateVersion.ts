@@ -10,7 +10,7 @@ selfPkg.version =
 
 await fs.writeFile(
   process.cwd() + '/package.json',
-  JSON.stringify(selfPkg, undefined, 2),
+  JSON.stringify(selfPkg, undefined, 2) + '\n',
   'utf-8',
 );
 
