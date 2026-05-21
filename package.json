@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:mirror": "node ./scripts/updateVersion.ts && cross-env MIRROR=ON vite build",
+    "prebuild:mirror": "node ./scripts/updateVersion.ts",
+    "build:mirror": "cross-env MIRROR=ON vite build",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
