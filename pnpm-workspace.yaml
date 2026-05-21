@@ -3,3 +3,4 @@ allowBuilds:
   core-js: true
   esbuild: true
   simple-git-hooks: true
+  workerd: true # for cloudflare/wrangler-action
