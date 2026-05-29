@@ -19,13 +19,11 @@ jobs:
 
       - uses: jdx/mise-action@v4
         with:
-          install_args: "node pnpm"
-
-      - run: node -v
-      - run: pnpm -v
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: mise settings add idiomatic_version_file_enable_tools node
+      - run: mise settings add idiomatic_version_file_enable_tools pnpm
 
       - run: pnpm install --frozen-lockfile
-
       - run: pnpm run build:mirror
       - run: pnpm publish --no-git-checks
 
