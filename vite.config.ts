@@ -13,6 +13,9 @@ const port = 8444;
 
 export default defineConfig(() => {
   return {
+    worker: {
+      format: `es` as const,
+    },
     resolve: {
       tsconfigPaths: true,
     },

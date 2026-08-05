@@ -292,6 +292,9 @@ const inputImportRef = shallowRef();
                 支持任意位置粘贴(Ctrl+V)文本触发导入
               </div>
             </NTooltip>
+            <RouterLink flex to="/log">
+              <NButton class="w-full">查看日志包</NButton>
+            </RouterLink>
           </NSpace>
         </NPopover>
         <NTooltip>

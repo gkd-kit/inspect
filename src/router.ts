@@ -1,4 +1,5 @@
 import { toValidURL } from '@/utils/check';
+import { getKnownLogRoute, isValidLogPath } from '@/utils/log_url';
 import type { RouteRecordRedirectOption } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -11,6 +12,7 @@ const recordModule = <T, S extends () => T>(v: S): S => {
 const snapshotPage = recordModule(
   () => import('@/views/snapshot/SnapshotPage.vue'),
 );
+const logPage = recordModule(() => import('@/views/log/LogPage.vue'));
 
 const getGithubAssetId = (v: unknown) => {
   return String(v).match(/^\d+/)?.[0]; // 丢弃非法字符
@@ -101,6 +103,27 @@ const router = createRouter({
       path: '/svg',
       component: recordModule(() => import('@/views/SvgPage.vue')),
       meta: { title: 'SVG' },
+    },
+    {
+      path: '/log',
+      component: logPage,
+      beforeEnter(to) {
+        const queryUrl = Array.isArray(to.query.url)
+          ? to.query.url[0]
+          : to.query.url;
+        if (typeof queryUrl == 'string') {
+          return getKnownLogRoute(queryUrl);
+        }
+      },
+      meta: { title: '日志包查看器' },
+    },
+    {
+      path: '/log/:pathMatch(.*)*',
+      component: logPage,
+      beforeEnter(to) {
+        if (!isValidLogPath(to.params.pathMatch)) return { path: '/404' };
+      },
+      meta: { title: '日志包查看器' },
     },
     {
       path: '/:pathMatch(.*)*',
