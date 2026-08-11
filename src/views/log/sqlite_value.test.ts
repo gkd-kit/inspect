@@ -3,8 +3,16 @@ import { test } from 'node:test';
 import {
   getSqliteTimeValue,
   isSqliteAppIdColumn,
+  isSqliteSortableColumn,
   isSqliteSubscriptionIdColumn,
 } from './sqlite_value.ts';
+
+test(`id、ctime 和 mtime 列支持排序`, () => {
+  assert.equal(isSqliteSortableColumn(`id`), true);
+  assert.equal(isSqliteSortableColumn(`CTIME`), true);
+  assert.equal(isSqliteSortableColumn(`mtime`), true);
+  assert.equal(isSqliteSortableColumn(`app_id`), false);
+});
 
 test(`app_id 和 app_visit_log.id 识别为应用 ID`, () => {
   assert.equal(isSqliteAppIdColumn(`action_log`, `app_id`), true);

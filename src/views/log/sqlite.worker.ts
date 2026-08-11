@@ -18,7 +18,7 @@ export type SqliteCellValue =
   | null
   | { type: `blob`; byteLength: number };
 
-export type SqlitePageResult = {
+export type SqliteDataResult = {
   columns: string[];
   rows: SqliteCellValue[][];
 };
@@ -32,15 +32,13 @@ export type SqliteWorkerRequest =
     }
   | {
       id: number;
-      type: `page`;
+      type: `data`;
       table: string;
-      page: number;
-      pageSize: number;
     }
   | { id: number; type: `close` };
 
 export type SqliteWorkerResponse =
-  | { id: number; ok: true; result: SqliteOpenResult | SqlitePageResult | null }
+  | { id: number; ok: true; result: SqliteOpenResult | SqliteDataResult | null }
   | { id: number; ok: false; error: string };
 
 let database: Database | undefined;
@@ -94,18 +92,9 @@ const openDatabase = async (
   return { tables };
 };
 
-const getTablePage = (
-  table: string,
-  page: number,
-  pageSize: number,
-): SqlitePageResult => {
+const getTableData = (table: string): SqliteDataResult => {
   if (!database || !tableNames.has(table)) throw new Error(`数据表不存在`);
-  page = Math.max(1, Math.floor(page));
-  pageSize = Math.min(200, Math.max(1, Math.floor(pageSize)));
-  const result = execOne(
-    `SELECT * FROM ${quoteIdentifier(table)} LIMIT ? OFFSET ?`,
-    [pageSize, (page - 1) * pageSize],
-  );
+  const result = execOne(`SELECT * FROM ${quoteIdentifier(table)}`);
   return {
     columns: result?.columns || [],
     rows: (result?.values || []).map((row) =>
@@ -122,11 +111,11 @@ const getTablePage = (
 self.onmessage = async (event: MessageEvent<SqliteWorkerRequest>) => {
   const request = event.data;
   try {
-    let result: SqliteOpenResult | SqlitePageResult | null;
+    let result: SqliteOpenResult | SqliteDataResult | null;
     if (request.type == `open`) {
       result = await openDatabase(request.database, request.wal);
-    } else if (request.type == `page`) {
-      result = getTablePage(request.table, request.page, request.pageSize);
+    } else if (request.type == `data`) {
+      result = getTableData(request.table);
     } else {
       database?.close();
       database = undefined;

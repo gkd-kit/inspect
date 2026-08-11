@@ -1,6 +1,11 @@
 const sqliteTimeColumns = new Set([`ctime`, `mtime`]);
+const sqliteSortableColumns = new Set([`id`, `ctime`, `mtime`]);
 const sqliteTimeIdTables = new Set([`snapshot`, `subs_config`]);
 const sqliteSubscriptionIdTables = new Set([`app_visit_log`, `subs_config`]);
+
+export const isSqliteSortableColumn = (column: string) => {
+  return sqliteSortableColumns.has(column.toLowerCase());
+};
 
 export const isSqliteAppIdColumn = (table: string, column: string) => {
   const normalizedColumn = column.toLowerCase();

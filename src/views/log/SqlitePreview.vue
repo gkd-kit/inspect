@@ -1,9 +1,11 @@
 <script lang="tsx" setup>
+import { vRect } from '@/utils/directives';
 import type { DataTableColumns } from 'naive-ui';
+import { withDirectives } from 'vue';
 import type {
   SqliteCellValue,
+  SqliteDataResult,
   SqliteOpenResult,
-  SqlitePageResult,
   SqliteTableMeta,
   SqliteWorkerRequest,
   SqliteWorkerResponse,
@@ -13,8 +15,14 @@ import {
   formatLocalDateTime,
   getSqliteTimeValue,
   isSqliteAppIdColumn,
+  isSqliteSortableColumn,
   isSqliteSubscriptionIdColumn,
 } from './sqlite_value';
+import {
+  getSqliteColumnWidth,
+  getSqliteMeasuredColumnWidth,
+  getSqliteTableWidth,
+} from './sqlite_table';
 import { createTextSearchOptions, matchesTextSearch } from './text_search';
 
 const props = defineProps<{
@@ -25,14 +33,13 @@ const props = defineProps<{
 }>();
 
 const loading = shallowRef(true);
-const pageLoading = shallowRef(false);
+const dataLoading = shallowRef(false);
 const errorText = shallowRef(``);
-const pageErrorText = shallowRef(``);
+const dataErrorText = shallowRef(``);
 const tables = shallowRef<SqliteTableMeta[]>([]);
 const selectedTableName = shallowRef(``);
-const page = shallowRef(1);
-const pageSize = 100;
 const columns = shallowRef<string[]>([]);
+const columnWidths = shallowRef<number[]>([]);
 const rows = shallowRef<SqliteCellValue[][]>([]);
 const tableQuery = shallowRef(``);
 const tableSearchOptions = reactive(createTextSearchOptions());
@@ -41,11 +48,11 @@ const worker = new Worker(new URL(`./sqlite.worker.ts`, import.meta.url), {
   type: `module`,
 });
 let nextRequestId = 1;
-let pageRequestSequence = 0;
+let dataRequestSequence = 0;
 const pending = new Map<
   number,
   {
-    resolve: (value: SqliteOpenResult | SqlitePageResult | null) => void;
+    resolve: (value: SqliteOpenResult | SqliteDataResult | null) => void;
     reject: (reason: Error) => void;
   }
 >();
@@ -94,43 +101,57 @@ const filteredTables = computed(() => {
   );
 });
 
-const loadPage = async () => {
+let textMeasureContext: CanvasRenderingContext2D | null | undefined;
+const measureSqliteText = (text: string) => {
+  if (textMeasureContext === undefined) {
+    textMeasureContext = document.createElement(`canvas`).getContext(`2d`);
+    if (textMeasureContext) {
+      const { fontFamily, fontSize } = getComputedStyle(document.body);
+      textMeasureContext.font = `${fontSize} ${fontFamily}`;
+    }
+  }
+  return (
+    textMeasureContext?.measureText(text).width ?? Array.from(text).length * 8
+  );
+};
+
+const loadData = async () => {
   if (!selectedTableName.value) return;
-  const requestSequence = ++pageRequestSequence;
+  const requestSequence = ++dataRequestSequence;
   const table = selectedTableName.value;
-  const requestedPage = page.value;
-  pageLoading.value = true;
-  pageErrorText.value = ``;
+  dataLoading.value = true;
+  dataErrorText.value = ``;
   try {
-    const result = await requestWorker<SqlitePageResult>({
-      type: `page`,
+    const result = await requestWorker<SqliteDataResult>({
+      type: `data`,
       table,
-      page: requestedPage,
-      pageSize,
     });
     if (
-      requestSequence != pageRequestSequence ||
-      table != selectedTableName.value ||
-      requestedPage != page.value
+      requestSequence != dataRequestSequence ||
+      table != selectedTableName.value
     ) {
       return;
     }
+    columnWidths.value = result.columns.map((name) =>
+      getSqliteColumnWidth({
+        title: name,
+        values: [],
+        sortable: isSqliteSortableColumn(name),
+        measureText: measureSqliteText,
+      }),
+    );
     columns.value = result.columns;
     rows.value = result.rows;
   } catch (error) {
-    if (requestSequence != pageRequestSequence) return;
-    pageErrorText.value =
+    if (requestSequence != dataRequestSequence) return;
+    dataErrorText.value =
       error instanceof Error ? error.message : String(error);
   } finally {
-    if (requestSequence == pageRequestSequence) pageLoading.value = false;
+    if (requestSequence == dataRequestSequence) dataLoading.value = false;
   }
 };
 
-watch(selectedTableName, () => {
-  if (page.value == 1) void loadPage();
-  else page.value = 1;
-});
-watch(page, loadPage);
+watch(selectedTableName, loadData);
 
 const init = async () => {
   loading.value = true;
@@ -208,14 +229,40 @@ const renderSqlValue = (
 const tableColumns = computed<
   DataTableColumns<Record<string, SqliteCellValue>>
 >(() => {
-  return columns.value.map((name) => ({
+  const table = selectedTableName.value;
+  return columns.value.map((name, columnIndex) => ({
     key: name,
     title: name,
+    width: columnWidths.value[columnIndex],
+    sorter: isSqliteSortableColumn(name) ? `default` : undefined,
     render(row) {
-      return renderSqlValue(selectedTableName.value, name, row[name] ?? null);
+      return withDirectives(
+        <span class="inline-block w-max">
+          {renderSqlValue(table, name, row[name] ?? null)}
+        </span>,
+        [
+          [
+            vRect,
+            (rect: DOMRect) => {
+              if (table != selectedTableName.value) return;
+              const currentWidth = columnWidths.value[columnIndex];
+              if (currentWidth == null) return;
+              const nextWidth = getSqliteMeasuredColumnWidth(
+                currentWidth,
+                rect.width,
+              );
+              if (nextWidth == currentWidth) return;
+              const nextWidths = [...columnWidths.value];
+              nextWidths[columnIndex] = nextWidth;
+              columnWidths.value = nextWidths;
+            },
+          ],
+        ],
+      );
     },
   }));
 });
+const tableScrollX = computed(() => getSqliteTableWidth(columnWidths.value));
 const tableRows = computed(() => {
   return rows.value.map((values, index) => {
     const row: Record<string, SqliteCellValue> = { __rowIndex: index };
@@ -296,37 +343,31 @@ const tableRows = computed(() => {
               class="h-full min-h-0 flex flex-col items-end gap-10px"
             >
               <NAlert
-                v-if="pageErrorText"
+                v-if="dataErrorText"
                 type="warning"
                 title="当前数据表无法读取"
                 class="w-full flex-none"
               >
-                {{ pageErrorText }}
+                {{ dataErrorText }}
               </NAlert>
               <div
                 name="sqlite-data-table-scroll"
-                class="w-full min-h-0 flex-1 overflow-auto"
+                class="w-full min-h-0 flex-1"
               >
                 <NDataTable
                   striped
-                  table-layout="auto"
-                  :loading="pageLoading"
+                  virtual-scroll
+                  flex-height
+                  :scrollX="tableScrollX || undefined"
+                  :loading="dataLoading"
                   :columns="tableColumns"
                   :data="tableRows"
                   :pagination="false"
                   :rowKey="(row: Record<string, SqliteCellValue>) => Number(row.__rowIndex)"
                   size="small"
-                  class="w-full [&_.n-data-table-table]:min-w-full [&_.n-data-table-table]:w-max [&_.n-data-table-th]:whitespace-nowrap"
+                  class="h-full w-full [&_.n-data-table-table]:min-w-full [&_.n-data-table-th]:whitespace-nowrap"
                 />
               </div>
-              <NPagination
-                v-if="
-                  selectedTable.count != null && selectedTable.count > pageSize
-                "
-                v-model:page="page"
-                :pageSize="pageSize"
-                :itemCount="selectedTable.count"
-              />
             </div>
           </NTabPane>
           <NTabPane name="schema" tab="表结构">
