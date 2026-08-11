@@ -18,6 +18,12 @@ export const mirror = (): Plugin => {
         return {
           experimental: {
             renderBuiltUrl(filename) {
+              if (filename.startsWith(`assets/worker-entry-`)) {
+                const sameOriginPath = `/${filename}`;
+                return {
+                  runtime: `globalThis.location.origin + ${JSON.stringify(sameOriginPath)}`,
+                };
+              }
               return mirrorBaseUrl + '/' + filename;
             },
           },
