@@ -25,14 +25,14 @@ const segments = computed(() => getLineSegments(props.line));
     >
       {{ line.number }}
     </span>
-    <code
+    <span
       class="box-border min-w-0 px-10px [font:inherit] [tab-size:2]"
       :class="
         wrap ? 'whitespace-pre-wrap [overflow-wrap:anywhere]' : 'whitespace-pre'
       "
     >
       <template v-for="(segment, index) in segments" :key="index">
-        <mark
+        <span
           v-if="segment.match"
           :ref="segment.active ? setActiveMatchElement : undefined"
           name="text-viewer-match"
@@ -43,9 +43,9 @@ const segments = computed(() => getLineSegments(props.line));
           "
         >
           {{ segment.text }}
-        </mark>
+        </span>
         <template v-else>{{ segment.text }}</template>
       </template>
-    </code>
+    </span>
   </div>
 </template>

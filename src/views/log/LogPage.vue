@@ -395,7 +395,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
     page-size
     class="box-border flex min-h-700px min-w-1200px flex-col gap-10px bg-[#f8fafc] p-10px"
   >
-    <header name="log-toolbar" class="h-42px flex items-center gap-10px">
+    <div name="log-toolbar" class="h-42px flex items-center gap-10px">
       <RouterLink to="/" flex items-center>
         <NButton quaternary>返回首页</NButton>
       </RouterLink>
@@ -423,18 +423,18 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
         accept=".zip,application/zip"
         @change="handleLocalFile"
       />
-    </header>
+    </div>
 
     <NAlert v-if="errorText" type="error" closable @close="errorText = ``">
       {{ errorText }}
     </NAlert>
 
-    <main
+    <div
       v-if="archive"
       name="log-workspace"
       class="flex min-h-0 flex-1 gap-10px"
     >
-      <aside
+      <div
         name="log-file-panel"
         class="box-border flex min-h-0 flex-col rounded-6px border border-[#e2e8f0] bg-white transition-[width,min-width] duration-180 ease"
         :class="
@@ -492,9 +492,9 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
           class="min-h-0 flex-1 p-8px"
           @update:selectedKeys="updateSelectedKeys"
         />
-      </aside>
+      </div>
 
-      <section
+      <div
         name="log-preview-panel"
         class="box-border flex min-h-0 min-w-0 flex-1 flex-col rounded-6px border border-[#e2e8f0] bg-white"
       >
@@ -600,10 +600,10 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
           />
           <NEmpty v-else description="该文件不支持预览" />
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
-    <main
+    <div
       v-else
       name="log-empty-state"
       class="grid min-h-0 flex-1 place-items-center"
@@ -626,6 +626,6 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
           </div>
         </div>
       </NSpin>
-    </main>
+    </div>
   </div>
 </template>

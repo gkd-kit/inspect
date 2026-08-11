@@ -110,7 +110,7 @@ const columns: DataTableColumns<DeviceApp> = [
     >
       <NTabPane name="users" tab="按用户查看">
         <div name="apps-users-layout" class="h-full min-h-0 flex gap-12px">
-          <aside
+          <div
             name="user-list"
             aria-label="设备用户"
             class="w-220px min-w-220px overflow-auto pr-2px"
@@ -141,14 +141,14 @@ const columns: DataTableColumns<DeviceApp> = [
                 {{ user.apps.length }} 个应用
               </span>
             </button>
-          </aside>
+          </div>
 
-          <section
+          <div
             v-if="selectedUser"
             name="user-apps"
             class="min-h-0 min-w-0 flex flex-1 flex-col gap-10px"
           >
-            <header
+            <div
               name="user-apps-header"
               class="min-w-0 flex items-center gap-16px"
             >
@@ -170,7 +170,7 @@ const columns: DataTableColumns<DeviceApp> = [
                 placeholder="搜索应用名称、包名或版本"
                 class="ml-auto min-w-320px w-50% max-w-460px"
               />
-            </header>
+            </div>
 
             <NEmpty
               v-if="pagedApps.length == 0"
@@ -195,7 +195,7 @@ const columns: DataTableColumns<DeviceApp> = [
               :itemCount="filteredApps.length"
               class="flex-none justify-end"
             />
-          </section>
+          </div>
         </div>
       </NTabPane>
 

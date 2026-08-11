@@ -22,9 +22,9 @@ const columns = computed<DataTableColumns<JsonTableRow>>(() => [
     title: `值`,
     render(row) {
       return (
-        <code class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+        <span class="whitespace-pre-wrap font-mono [overflow-wrap:anywhere]">
           {formatBasicJsonValue(row.value)}
-        </code>
+        </span>
       );
     },
   },

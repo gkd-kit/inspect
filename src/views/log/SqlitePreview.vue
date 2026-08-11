@@ -287,7 +287,7 @@ const tableRows = computed(() => {
       description="数据库中没有可展示的数据表"
     />
     <div v-else name="sqlite-layout" class="h-full min-h-0 flex gap-12px">
-      <aside
+      <div
         name="sqlite-table-list"
         class="w-250px min-w-250px flex flex-col gap-8px border-r border-[#e5e7eb] pr-10px"
       >
@@ -318,9 +318,9 @@ const tableRows = computed(() => {
             </NTag>
           </NButton>
         </div>
-      </aside>
+      </div>
 
-      <section
+      <div
         v-if="selectedTable"
         name="sqlite-table-content"
         class="h-full min-h-0 min-w-0 flex-1"
@@ -371,14 +371,14 @@ const tableRows = computed(() => {
             </div>
           </NTabPane>
           <NTabPane name="schema" tab="表结构">
-            <pre
+            <div
               name="sqlite-schema"
-              class="box-border m-0 h-full overflow-auto whitespace-pre-wrap rounded-4px border border-[#e5e7eb] bg-[#fafafa] p-12px"
-              >{{ selectedTable.sql }}</pre
-            >
+              class="box-border m-0 h-full overflow-auto whitespace-pre-wrap rounded-4px border border-[#e5e7eb] bg-[#fafafa] p-12px font-mono"
+              v-text="selectedTable.sql"
+            ></div>
           </NTabPane>
         </NTabs>
-      </section>
+      </div>
     </div>
   </NSpin>
 </template>

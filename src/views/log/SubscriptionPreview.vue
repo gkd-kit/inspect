@@ -87,9 +87,9 @@ const renderRules = (group: RawAppGroup | RawGlobalGroup) => {
           name={index}
           title={getRuleTitle(rule, index)}
         >
-          <pre class="m-0 whitespace-pre-wrap rounded-4px border border-[#e5e7eb] bg-[#fafafa] p-10px font-mono text-12px [overflow-wrap:anywhere]">
+          <div class="m-0 whitespace-pre-wrap rounded-4px border border-[#e5e7eb] bg-[#fafafa] p-10px font-mono text-12px [overflow-wrap:anywhere]">
             {JSON.stringify(rule, null, 2)}
-          </pre>
+          </div>
         </NCollapseItem>
       ))}
     </NCollapse>

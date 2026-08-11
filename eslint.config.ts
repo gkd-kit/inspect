@@ -6,6 +6,7 @@ import pluginPrettier from 'eslint-plugin-prettier/recommended';
 import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import autoImportGlobals from './.eslintrc-auto-import.json' with { type: 'json' };
+import projectRules from './eslint-rules/native-element-allowlist.ts';
 
 export default defineConfig(
   {
@@ -21,6 +22,17 @@ export default defineConfig(
   js.configs.recommended,
   tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
+
+  // Disallow JavaScript-family source files. Generated and dependency files are ignored above.
+  {
+    files: ['**/*.{js,mjs,cjs,jsx,mts,cts}'],
+    plugins: {
+      project: projectRules,
+    },
+    rules: {
+      'project/typescript-source-files-only': 'error',
+    },
+  },
 
   // Vue SFC + TypeScript parser
   {
@@ -40,17 +52,18 @@ export default defineConfig(
 
   // https://typescript-eslint.io/troubleshooting/faqs/eslint/
   {
-    files: ['**/*.{ts,tsx,mts,cts,vue}'],
+    files: ['**/*.{ts,tsx,vue}'],
     rules: {
       'no-undef': 'off',
     },
   },
 
-  // for JS/TS/Vue
+  // for TS/Vue
   {
-    files: ['**/*.{js,mjs,cjs,ts,mts,cts,vue}'],
+    files: ['**/*.{ts,tsx,vue}'],
     plugins: {
       'unused-imports': unusedImports,
+      project: projectRules,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -66,6 +79,7 @@ export default defineConfig(
       'vue/v-on-event-hyphenation': ['error', 'never', { autofix: true }],
       'vue/custom-event-name-casing': ['error', 'camelCase'],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+      'project/native-element-allowlist': 'error',
       'no-empty': 'off',
       'no-useless-assignment': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
