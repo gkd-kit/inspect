@@ -15,11 +15,6 @@ export default defineConfig(() => {
   return {
     worker: {
       format: `es` as const,
-      rollupOptions: {
-        output: {
-          entryFileNames: `assets/worker-entry-[name]-[hash].js`,
-        },
-      },
     },
     resolve: {
       tsconfigPaths: true,

@@ -7,28 +7,36 @@ const selfPkg: typeof selfPkgT = JSON.parse(
 );
 
 const mirrorBaseUrl = `https://registry.npmmirror.com/@gkd-kit/inspect/${selfPkg.version}/files/dist`;
+const workerEntryPrefix = `assets/worker-entry-`;
 
 export const mirror = (): Plugin => {
   return {
     name: 'mirror',
-    apply: 'build',
+    apply(_config, { command }) {
+      return command == `build` && process.env.MIRROR == `ON`;
+    },
     enforce: 'post',
     config() {
-      if (process.env.MIRROR == `ON`) {
-        return {
-          experimental: {
-            renderBuiltUrl(filename) {
-              if (filename.startsWith(`assets/worker-entry-`)) {
-                const sameOriginPath = `/${filename}`;
-                return {
-                  runtime: `globalThis.location.origin + ${JSON.stringify(sameOriginPath)}`,
-                };
-              }
-              return mirrorBaseUrl + '/' + filename;
+      return {
+        worker: {
+          rollupOptions: {
+            output: {
+              entryFileNames: `${workerEntryPrefix}[name]-[hash].js`,
             },
           },
-        };
-      }
+        },
+        experimental: {
+          renderBuiltUrl(filename) {
+            if (filename.startsWith(workerEntryPrefix)) {
+              const sameOriginPath = `/${filename}`;
+              return {
+                runtime: `globalThis.location.origin + ${JSON.stringify(sameOriginPath)}`,
+              };
+            }
+            return mirrorBaseUrl + '/' + filename;
+          },
+        },
+      };
     },
   };
 };
