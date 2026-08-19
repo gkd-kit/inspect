@@ -2,6 +2,12 @@ import type { RawSubscription } from '@gkd-kit/api';
 import type { JSZipObject } from 'jszip';
 import { loadAsync } from '@/utils/chunk';
 import { getAppNameMapFromValue } from './app_names';
+import {
+  createSourceLinkContext,
+  parseLogVersionInfo,
+  type LogVersionInfo,
+  type SourceLinkContext,
+} from './source_links';
 import { getSubscriptionNameEntry } from './subscription_names';
 import { assertSafeZipStructure } from './zip_limits';
 
@@ -331,6 +337,94 @@ export const decodeLogText = (data: Uint8Array) => {
     }
   }
   return text;
+};
+
+const archiveSourceLinkContextTasks = new WeakMap<
+  LogArchive,
+  Promise<SourceLinkContext | undefined>
+>();
+
+const getLogVersionEntries = (archive: LogArchive) => {
+  return archive.entries.filter((entry) =>
+    /^gkd-[^/]+\.json$/i.test(entry.path),
+  );
+};
+
+const logVersionInfoTasks = new WeakMap<
+  LogArchive,
+  Promise<LogVersionInfo | undefined>
+>();
+
+export const getLogVersionInfo = (archive: LogArchive) => {
+  let task = logVersionInfoTasks.get(archive);
+  if (task) return task;
+  task = (async () => {
+    const items: LogVersionInfo[] = [];
+    for (const entry of getLogVersionEntries(archive)) {
+      try {
+        const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
+        const item = parseLogVersionInfo(raw);
+        if (item) items.push(item);
+      } catch {}
+    }
+    const first = items[0];
+    if (!first) return;
+    if (
+      items.some(
+        (item) =>
+          item.versionName != first.versionName ||
+          item.versionCode != first.versionCode ||
+          item.commitUrl != first.commitUrl,
+      )
+    ) {
+      return;
+    }
+    return first;
+  })();
+  logVersionInfoTasks.set(archive, task);
+  return task;
+};
+
+export const getArchiveSourceLinkContext = (archive: LogArchive) => {
+  let task = archiveSourceLinkContextTasks.get(archive);
+  if (task) return task;
+  task = (async () => {
+    const sourcePathsEntry = archive.entries.find(
+      (entry) => entry.path.toLowerCase() == `source-paths.txt`,
+    );
+    if (!sourcePathsEntry) return;
+    const versionEntries = getLogVersionEntries(archive);
+    if (versionEntries.length == 0) return;
+    try {
+      const sourcePathsRaw = decodeLogText(
+        await readEntryBytes(sourcePathsEntry, MAX_JSON_SIZE),
+      );
+      const contexts: SourceLinkContext[] = [];
+      for (const entry of versionEntries) {
+        try {
+          const versionRaw = decodeLogText(
+            await readEntryBytes(entry, MAX_JSON_SIZE),
+          );
+          const context = createSourceLinkContext(versionRaw, sourcePathsRaw);
+          if (context) contexts.push(context);
+        } catch {}
+      }
+      const first = contexts[0];
+      if (!first) return;
+      if (
+        contexts.some(
+          (context) =>
+            context.repositoryUrl != first.repositoryUrl ||
+            context.commitId.toLowerCase() != first.commitId.toLowerCase(),
+        )
+      ) {
+        return;
+      }
+      return first;
+    } catch {}
+  })();
+  archiveSourceLinkContextTasks.set(archive, task);
+  return task;
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> => {

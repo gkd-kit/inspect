@@ -46,6 +46,7 @@ import { isJsonTreeTooLarge } from './json_preview';
 import JsonPreview from './JsonPreview.vue';
 import LogDirectoryPreview from './LogDirectoryPreview.vue';
 import { readLimitedResponse } from './response';
+import type { LogVersionInfo, SourceLinkContext } from './source_links';
 import SubscriptionPreview from './SubscriptionPreview.vue';
 import SubscriptionDirectoryPreview from './SubscriptionDirectoryPreview.vue';
 import SqlitePreview from './SqlitePreview.vue';
@@ -54,7 +55,9 @@ import {
   decodeLogText,
   formatBytes,
   getLogAppNames,
+  getArchiveSourceLinkContext,
   getLogSubscriptionNames,
+  getLogVersionInfo,
   getDatabaseFiles,
   getDefaultLogEntry,
   isRawSubscription,
@@ -105,6 +108,8 @@ const logDetailPath = shallowRef(``);
 const logDetailText = shallowRef<string>();
 const logDetailError = shallowRef(``);
 const logDetailLoading = shallowRef(false);
+const sourceLinkContext = shallowRef<SourceLinkContext>();
+const logVersionInfo = shallowRef<LogVersionInfo>();
 const subscriptionItems = shallowRef<SubscriptionFileSummary[]>([]);
 const subscriptionDetail = shallowRef<SubscriptionFileDetail>();
 const subscriptionDetailStructured = shallowRef(false);
@@ -158,6 +163,8 @@ const clearSubscriptionDetail = () => {
 
 const resetDirectoryData = () => {
   logItems.value = [];
+  sourceLinkContext.value = undefined;
+  logVersionInfo.value = undefined;
   subscriptionItems.value = [];
   subscriptionSummaryTask = undefined;
   clearLogDetail();
@@ -454,7 +461,18 @@ const loadArchive = async (
   try {
     const result = await loadLogArchive(data, name || `log.zip`);
     if (sequence != loadSequence) return;
+    const [resolvedVersionInfo, resolvedSourceLinkContext] = await Promise.all([
+      getLogVersionInfo(result),
+      getArchiveSourceLinkContext(result),
+    ]);
+    if (sequence != loadSequence) return;
     archive.value = result;
+    logVersionInfo.value = resolvedVersionInfo
+      ? markRaw(resolvedVersionInfo)
+      : undefined;
+    sourceLinkContext.value = resolvedSourceLinkContext
+      ? markRaw(resolvedSourceLinkContext)
+      : undefined;
     const initialEntry = getDefaultLogEntry(result);
     if (initialEntry && isLogDirectoryPath(initialEntry.path)) {
       showLogDirectoryPreview();
@@ -745,6 +763,15 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
       <div name="log-title" class="flex-none text-18px font-600">
         日志包查看器
       </div>
+      <a
+        v-if="logVersionInfo"
+        :href="logVersionInfo.commitUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex-none text-14px text-[#2563eb] hover:underline"
+      >
+        {{ logVersionInfo.versionName }} ({{ logVersionInfo.versionCode }})
+      </a>
       <NInputGroup class="ml-auto min-w-420px max-w-720px">
         <NInput
           v-model:value="inputUrl"
@@ -923,6 +950,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             :items="crashItems"
             :detail="crashDetail"
             :detailLoading="crashDetailLoading"
+            :sourceLinkContext="sourceLinkContext"
             @select="loadCrashDetail"
           />
           <LogDirectoryPreview
@@ -932,6 +960,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             :detailText="logDetailText"
             :detailError="logDetailError"
             :detailLoading="logDetailLoading"
+            :sourceLinkContext="sourceLinkContext"
             @select="loadLogFileDetail"
           />
           <SubscriptionDirectoryPreview

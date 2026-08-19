@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SourceLinkContext } from '../source_links';
 import CopyButton from './CopyButton.vue';
 import SearchBar from './SearchBar.vue';
 import Viewport from './Viewport.vue';
@@ -10,6 +11,7 @@ const props = withDefaults(
     searchPlaceholder?: string;
     allowWrap?: boolean;
     copyable?: boolean;
+    sourceLinkContext?: SourceLinkContext;
   }>(),
   {
     searchPlaceholder: `搜索`,
@@ -23,6 +25,7 @@ const state = useProvideTextViewerState({
   searchPlaceholder: toRef(props, `searchPlaceholder`),
   allowWrap: toRef(props, `allowWrap`),
   copyable: toRef(props, `copyable`),
+  sourceLinkContext: toRef(props, `sourceLinkContext`),
 });
 
 const { allowWrap: allowWrapRef, wrap } = state;

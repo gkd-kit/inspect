@@ -7,7 +7,13 @@ import {
   createTextSearchOptions,
   getTextMatchRanges,
   isTextSearchQueryValid,
+  type TextMatchRange,
 } from '../text_search';
+import {
+  getSourceLineTokens,
+  type SourceLinkContext,
+  type SourceLinkTarget,
+} from '../source_links';
 import { getVirtualTextLines, type VirtualTextLine } from '../virtual_text';
 
 type TextViewerOptions = {
@@ -15,12 +21,51 @@ type TextViewerOptions = {
   searchPlaceholder: Readonly<Ref<string>>;
   allowWrap: Readonly<Ref<boolean>>;
   copyable: Readonly<Ref<boolean>>;
+  sourceLinkContext: Readonly<Ref<SourceLinkContext | undefined>>;
 };
 
-export type TextLineSegment = {
+export type TextLineFragment = {
   text: string;
   match: boolean;
   active: boolean;
+};
+
+export type TextLineToken = {
+  fragments: TextLineFragment[];
+  sourceTargets?: readonly SourceLinkTarget[];
+};
+
+const getTextLineFragments = (
+  text: string,
+  offset: number,
+  ranges: readonly TextMatchRange[],
+  activeRangeIndex: number | undefined,
+): TextLineFragment[] => {
+  if (!text) return [{ text: ` `, match: false, active: false }];
+  const boundaries = new Set([0, text.length]);
+  const end = offset + text.length;
+  ranges.forEach((range) => {
+    if (range.end <= offset || range.start >= end) return;
+    boundaries.add(Math.max(range.start - offset, 0));
+    boundaries.add(Math.min(range.end - offset, text.length));
+  });
+  const points = [...boundaries].toSorted((a, b) => a - b);
+  const fragments: TextLineFragment[] = [];
+  for (let index = 0; index < points.length - 1; index++) {
+    const start = points[index];
+    const fragmentEnd = points[index + 1];
+    if (start == null || fragmentEnd == null || start == fragmentEnd) continue;
+    const absoluteStart = offset + start;
+    const rangeIndex = ranges.findIndex(
+      (range) => range.start <= absoluteStart && range.end > absoluteStart,
+    );
+    fragments.push({
+      text: text.slice(start, fragmentEnd),
+      match: rangeIndex >= 0,
+      active: rangeIndex >= 0 && rangeIndex == activeRangeIndex,
+    });
+  }
+  return fragments;
 };
 
 const [provideTextViewerState, injectTextViewerState] = createInjectionState(
@@ -94,44 +139,32 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       if (element instanceof HTMLElement) activeMatchElement.value = element;
     };
 
-    const getLineSegments = (line: VirtualTextLine): TextLineSegment[] => {
-      if (!normalizedQuery.value) {
-        return [{ text: line.text || ` `, match: false, active: false }];
-      }
-      const segments: TextLineSegment[] = [];
-      const ranges = getTextMatchRanges(
+    const getLineTokens = (line: VirtualTextLine): TextLineToken[] => {
+      const ranges = normalizedQuery.value
+        ? getTextMatchRanges(line.text, normalizedQuery.value, searchOptions)
+        : [];
+      const activeRangeIndex =
+        activeMatch.value?.lineKey == line.key
+          ? activeMatch.value.rangeIndex
+          : undefined;
+      const sourceTokens = getSourceLineTokens(
         line.text,
-        normalizedQuery.value,
-        searchOptions,
+        options.sourceLinkContext.value,
       );
       let offset = 0;
-      ranges.forEach((range, rangeIndex) => {
-        if (range.start > offset) {
-          segments.push({
-            text: line.text.slice(offset, range.start),
-            match: false,
-            active: false,
-          });
-        }
-        segments.push({
-          text: line.text.slice(range.start, range.end),
-          match: true,
-          active:
-            activeMatch.value?.lineKey == line.key &&
-            activeMatch.value.rangeIndex == rangeIndex,
-        });
-        offset = range.end;
+      return sourceTokens.map((token) => {
+        const result: TextLineToken = {
+          fragments: getTextLineFragments(
+            token.text,
+            offset,
+            ranges,
+            activeRangeIndex,
+          ),
+          sourceTargets: token.sourceTargets,
+        };
+        offset += token.text.length;
+        return result;
       });
-      if (offset < line.text.length) {
-        segments.push({
-          text: line.text.slice(offset),
-          match: false,
-          active: false,
-        });
-      }
-      return segments.length
-        ? segments
-        : [{ text: line.text || ` `, match: false, active: false }];
     };
 
     const copyText = async () => {
@@ -250,7 +283,7 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       handleSearchEnter,
       handleScroll,
       setActiveMatchElement,
-      getLineSegments,
+      getLineTokens,
       copyText,
     };
   },

@@ -3,6 +3,7 @@ import type { DataTableColumns } from 'naive-ui';
 import type { CrashDetail, CrashSummary } from './crash_preview';
 import { formatCrashTimestamp } from './crash_preview';
 import RawJsonPreview from './RawJsonPreview.vue';
+import type { SourceLinkContext } from './source_links';
 import TextSearchInput from './TextSearchInput.vue';
 import TextViewer from './text_viewer/TextViewer.vue';
 import { createTextSearchOptions, matchesTextSearch } from './text_search';
@@ -11,6 +12,7 @@ const props = defineProps<{
   items: CrashSummary[];
   detail?: CrashDetail;
   detailLoading?: boolean;
+  sourceLinkContext?: SourceLinkContext;
 }>();
 
 const emit = defineEmits<{
@@ -289,6 +291,7 @@ const rowProps = (item: CrashSummary) => ({
                   search-placeholder="搜索崩溃堆栈"
                   allow-wrap
                   copyable
+                  :sourceLinkContext="sourceLinkContext"
                   class="h-full"
                 />
                 <NEmpty v-else description="该记录没有堆栈信息" />

@@ -2,6 +2,7 @@
 import type { DataTableColumns } from 'naive-ui';
 import { formatLogFileDate, type LogFileSummary } from './directory_preview';
 import { formatBytes } from './log';
+import type { SourceLinkContext } from './source_links';
 import TextSearchInput from './TextSearchInput.vue';
 import TextViewer from './text_viewer/TextViewer.vue';
 import { createTextSearchOptions, matchesTextSearch } from './text_search';
@@ -12,6 +13,7 @@ const props = defineProps<{
   detailText?: string;
   detailError?: string;
   detailLoading?: boolean;
+  sourceLinkContext?: SourceLinkContext;
 }>();
 
 const emit = defineEmits<{
@@ -148,6 +150,7 @@ const rowProps = (item: LogFileSummary) => ({
             search-placeholder="搜索当前日志文件"
             allow-wrap
             copyable
+            :sourceLinkContext="sourceLinkContext"
             class="min-h-0 flex-1"
           />
           <NEmpty v-else description="请选择一个日志文件" />

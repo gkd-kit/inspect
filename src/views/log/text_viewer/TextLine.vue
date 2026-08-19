@@ -1,13 +1,40 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import type { VirtualTextLine } from '../virtual_text';
-import { useTextViewerState } from './context';
+import { type TextLineFragment, useTextViewerState } from './context';
 
 const props = defineProps<{
   line: VirtualTextLine;
 }>();
 
-const { wrap, getLineSegments, setActiveMatchElement } = useTextViewerState();
-const segments = computed(() => getLineSegments(props.line));
+const { wrap, getLineTokens, setActiveMatchElement } = useTextViewerState();
+const tokens = computed(() => getLineTokens(props.line));
+
+const HighlightedText = (props: { fragments: readonly TextLineFragment[] }) => (
+  <>
+    {props.fragments.map((fragment, index) =>
+      fragment.match ? (
+        <span
+          key={index}
+          ref={fragment.active ? setActiveMatchElement : undefined}
+          data-name="text-viewer-match"
+          data-active={fragment.active ? `` : undefined}
+          class={[
+            `rounded-2px text-inherit`,
+            fragment.active ? `bg-[#fb923c] text-[#7c2d12]` : `bg-[#fde68a]`,
+          ]}
+        >
+          {fragment.text}
+        </span>
+      ) : (
+        fragment.text
+      ),
+    )}
+  </>
+);
+
+const activatePopover = (event: KeyboardEvent) => {
+  if (event.currentTarget instanceof HTMLElement) event.currentTarget.click();
+};
 </script>
 
 <template>
@@ -31,20 +58,47 @@ const segments = computed(() => getLineSegments(props.line));
         wrap ? 'whitespace-pre-wrap [overflow-wrap:anywhere]' : 'whitespace-pre'
       "
     >
-      <template v-for="(segment, index) in segments" :key="index">
-        <span
-          v-if="segment.match"
-          :ref="segment.active ? setActiveMatchElement : undefined"
-          name="text-viewer-match"
-          :data-active="segment.active ? '' : undefined"
-          class="rounded-2px text-inherit"
-          :class="
-            segment.active ? 'bg-[#fb923c] text-[#7c2d12]' : 'bg-[#fde68a]'
-          "
+      <template v-for="(token, index) in tokens" :key="index">
+        <a
+          v-if="token.sourceTargets?.length == 1"
+          :href="token.sourceTargets[0]?.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-[#2563eb] underline decoration-transparent underline-offset-2 hover:decoration-current"
         >
-          {{ segment.text }}
-        </span>
-        <template v-else>{{ segment.text }}</template>
+          <HighlightedText :fragments="token.fragments" />
+        </a>
+        <NPopover
+          v-else-if="token.sourceTargets && token.sourceTargets.length > 1"
+          trigger="click"
+          placement="bottom-start"
+        >
+          <template #trigger>
+            <span
+              role="button"
+              tabindex="0"
+              class="cursor-pointer text-[#2563eb] underline decoration-dashed underline-offset-2"
+              @keydown.enter.prevent="activatePopover"
+              @keydown.space.prevent="activatePopover"
+            >
+              <HighlightedText :fragments="token.fragments" />
+            </span>
+          </template>
+          <div class="max-w-640px flex flex-col gap-4px">
+            <a
+              v-for="target in token.sourceTargets"
+              :key="target.path"
+              :href="target.url"
+              :title="target.path"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="break-all text-[#2563eb] hover:underline"
+            >
+              {{ target.displayPath }}
+            </a>
+          </div>
+        </NPopover>
+        <HighlightedText v-else :fragments="token.fragments" />
       </template>
     </span>
   </div>
