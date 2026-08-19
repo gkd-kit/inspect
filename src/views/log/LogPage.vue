@@ -12,10 +12,42 @@ import {
 import { getDragEventFiles } from '@/utils/others';
 import AppsPreview from './AppsPreview.vue';
 import { getAppsPreviewData, type AppsPreviewData } from './apps_preview';
+import CrashPreview from './CrashPreview.vue';
+import {
+  CRASH_TREE_KEY,
+  getCrashEntries,
+  getUnsupportedCrashDetail,
+  getUnreadableCrashDetail,
+  isCrashJsonPath,
+  isCrashPath,
+  loadCrashSummaries,
+  parseCrashDetail,
+  type CrashDetail,
+  type CrashSummary,
+} from './crash_preview';
+import {
+  getLogDirectoryEntries,
+  getLogFileSummaries,
+  getSubscriptionDirectoryEntries,
+  getUnsupportedSubscriptionDetail,
+  getUnreadableSubscriptionDetail,
+  isLogDirectoryPath,
+  isSubscriptionDirectoryPath,
+  isSubscriptionJsonPath,
+  loadSubscriptionFileSummaries,
+  LOG_TREE_KEY,
+  parseSubscriptionFileDetail,
+  SUBSCRIPTION_TREE_KEY,
+  type LogFileSummary,
+  type SubscriptionFileDetail,
+  type SubscriptionFileSummary,
+} from './directory_preview';
 import { isJsonTreeTooLarge } from './json_preview';
 import JsonPreview from './JsonPreview.vue';
+import LogDirectoryPreview from './LogDirectoryPreview.vue';
 import { readLimitedResponse } from './response';
 import SubscriptionPreview from './SubscriptionPreview.vue';
+import SubscriptionDirectoryPreview from './SubscriptionDirectoryPreview.vue';
 import SqlitePreview from './SqlitePreview.vue';
 import TextViewer from './text_viewer/TextViewer.vue';
 import {
@@ -45,6 +77,9 @@ type PreviewKind =
   | `text`
   | `json`
   | `apps`
+  | `crash`
+  | `log-directory`
+  | `subscription-directory`
   | `subscription`
   | `invalid-json`
   | `database`
@@ -62,6 +97,18 @@ const previewKind = shallowRef<PreviewKind>(`none`);
 const previewText = shallowRef(``);
 const jsonValue = shallowRef<unknown>();
 const appsData = shallowRef<AppsPreviewData>();
+const crashItems = shallowRef<CrashSummary[]>([]);
+const crashDetail = shallowRef<CrashDetail>();
+const crashDetailLoading = shallowRef(false);
+const logItems = shallowRef<LogFileSummary[]>([]);
+const logDetailPath = shallowRef(``);
+const logDetailText = shallowRef<string>();
+const logDetailError = shallowRef(``);
+const logDetailLoading = shallowRef(false);
+const subscriptionItems = shallowRef<SubscriptionFileSummary[]>([]);
+const subscriptionDetail = shallowRef<SubscriptionFileDetail>();
+const subscriptionDetailStructured = shallowRef(false);
+const subscriptionDetailLoading = shallowRef(false);
 const jsonError = shallowRef(``);
 const databaseData = shallowRef<Uint8Array>();
 const walData = shallowRef<Uint8Array>();
@@ -71,13 +118,54 @@ const localFileInput = shallowRef<HTMLInputElement>();
 const filePanelCollapsed = shallowRef(false);
 let loadSequence = 0;
 let previewSequence = 0;
+let crashDetailSequence = 0;
+let crashSummaryTask: Promise<CrashSummary[]> | undefined;
+let logDetailSequence = 0;
+let subscriptionDetailSequence = 0;
+let subscriptionSummaryTask: Promise<SubscriptionFileSummary[]> | undefined;
 let activeFetchController: AbortController | undefined;
 
 const selectedEntry = computed(() =>
   archive.value?.entryMap.get(selectedPath.value),
 );
 
+const clearCrashDetail = () => {
+  crashDetailSequence++;
+  crashDetail.value = undefined;
+  crashDetailLoading.value = false;
+};
+
+const resetCrashData = () => {
+  crashSummaryTask = undefined;
+  crashItems.value = [];
+  clearCrashDetail();
+};
+
+const clearLogDetail = () => {
+  logDetailSequence++;
+  logDetailPath.value = ``;
+  logDetailText.value = undefined;
+  logDetailError.value = ``;
+  logDetailLoading.value = false;
+};
+
+const clearSubscriptionDetail = () => {
+  subscriptionDetailSequence++;
+  subscriptionDetail.value = undefined;
+  subscriptionDetailStructured.value = false;
+  subscriptionDetailLoading.value = false;
+};
+
+const resetDirectoryData = () => {
+  logItems.value = [];
+  subscriptionItems.value = [];
+  subscriptionSummaryTask = undefined;
+  clearLogDetail();
+  clearSubscriptionDetail();
+};
+
 const clearPreview = () => {
+  previewLoading.value = false;
   previewKind.value = `none`;
   previewText.value = ``;
   jsonValue.value = undefined;
@@ -87,6 +175,9 @@ const clearPreview = () => {
   walData.value = undefined;
   appNames.value = {};
   subscriptionNames.value = {};
+  clearCrashDetail();
+  clearLogDetail();
+  clearSubscriptionDetail();
 };
 
 const showEntry = async (entry: LogEntry | undefined) => {
@@ -163,12 +254,198 @@ const showEntry = async (entry: LogEntry | undefined) => {
   }
 };
 
+const showCrashPreview = async () => {
+  const currentArchive = archive.value;
+  if (!currentArchive) return;
+  const entries = getCrashEntries(currentArchive.entries);
+  if (entries.length == 0) return;
+  const sequence = ++previewSequence;
+  errorText.value = ``;
+  clearPreview();
+  selectedPath.value = CRASH_TREE_KEY;
+  previewKind.value = `crash`;
+  if (crashItems.value.length == entries.length) return;
+  previewLoading.value = true;
+  try {
+    crashSummaryTask ||= loadCrashSummaries(entries, async (entry) => {
+      return decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
+    });
+    const items = await crashSummaryTask;
+    if (
+      sequence != previewSequence ||
+      currentArchive != archive.value ||
+      selectedPath.value != CRASH_TREE_KEY
+    ) {
+      return;
+    }
+    crashItems.value = markRaw(items);
+  } catch (error) {
+    if (sequence != previewSequence) return;
+    errorText.value = error instanceof Error ? error.message : String(error);
+    previewKind.value = `unsupported`;
+  } finally {
+    if (sequence == previewSequence) previewLoading.value = false;
+  }
+};
+
+const loadCrashDetail = async (path: string) => {
+  const currentArchive = archive.value;
+  const entry = currentArchive?.entryMap.get(path);
+  if (!currentArchive || !entry || !isCrashPath(entry.path)) return;
+  const sequence = ++crashDetailSequence;
+  crashDetail.value = undefined;
+  crashDetailLoading.value = true;
+  if (!isCrashJsonPath(entry.path)) {
+    crashDetail.value = markRaw(getUnsupportedCrashDetail(entry.path));
+    crashDetailLoading.value = false;
+    return;
+  }
+  try {
+    const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
+    if (
+      sequence != crashDetailSequence ||
+      currentArchive != archive.value ||
+      previewKind.value != `crash`
+    ) {
+      return;
+    }
+    crashDetail.value = markRaw(parseCrashDetail(raw, entry.path));
+  } catch (error) {
+    if (sequence != crashDetailSequence) return;
+    crashDetail.value = markRaw(getUnreadableCrashDetail(entry.path, error));
+  } finally {
+    if (sequence == crashDetailSequence) crashDetailLoading.value = false;
+  }
+};
+
+const showLogDirectoryPreview = () => {
+  const currentArchive = archive.value;
+  if (!currentArchive) return;
+  const entries = getLogDirectoryEntries(currentArchive.entries);
+  if (entries.length == 0) return;
+  previewSequence++;
+  errorText.value = ``;
+  clearPreview();
+  selectedPath.value = LOG_TREE_KEY;
+  logItems.value = markRaw(getLogFileSummaries(entries));
+  previewKind.value = `log-directory`;
+};
+
+const loadLogFileDetail = async (path: string) => {
+  const currentArchive = archive.value;
+  const entry = currentArchive?.entryMap.get(path);
+  if (!currentArchive || !entry || !isLogDirectoryPath(entry.path)) return;
+  const sequence = ++logDetailSequence;
+  logDetailPath.value = entry.path;
+  logDetailText.value = undefined;
+  logDetailError.value = ``;
+  logDetailLoading.value = true;
+  try {
+    const text = decodeLogText(await readEntryBytes(entry));
+    if (
+      sequence != logDetailSequence ||
+      currentArchive != archive.value ||
+      previewKind.value != `log-directory`
+    ) {
+      return;
+    }
+    logDetailText.value = text;
+  } catch (error) {
+    if (sequence != logDetailSequence) return;
+    logDetailError.value =
+      error instanceof Error ? error.message : String(error);
+  } finally {
+    if (sequence == logDetailSequence) logDetailLoading.value = false;
+  }
+};
+
+const showSubscriptionDirectoryPreview = async () => {
+  const currentArchive = archive.value;
+  if (!currentArchive) return;
+  const entries = getSubscriptionDirectoryEntries(currentArchive.entries);
+  if (entries.length == 0) return;
+  const sequence = ++previewSequence;
+  errorText.value = ``;
+  clearPreview();
+  selectedPath.value = SUBSCRIPTION_TREE_KEY;
+  previewKind.value = `subscription-directory`;
+  if (subscriptionItems.value.length == entries.length) return;
+  previewLoading.value = true;
+  try {
+    subscriptionSummaryTask ||= loadSubscriptionFileSummaries(
+      entries,
+      async (entry) => {
+        return decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
+      },
+    );
+    const items = await subscriptionSummaryTask;
+    if (
+      sequence != previewSequence ||
+      currentArchive != archive.value ||
+      selectedPath.value != SUBSCRIPTION_TREE_KEY
+    ) {
+      return;
+    }
+    subscriptionItems.value = markRaw(items);
+  } catch (error) {
+    if (sequence != previewSequence) return;
+    errorText.value = error instanceof Error ? error.message : String(error);
+    previewKind.value = `unsupported`;
+  } finally {
+    if (sequence == previewSequence) previewLoading.value = false;
+  }
+};
+
+const loadSubscriptionDetail = async (path: string) => {
+  const currentArchive = archive.value;
+  const entry = currentArchive?.entryMap.get(path);
+  if (!currentArchive || !entry || !isSubscriptionDirectoryPath(entry.path)) {
+    return;
+  }
+  const sequence = ++subscriptionDetailSequence;
+  subscriptionDetail.value = undefined;
+  subscriptionDetailStructured.value = false;
+  subscriptionDetailLoading.value = true;
+  if (!isSubscriptionJsonPath(entry.path)) {
+    subscriptionDetail.value = markRaw(
+      getUnsupportedSubscriptionDetail(entry.path),
+    );
+    subscriptionDetailLoading.value = false;
+    return;
+  }
+  try {
+    const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
+    if (
+      sequence != subscriptionDetailSequence ||
+      currentArchive != archive.value ||
+      previewKind.value != `subscription-directory`
+    ) {
+      return;
+    }
+    const detail = parseSubscriptionFileDetail(raw, entry.path);
+    subscriptionDetail.value = markRaw(detail);
+    subscriptionDetailStructured.value =
+      detail.parsed && isRawSubscription(detail.value);
+  } catch (error) {
+    if (sequence != subscriptionDetailSequence) return;
+    subscriptionDetail.value = markRaw(
+      getUnreadableSubscriptionDetail(entry.path, error),
+    );
+  } finally {
+    if (sequence == subscriptionDetailSequence) {
+      subscriptionDetailLoading.value = false;
+    }
+  }
+};
+
 const loadArchive = async (
   data: Blob | ArrayBuffer | Uint8Array,
   name: string,
   sequence = ++loadSequence,
 ) => {
   previewSequence++;
+  resetCrashData();
+  resetDirectoryData();
   archiveLoading.value = true;
   errorText.value = ``;
   clearPreview();
@@ -179,7 +456,21 @@ const loadArchive = async (
     if (sequence != loadSequence) return;
     archive.value = result;
     const initialEntry = getDefaultLogEntry(result);
-    if (initialEntry) await showEntry(initialEntry);
+    if (initialEntry && isLogDirectoryPath(initialEntry.path)) {
+      showLogDirectoryPreview();
+    } else if (initialEntry && isCrashPath(initialEntry.path)) {
+      await showCrashPreview();
+    } else if (initialEntry && isSubscriptionDirectoryPath(initialEntry.path)) {
+      await showSubscriptionDirectoryPreview();
+    } else if (initialEntry) {
+      await showEntry(initialEntry);
+    } else if (getLogDirectoryEntries(result.entries).length) {
+      showLogDirectoryPreview();
+    } else if (getCrashEntries(result.entries).length) {
+      await showCrashPreview();
+    } else if (getSubscriptionDirectoryEntries(result.entries).length) {
+      await showSubscriptionDirectoryPreview();
+    }
     return sequence == loadSequence;
   } catch (error) {
     if (sequence != loadSequence) return;
@@ -289,6 +580,8 @@ const loadFromRoute = async () => {
   const source = getRouteSource();
   const sequence = ++loadSequence;
   previewSequence++;
+  resetCrashData();
+  resetDirectoryData();
   archive.value = undefined;
   selectedPath.value = ``;
   clearPreview();
@@ -353,11 +646,25 @@ useEventListener(document.body, `drop`, (event) => {
   void importLocalFile(files);
 });
 
-type LogTreeOption = TreeOption & { path?: string; isFile?: boolean };
+type LogTreeOption = TreeOption & {
+  path?: string;
+  isFile?: boolean;
+};
 const treeData = computed<LogTreeOption[]>(() => {
   const roots: LogTreeOption[] = [];
   const nodes = new Map<string, LogTreeOption>();
-  for (const entry of archive.value?.entries || []) {
+  const entries = archive.value?.entries || [];
+  const crashEntries = getCrashEntries(entries);
+  const logEntries = getLogDirectoryEntries(entries);
+  const subscriptionEntries = getSubscriptionDirectoryEntries(entries);
+  for (const entry of entries) {
+    if (
+      isCrashPath(entry.path) ||
+      isLogDirectoryPath(entry.path) ||
+      isSubscriptionDirectoryPath(entry.path)
+    ) {
+      continue;
+    }
     const parts = entry.path.split(`/`).filter(Boolean);
     let parentChildren = roots;
     let currentPath = ``;
@@ -379,11 +686,47 @@ const treeData = computed<LogTreeOption[]>(() => {
       parentChildren = (node.children || []) as LogTreeOption[];
     });
   }
+  if (crashEntries.length) {
+    roots.push({
+      key: CRASH_TREE_KEY,
+      label: `crash (${crashEntries.length})`,
+      isFile: true,
+    });
+  }
+  if (logEntries.length) {
+    roots.push({
+      key: LOG_TREE_KEY,
+      label: `log (${logEntries.length})`,
+      isFile: true,
+    });
+  }
+  if (subscriptionEntries.length) {
+    roots.push({
+      key: SUBSCRIPTION_TREE_KEY,
+      label: `subscription (${subscriptionEntries.length})`,
+      isFile: true,
+    });
+  }
+  roots.sort((a, b) =>
+    String(a.label || ``).localeCompare(String(b.label || ``), `zh-CN`),
+  );
   return roots;
 });
 
 const updateSelectedKeys = (keys: Array<string | number>) => {
   const path = String(keys[0] || ``);
+  if (path == CRASH_TREE_KEY) {
+    void showCrashPreview();
+    return;
+  }
+  if (path == LOG_TREE_KEY) {
+    showLogDirectoryPreview();
+    return;
+  }
+  if (path == SUBSCRIPTION_TREE_KEY) {
+    void showSubscriptionDirectoryPreview();
+    return;
+  }
   const entry = archive.value?.entryMap.get(path);
   if (entry) void showEntry(entry);
 };
@@ -574,6 +917,30 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             :key="selectedPath"
             :value="jsonValue"
             :raw="previewText"
+          />
+          <CrashPreview
+            v-else-if="previewKind == 'crash'"
+            :items="crashItems"
+            :detail="crashDetail"
+            :detailLoading="crashDetailLoading"
+            @select="loadCrashDetail"
+          />
+          <LogDirectoryPreview
+            v-else-if="previewKind == 'log-directory'"
+            :items="logItems"
+            :detailPath="logDetailPath"
+            :detailText="logDetailText"
+            :detailError="logDetailError"
+            :detailLoading="logDetailLoading"
+            @select="loadLogFileDetail"
+          />
+          <SubscriptionDirectoryPreview
+            v-else-if="previewKind == 'subscription-directory'"
+            :items="subscriptionItems"
+            :detail="subscriptionDetail"
+            :detailStructured="subscriptionDetailStructured"
+            :detailLoading="subscriptionDetailLoading"
+            @select="loadSubscriptionDetail"
           />
           <AppsPreview
             v-else-if="previewKind == 'apps' && appsData"
