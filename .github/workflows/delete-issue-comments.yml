@@ -1,0 +1,26 @@
+name: delete issue comments
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: delete-issue-46-comments
+  cancel-in-progress: false
+
+jobs:
+  delete-comments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+
+      - run: node ./scripts/deleteIssueComments.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

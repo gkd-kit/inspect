@@ -7,6 +7,7 @@
     "build": "vite build",
     "prebuild:mirror": "node ./scripts/updateVersion.ts",
     "build:mirror": "cross-env MIRROR=ON vite build",
+    "delete-issue-comments": "node ./scripts/deleteIssueComments.ts",
     "preview": "vite preview",
     "build-only": "vite build",
     "test:log": "node --test --experimental-strip-types src/views/log/*.test.ts",
