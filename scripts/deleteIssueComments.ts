@@ -78,16 +78,14 @@ comments.sort((left, right) => {
   return left.created_at.localeCompare(right.created_at) || left.id - right.id;
 });
 
-const [firstComment, ...laterComments] = comments;
-
-if (!firstComment) {
+if (comments.length === 0) {
   console.log(`Issue #${ISSUE_NUMBER} has no comments to delete`);
 } else {
   const now = Date.now();
   const recentComments: IssueComment[] = [];
   const commentsToDelete: IssueComment[] = [];
 
-  for (const comment of laterComments) {
+  for (const comment of comments) {
     const commentCreatedAt = Date.parse(comment.created_at);
 
     if (!Number.isFinite(commentCreatedAt)) {
@@ -103,9 +101,8 @@ if (!firstComment) {
     }
   }
 
-  console.log(`Keeping the first comment: ${firstComment.html_url}`);
   console.log(`Keeping ${recentComments.length} recent comment(s)`);
-  console.log(`Deleting ${commentsToDelete.length} later comment(s)`);
+  console.log(`Deleting ${commentsToDelete.length} old comment(s)`);
 
   for (const comment of commentsToDelete) {
     await deleteIssueComment(comment);
