@@ -1,5 +1,6 @@
 import { GM_fetch, gmOk, type GmXhrOptions } from './gm';
-import { isCanProxyImportFileUrl, isAllowCorsUrl } from './url';
+import { isAllowCorsUrl } from './url';
+import { getWorkersProxyUrl } from './workers';
 
 const isGetReq = (req: Request, init?: RequestInit) => {
   return (init?.method || req.method).toUpperCase() === 'GET';
@@ -17,17 +18,18 @@ export const enhanceFetch = async (
     // with cookie
     // export snapshot need
     return GM_fetch(input, init, xhrDetails);
-  } else if (isGetReq(req, init) && isCanProxyImportFileUrl(u.href)) {
-    const proxyUrl = new URL(`https://proxy.gkd.li`);
-    proxyUrl.searchParams.set(`proxyUrl`, u.href);
-    const request = new Request(input, init);
-    return fetch(proxyUrl, {
-      method: request.method,
-      headers: request.headers,
-      body: request.body,
-    });
-  } else {
-    useGlobalStore().networkErrorDlgVisible = true;
-    throw new Error(`gm is not supported`);
   }
+  if (isGetReq(req, init)) {
+    const proxyUrl = getWorkersProxyUrl(u);
+    if (proxyUrl) {
+      const request = new Request(input, init);
+      return fetch(proxyUrl, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+      });
+    }
+  }
+  useGlobalStore().networkErrorDlgVisible = true;
+  throw new Error(`gm is not supported`);
 };

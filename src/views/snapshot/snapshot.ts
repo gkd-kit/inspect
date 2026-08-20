@@ -11,6 +11,7 @@ import type { ResolvedSelector } from '@/utils/selector';
 import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
 import { useTask } from '@/utils/task';
 import { getImportFileUrl } from '@/utils/url';
+import { getSnapshotImportId } from '@/utils/workers';
 import type { QueryResult } from '@gkd-kit/selector';
 
 if (import.meta.hot) {
@@ -18,12 +19,6 @@ if (import.meta.hot) {
     location.reload();
   });
 }
-
-const getRemoteImportId = async (id: number): Promise<number> => {
-  return fetch('https://detect.gkd.li/api/getImportId?id=' + id)
-    .then((r) => r.json())
-    .catch(() => 0);
-};
 
 type SnapshotRouteSource =
   | { type: 'snapshot'; snapshotId: number }
@@ -149,7 +144,9 @@ export const useSnapshotStore = createSharedComposable(() => {
       }
 
       if (!hasSnapshot) {
-        const remoteImportId = await getRemoteImportId(source.snapshotId);
+        const remoteImportId = await getSnapshotImportId(
+          source.snapshotId,
+        ).catch(() => null);
         if (remoteImportId && Number.isSafeInteger(remoteImportId)) {
           redirected.value = true;
           router.replace({
@@ -182,9 +179,7 @@ export const useSnapshotStore = createSharedComposable(() => {
       !importSnapshotId[importId.value] &&
       snapshotId.value
     ) {
-      fetch(
-        `https://detect.gkd.li/api/detectSnapshot?importId=` + importId.value,
-      );
+      detectSnapshot(snapshotId.value, importId.value);
     }
   });
   const autoUpload = computed(() => {

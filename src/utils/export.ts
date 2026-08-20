@@ -3,9 +3,10 @@ import { saveAs } from 'file-saver';
 import pLimit from 'p-limit';
 import { JSZipAsync } from './chunk';
 import { uploadAsset } from './github';
-import { delay, obj2usp } from './others';
+import { delay } from './others';
 import { screenshotStorage, snapshotStorage } from './snapshot';
 import { getImageId } from './url';
+import { detectRemoteSnapshot } from './workers';
 
 const snapshotAsZip = async (snapshot: Snapshot) => {
   if (!snapshot.nodes.length) {
@@ -118,7 +119,7 @@ export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
     ).then((r) => {
       snapshotImportId[snapshot.id] = r.id;
       importSnapshotId[r.id] = snapshot.id;
-      detectFetchSnapshot(snapshot.id, r.id);
+      void detectFetchSnapshot(snapshot.id, r.id).catch(() => undefined);
       return r.id;
     })
   );
@@ -152,13 +153,7 @@ export const batchCreateZipUrl = async (snapshots: Snapshot[]) => {
 };
 
 const detectFetchSnapshot = async (id: number, importId: number | string) => {
-  return fetch(
-    `https://detect.gkd.li/api/detectSnapshot?` +
-      obj2usp({
-        id,
-        importId,
-      }).toString(),
-  );
+  return detectRemoteSnapshot(id, +importId);
 };
 
 export const detectSnapshot = async (
@@ -172,5 +167,5 @@ export const detectSnapshot = async (
   if (importSnapshotId[importId]) {
     return;
   }
-  await detectFetchSnapshot(id, importId);
+  await detectFetchSnapshot(id, importId).catch(() => undefined);
 };
