@@ -67,6 +67,7 @@
     "p-limit": "catalog:",
     "pkg-exports": "catalog:",
     "prettier": "catalog:",
+    "retrace-wasm": "catalog:",
     "sass": "catalog:",
     "simple-git": "catalog:",
     "simple-git-hooks": "catalog:",

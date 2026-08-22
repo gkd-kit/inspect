@@ -8,6 +8,7 @@ import { useProvideTextViewerState } from './context';
 const props = withDefaults(
   defineProps<{
     value: string;
+    documentKey?: string;
     searchPlaceholder?: string;
     allowWrap?: boolean;
     copyable?: boolean;
@@ -22,6 +23,7 @@ const props = withDefaults(
 
 const state = useProvideTextViewerState({
   value: toRef(props, `value`),
+  documentKey: toRef(props, `documentKey`),
   searchPlaceholder: toRef(props, `searchPlaceholder`),
   allowWrap: toRef(props, `allowWrap`),
   copyable: toRef(props, `copyable`),

@@ -4,6 +4,8 @@ import { loadAsync } from '@/utils/chunk';
 import { getAppNameMapFromValue } from './app_names';
 import {
   createSourceLinkContext,
+  isLogVersionPath,
+  parseLogBuildKey,
   parseLogVersionInfo,
   type LogVersionInfo,
   type SourceLinkContext,
@@ -345,9 +347,7 @@ const archiveSourceLinkContextTasks = new WeakMap<
 >();
 
 const getLogVersionEntries = (archive: LogArchive) => {
-  return archive.entries.filter((entry) =>
-    /^gkd-[^/]+\.json$/i.test(entry.path),
-  );
+  return archive.entries.filter((entry) => isLogVersionPath(entry.path));
 };
 
 const logVersionInfoTasks = new WeakMap<
@@ -382,6 +382,25 @@ export const getLogVersionInfo = (archive: LogArchive) => {
     return first;
   })();
   logVersionInfoTasks.set(archive, task);
+  return task;
+};
+
+const logBuildKeyTasks = new WeakMap<LogArchive, Promise<string | undefined>>();
+
+export const getLogBuildKey = (archive: LogArchive) => {
+  let task = logBuildKeyTasks.get(archive);
+  if (task) return task;
+  task = (async () => {
+    const entry = archive.entries.find(
+      (item) => item.path.toLowerCase() == `gkd.json`,
+    );
+    if (!entry) return;
+    try {
+      const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
+      return parseLogBuildKey(raw);
+    } catch {}
+  })();
+  logBuildKeyTasks.set(archive, task);
   return task;
 };
 

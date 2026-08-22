@@ -1,8 +1,10 @@
 <script lang="tsx" setup>
 import type { DataTableColumns } from 'naive-ui';
+import DirectoryPreviewHeader from './DirectoryPreviewHeader.vue';
 import { formatLogFileDate, type LogFileSummary } from './directory_preview';
 import { formatBytes } from './log';
 import type { SourceLinkContext } from './source_links';
+import StackRetraceButton from './StackRetraceButton.vue';
 import TextSearchInput from './TextSearchInput.vue';
 import TextViewer from './text_viewer/TextViewer.vue';
 import { createTextSearchOptions, matchesTextSearch } from './text_search';
@@ -13,11 +15,15 @@ const props = defineProps<{
   detailText?: string;
   detailError?: string;
   detailLoading?: boolean;
+  retraceAvailable?: boolean;
+  retraceLoading?: boolean;
+  retraceActive?: boolean;
   sourceLinkContext?: SourceLinkContext;
 }>();
 
 const emit = defineEmits<{
   select: [path: string];
+  toggleRetrace: [];
 }>();
 
 const activeTab = shallowRef<`list` | `detail`>(`list`);
@@ -81,81 +87,71 @@ const rowProps = (item: LogFileSummary) => ({
 
 <template>
   <div name="log-directory-preview" class="h-full min-h-0 flex flex-col">
+    <DirectoryPreviewHeader
+      title="运行日志"
+      :count="items.length"
+      listLabel="日志列表"
+      :listActive="activeTab == 'list'"
+      :detailText="selectedItem?.fileName"
+      :detailTitle="selectedItem?.path"
+      :detailMeta="selectedItem ? formatBytes(selectedItem.size) : undefined"
+      @selectList="activeTab = 'list'"
+    />
+
     <div
-      name="log-directory-title"
-      class="h-40px flex flex-none items-center gap-8px border-b border-[#e5e7eb] px-4px pb-10px font-600"
+      v-if="activeTab == 'list'"
+      class="min-h-0 flex flex-1 flex-col gap-10px"
     >
-      <span>运行日志</span>
-      <NTag size="small" round>{{ items.length }}</NTag>
+      <TextSearchInput
+        v-model="query"
+        v-model:match-case="searchOptions.matchCase"
+        v-model:whole-word="searchOptions.wholeWord"
+        v-model:use-regex="searchOptions.useRegex"
+        placeholder="搜索日志日期或文件名"
+        class="flex-none"
+      />
+      <NEmpty
+        v-if="filteredItems.length == 0"
+        :description="query.trim() ? '没有匹配的日志文件' : '没有日志文件'"
+        class="min-h-0 flex-1"
+      />
+      <NDataTable
+        v-else
+        striped
+        :columns="columns"
+        :data="filteredItems"
+        :pagination="false"
+        :rowKey="(item: LogFileSummary) => item.path"
+        :rowProps="rowProps"
+        class="min-h-0 flex-1 [&_.n-data-table-wrapper]:h-full"
+      />
     </div>
 
-    <NTabs
-      v-model:value="activeTab"
-      type="line"
-      animated
-      class="min-h-0 flex-1 [&_.n-tab-pane]:h-full [&_.n-tab-pane]:min-h-0 [&_.n-tabs-pane-wrapper]:h-full [&_.n-tabs-pane-wrapper]:min-h-0"
-    >
-      <NTabPane name="list" tab="日志列表">
-        <div class="h-full min-h-0 flex flex-col gap-10px">
-          <TextSearchInput
-            v-model="query"
-            v-model:match-case="searchOptions.matchCase"
-            v-model:whole-word="searchOptions.wholeWord"
-            v-model:use-regex="searchOptions.useRegex"
-            placeholder="搜索日志日期或文件名"
-            class="flex-none"
+    <div v-else class="min-h-0 flex flex-1 flex-col">
+      <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
+      <NAlert v-else-if="detailError" type="error" title="日志文件读取失败">
+        {{ detailError }}
+      </NAlert>
+      <TextViewer
+        v-else-if="detailPath && detailText != null"
+        :key="detailPath"
+        :value="detailText"
+        search-placeholder="搜索当前日志文件"
+        allow-wrap
+        copyable
+        :sourceLinkContext="sourceLinkContext"
+        class="min-h-0 flex-1"
+      >
+        <template #toolbar-start>
+          <StackRetraceButton
+            :available="retraceAvailable"
+            :loading="retraceLoading"
+            :retraced="retraceActive"
+            @toggle="emit('toggleRetrace')"
           />
-          <NEmpty
-            v-if="filteredItems.length == 0"
-            :description="query.trim() ? '没有匹配的日志文件' : '没有日志文件'"
-            class="min-h-0 flex-1"
-          />
-          <NDataTable
-            v-else
-            striped
-            :columns="columns"
-            :data="filteredItems"
-            :pagination="false"
-            :rowKey="(item: LogFileSummary) => item.path"
-            :rowProps="rowProps"
-            class="min-h-0 flex-1 [&_.n-data-table-wrapper]:h-full"
-          />
-        </div>
-      </NTabPane>
-
-      <NTabPane name="detail" tab="详情" :disabled="!selectedPath">
-        <div class="h-full min-h-0 flex flex-col gap-10px">
-          <div class="flex flex-none items-center gap-10px">
-            <NButton size="small" @click="activeTab = 'list'">
-              返回日志列表
-            </NButton>
-            <span
-              class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-600"
-              :title="selectedItem?.path"
-            >
-              {{ selectedItem?.fileName }}
-            </span>
-            <span class="text-12px text-[#64748b]">
-              {{ selectedItem ? formatBytes(selectedItem.size) : '' }}
-            </span>
-          </div>
-          <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
-          <NAlert v-else-if="detailError" type="error" title="日志文件读取失败">
-            {{ detailError }}
-          </NAlert>
-          <TextViewer
-            v-else-if="detailPath && detailText != null"
-            :key="detailPath"
-            :value="detailText"
-            search-placeholder="搜索当前日志文件"
-            allow-wrap
-            copyable
-            :sourceLinkContext="sourceLinkContext"
-            class="min-h-0 flex-1"
-          />
-          <NEmpty v-else description="请选择一个日志文件" />
-        </div>
-      </NTabPane>
-    </NTabs>
+        </template>
+      </TextViewer>
+      <NEmpty v-else description="请选择一个日志文件" />
+    </div>
   </div>
 </template>

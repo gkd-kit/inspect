@@ -42,6 +42,7 @@ catalog:
   p-limit: ^7.3.0
   pkg-exports: ^0.2.0
   prettier: ^3.8.3
+  retrace-wasm: ^0.1.1
   sass: ^1.99.0
   simple-git: ^3.36.0
   simple-git-hooks: ^2.13.1

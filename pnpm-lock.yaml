@@ -316,6 +316,9 @@ catalogs:
     prettier:
       specifier: ^3.8.3
       version: 3.8.3
+    retrace-wasm:
+      specifier: ^0.1.1
+      version: 0.1.1
     sass:
       specifier: ^1.99.0
       version: 1.99.0
@@ -498,6 +501,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.8.3
+      retrace-wasm:
+        specifier: 'catalog:'
+        version: 0.1.1
       sass:
         specifier: 'catalog:'
         version: 1.99.0
@@ -3346,6 +3352,10 @@ packages:
   restore-cursor@5.1.0:
     resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
     engines: {node: '>=18'}
+
+  retrace-wasm@0.1.1:
+    resolution: {integrity: sha512-W2EoYGIftKfzlBWVTVTwYyCO/CX1zqrP6YYOGnJhjjJekSWyAFVL0OAwQx9VTlxqH/YewOVzOFBRHsgZo8qb6w==}
+    engines: {node: '>=26.6.0'}
 
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
@@ -6802,6 +6812,8 @@ snapshots:
     dependencies:
       onetime: 7.0.0
       signal-exit: 4.1.0
+
+  retrace-wasm@0.1.1: {}
 
   rfdc@1.4.1: {}
 

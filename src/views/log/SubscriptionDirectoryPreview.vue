@@ -5,6 +5,7 @@ import type {
   SubscriptionFileDetail,
   SubscriptionFileSummary,
 } from './directory_preview';
+import DirectoryPreviewHeader from './DirectoryPreviewHeader.vue';
 import JsonPreview from './JsonPreview.vue';
 import SubscriptionPreview from './SubscriptionPreview.vue';
 import TextSearchInput from './TextSearchInput.vue';
@@ -162,104 +163,84 @@ const rowProps = (item: SubscriptionFileSummary) => ({
     name="subscription-directory-preview"
     class="h-full min-h-0 flex flex-col"
   >
+    <DirectoryPreviewHeader
+      title="订阅文件"
+      :count="items.length"
+      listLabel="订阅列表"
+      :listActive="activeTab == 'list'"
+      :detailText="selectedItem?.name || selectedItem?.fileName"
+      :detailTitle="selectedItem?.path"
+      @selectList="activeTab = 'list'"
+    />
+
     <div
-      class="h-40px flex flex-none items-center gap-8px border-b border-[#e5e7eb] px-4px pb-10px font-600"
+      v-if="activeTab == 'list'"
+      class="min-h-0 flex flex-1 flex-col gap-10px"
     >
-      <span>订阅文件</span>
-      <NTag size="small" round>{{ items.length }}</NTag>
+      <TextSearchInput
+        v-model="query"
+        v-model:match-case="searchOptions.matchCase"
+        v-model:whole-word="searchOptions.wholeWord"
+        v-model:use-regex="searchOptions.useRegex"
+        placeholder="搜索订阅 ID、名称、作者或版本"
+        class="flex-none"
+      />
+      <NEmpty
+        v-if="pagedItems.length == 0"
+        :description="query.trim() ? '没有匹配的订阅' : '没有订阅文件'"
+        class="min-h-0 flex-1"
+      />
+      <NDataTable
+        v-else
+        striped
+        :columns="columns"
+        :data="pagedItems"
+        :pagination="false"
+        :rowKey="(item: SubscriptionFileSummary) => item.path"
+        :rowProps="rowProps"
+        :scrollX="1020"
+        class="min-h-0 flex-1 [&_.n-data-table-wrapper]:h-full"
+      />
+      <NPagination
+        v-if="filteredItems.length > pageSize"
+        v-model:page="page"
+        :pageSize="pageSize"
+        :itemCount="filteredItems.length"
+        class="flex-none justify-end"
+      />
     </div>
 
-    <NTabs
-      v-model:value="activeTab"
-      type="line"
-      animated
-      class="min-h-0 flex-1 [&_.n-tab-pane]:h-full [&_.n-tab-pane]:min-h-0 [&_.n-tabs-pane-wrapper]:h-full [&_.n-tabs-pane-wrapper]:min-h-0"
-    >
-      <NTabPane name="list" tab="订阅列表">
-        <div class="h-full min-h-0 flex flex-col gap-10px">
-          <TextSearchInput
-            v-model="query"
-            v-model:match-case="searchOptions.matchCase"
-            v-model:whole-word="searchOptions.wholeWord"
-            v-model:use-regex="searchOptions.useRegex"
-            placeholder="搜索订阅 ID、名称、作者或版本"
-            class="flex-none"
-          />
-          <NEmpty
-            v-if="pagedItems.length == 0"
-            :description="query.trim() ? '没有匹配的订阅' : '没有订阅文件'"
+    <div v-else class="min-h-0 flex flex-1 flex-col gap-10px">
+      <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
+      <NEmpty v-else-if="!detail" description="请选择一个订阅文件" />
+      <div v-else class="min-h-0 flex-1">
+        <SubscriptionPreview
+          v-if="structuredDetail"
+          :key="detail.path"
+          :value="structuredDetail"
+          :raw="detail.raw"
+        />
+        <JsonPreview
+          v-else-if="detail.parsed"
+          :key="detail.path"
+          :value="detail.value"
+          :raw="detail.raw"
+        />
+        <div v-else class="h-full min-h-0 flex flex-col gap-8px">
+          <NAlert type="warning" title="订阅 JSON 解析失败" class="flex-none">
+            {{ detail.error }}
+          </NAlert>
+          <TextViewer
+            v-if="detail.raw"
+            :value="detail.raw"
+            search-placeholder="搜索原始内容"
+            allow-wrap
+            copyable
             class="min-h-0 flex-1"
           />
-          <NDataTable
-            v-else
-            striped
-            :columns="columns"
-            :data="pagedItems"
-            :pagination="false"
-            :rowKey="(item: SubscriptionFileSummary) => item.path"
-            :rowProps="rowProps"
-            :scrollX="1020"
-            class="min-h-0 flex-1 [&_.n-data-table-wrapper]:h-full"
-          />
-          <NPagination
-            v-if="filteredItems.length > pageSize"
-            v-model:page="page"
-            :pageSize="pageSize"
-            :itemCount="filteredItems.length"
-            class="flex-none justify-end"
-          />
+          <NEmpty v-else description="无法读取原始内容" />
         </div>
-      </NTabPane>
-
-      <NTabPane name="detail" tab="详情" :disabled="!selectedPath">
-        <div class="h-full min-h-0 flex flex-col gap-10px">
-          <div class="flex flex-none items-center gap-10px">
-            <NButton size="small" @click="activeTab = 'list'">
-              返回订阅列表
-            </NButton>
-            <span
-              class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-600"
-              :title="selectedItem?.path"
-            >
-              {{ selectedItem?.name || selectedItem?.fileName }}
-            </span>
-          </div>
-          <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
-          <NEmpty v-else-if="!detail" description="请选择一个订阅文件" />
-          <div v-else class="min-h-0 flex-1">
-            <SubscriptionPreview
-              v-if="structuredDetail"
-              :key="detail.path"
-              :value="structuredDetail"
-              :raw="detail.raw"
-            />
-            <JsonPreview
-              v-else-if="detail.parsed"
-              :key="detail.path"
-              :value="detail.value"
-              :raw="detail.raw"
-            />
-            <div v-else class="h-full min-h-0 flex flex-col gap-8px">
-              <NAlert
-                type="warning"
-                title="订阅 JSON 解析失败"
-                class="flex-none"
-              >
-                {{ detail.error }}
-              </NAlert>
-              <TextViewer
-                v-if="detail.raw"
-                :value="detail.raw"
-                search-placeholder="搜索原始内容"
-                allow-wrap
-                copyable
-                class="min-h-0 flex-1"
-              />
-              <NEmpty v-else description="无法读取原始内容" />
-            </div>
-          </div>
-        </div>
-      </NTabPane>
-    </NTabs>
+      </div>
+    </div>
   </div>
 </template>

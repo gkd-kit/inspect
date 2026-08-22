@@ -50,12 +50,14 @@ import type { LogVersionInfo, SourceLinkContext } from './source_links';
 import SubscriptionPreview from './SubscriptionPreview.vue';
 import SubscriptionDirectoryPreview from './SubscriptionDirectoryPreview.vue';
 import SqlitePreview from './SqlitePreview.vue';
+import StackRetraceButton from './StackRetraceButton.vue';
 import TextViewer from './text_viewer/TextViewer.vue';
 import {
   decodeLogText,
   formatBytes,
   getLogAppNames,
   getArchiveSourceLinkContext,
+  getLogBuildKey,
   getLogSubscriptionNames,
   getLogVersionInfo,
   getDatabaseFiles,
@@ -74,6 +76,8 @@ import {
   removeLogArchiveCache,
   setLogArchiveCache,
 } from './log_cache';
+import { LazyBuildRetracer } from './retrace_client';
+import { hasRetraceableStack } from './retrace_text';
 
 type PreviewKind =
   | `none`
@@ -88,6 +92,15 @@ type PreviewKind =
   | `database`
   | `unsupported`;
 
+type StackRetraceTextState = {
+  originalText: string;
+  retracedText?: string;
+  available: boolean;
+  loading: boolean;
+  active: boolean;
+  autoAttempted: boolean;
+};
+
 const route = useRoute();
 const router = useRouter();
 const archive = shallowRef<LogArchive>();
@@ -100,6 +113,7 @@ const previewKind = shallowRef<PreviewKind>(`none`);
 const previewText = shallowRef(``);
 const jsonValue = shallowRef<unknown>();
 const appsData = shallowRef<AppsPreviewData>();
+const appsView = shallowRef<`users` | `raw`>(`users`);
 const crashItems = shallowRef<CrashSummary[]>([]);
 const crashDetail = shallowRef<CrashDetail>();
 const crashDetailLoading = shallowRef(false);
@@ -110,6 +124,10 @@ const logDetailError = shallowRef(``);
 const logDetailLoading = shallowRef(false);
 const sourceLinkContext = shallowRef<SourceLinkContext>();
 const logVersionInfo = shallowRef<LogVersionInfo>();
+const logBuildKey = shallowRef<string>();
+const previewRetraceState = shallowRef<StackRetraceTextState>();
+const crashRetraceState = shallowRef<StackRetraceTextState>();
+const logRetraceState = shallowRef<StackRetraceTextState>();
 const subscriptionItems = shallowRef<SubscriptionFileSummary[]>([]);
 const subscriptionDetail = shallowRef<SubscriptionFileDetail>();
 const subscriptionDetailStructured = shallowRef(false);
@@ -129,14 +147,136 @@ let logDetailSequence = 0;
 let subscriptionDetailSequence = 0;
 let subscriptionSummaryTask: Promise<SubscriptionFileSummary[]> | undefined;
 let activeFetchController: AbortController | undefined;
+let buildRetracer: LazyBuildRetracer | undefined;
+const retraceTextStates = new Map<string, StackRetraceTextState>();
 
 const selectedEntry = computed(() =>
   archive.value?.entryMap.get(selectedPath.value),
 );
 
+const resetBuildRetrace = () => {
+  buildRetracer?.dispose();
+  buildRetracer = undefined;
+  logBuildKey.value = undefined;
+  retraceTextStates.clear();
+  previewRetraceState.value = undefined;
+  crashRetraceState.value = undefined;
+  logRetraceState.value = undefined;
+};
+
+const getRetraceTextState = (key: string, originalText: string) => {
+  const previous = retraceTextStates.get(key);
+  if (previous?.originalText == originalText) return previous;
+  const state = reactive<StackRetraceTextState>({
+    originalText,
+    available: hasRetraceableStack(originalText),
+    loading: false,
+    active: false,
+    autoAttempted: false,
+  });
+  retraceTextStates.set(key, state);
+  return state;
+};
+
+const getRetraceStateText = (state: StackRetraceTextState) => {
+  return state.active && state.retracedText != null
+    ? state.retracedText
+    : state.originalText;
+};
+
+const toggleRetraceText = async (
+  state: StackRetraceTextState | undefined,
+  kind: `crash` | `log`,
+  isCurrent: () => boolean,
+  applyText: (text: string) => void,
+) => {
+  const buildKey = logBuildKey.value;
+  if (!state || !state.available || !buildKey || state.loading) return;
+  if (state.active) {
+    state.active = false;
+    applyText(state.originalText);
+    return;
+  }
+  if (state.retracedText != null) {
+    state.active = true;
+    applyText(state.retracedText);
+    return;
+  }
+  const retracer = (buildRetracer ||= new LazyBuildRetracer(buildKey));
+  state.loading = true;
+  try {
+    const result = await retracer.retrace(state.originalText, kind);
+    if (result == state.originalText) {
+      if (isCurrent()) message.warning(`没有找到与当前 mapping 匹配的堆栈`);
+      return;
+    }
+    state.retracedText = result;
+    state.active = true;
+    if (!isCurrent()) return;
+    applyText(result);
+  } catch (error) {
+    if (error instanceof DOMException && error.name == `AbortError`) return;
+    if (!isCurrent()) return;
+    message.error(
+      `堆栈还原失败: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  } finally {
+    state.loading = false;
+  }
+};
+
+const autoRetraceText = (
+  state: StackRetraceTextState | undefined,
+  kind: `crash` | `log`,
+  isCurrent: () => boolean,
+  applyText: (text: string) => void,
+) => {
+  if (!state?.available || state.autoAttempted) return;
+  state.autoAttempted = true;
+  void toggleRetraceText(state, kind, isCurrent, applyText);
+};
+
+const togglePreviewRetrace = () => {
+  const state = previewRetraceState.value;
+  void toggleRetraceText(
+    state,
+    `log`,
+    () => previewRetraceState.value == state,
+    (text) => {
+      if (previewRetraceState.value == state) previewText.value = text;
+    },
+  );
+};
+
+const toggleCrashRetrace = () => {
+  const state = crashRetraceState.value;
+  void toggleRetraceText(
+    state,
+    `crash`,
+    () => crashRetraceState.value == state,
+    (stackTrace) => {
+      if (crashRetraceState.value != state || !crashDetail.value) return;
+      crashDetail.value = markRaw({ ...crashDetail.value, stackTrace });
+    },
+  );
+};
+
+const toggleLogRetrace = () => {
+  const state = logRetraceState.value;
+  void toggleRetraceText(
+    state,
+    `log`,
+    () => logRetraceState.value == state,
+    (text) => {
+      if (logRetraceState.value == state) logDetailText.value = text;
+    },
+  );
+};
+
 const clearCrashDetail = () => {
   crashDetailSequence++;
   crashDetail.value = undefined;
+  crashRetraceState.value = undefined;
   crashDetailLoading.value = false;
 };
 
@@ -150,6 +290,7 @@ const clearLogDetail = () => {
   logDetailSequence++;
   logDetailPath.value = ``;
   logDetailText.value = undefined;
+  logRetraceState.value = undefined;
   logDetailError.value = ``;
   logDetailLoading.value = false;
 };
@@ -175,8 +316,10 @@ const clearPreview = () => {
   previewLoading.value = false;
   previewKind.value = `none`;
   previewText.value = ``;
+  previewRetraceState.value = undefined;
   jsonValue.value = undefined;
   appsData.value = undefined;
+  appsView.value = `users`;
   jsonError.value = ``;
   databaseData.value = undefined;
   walData.value = undefined;
@@ -214,8 +357,21 @@ const showEntry = async (entry: LogEntry | undefined) => {
     if (entry.kind == `text`) {
       const bytes = await readEntryBytes(entry);
       if (sequence != previewSequence) return;
-      previewText.value = decodeLogText(bytes);
+      const text = decodeLogText(bytes);
+      const state = getRetraceTextState(`text:${entry.path}`, text);
+      previewRetraceState.value = state;
+      previewText.value = getRetraceStateText(state);
       previewKind.value = `text`;
+      autoRetraceText(
+        state,
+        `log`,
+        () => previewRetraceState.value == state,
+        (retracedText) => {
+          if (previewRetraceState.value == state) {
+            previewText.value = retracedText;
+          }
+        },
+      );
       return;
     }
     if (entry.kind == `json`) {
@@ -301,6 +457,7 @@ const loadCrashDetail = async (path: string) => {
   if (!currentArchive || !entry || !isCrashPath(entry.path)) return;
   const sequence = ++crashDetailSequence;
   crashDetail.value = undefined;
+  crashRetraceState.value = undefined;
   crashDetailLoading.value = true;
   if (!isCrashJsonPath(entry.path)) {
     crashDetail.value = markRaw(getUnsupportedCrashDetail(entry.path));
@@ -316,7 +473,29 @@ const loadCrashDetail = async (path: string) => {
     ) {
       return;
     }
-    crashDetail.value = markRaw(parseCrashDetail(raw, entry.path));
+    const detail = parseCrashDetail(raw, entry.path);
+    if (detail.stackTrace) {
+      const state = getRetraceTextState(
+        `crash:${entry.path}`,
+        detail.stackTrace,
+      );
+      crashRetraceState.value = state;
+      crashDetail.value = markRaw({
+        ...detail,
+        stackTrace: getRetraceStateText(state),
+      });
+      autoRetraceText(
+        state,
+        `crash`,
+        () => crashRetraceState.value == state,
+        (stackTrace) => {
+          if (crashRetraceState.value != state || !crashDetail.value) return;
+          crashDetail.value = markRaw({ ...crashDetail.value, stackTrace });
+        },
+      );
+    } else {
+      crashDetail.value = markRaw(detail);
+    }
   } catch (error) {
     if (sequence != crashDetailSequence) return;
     crashDetail.value = markRaw(getUnreadableCrashDetail(entry.path, error));
@@ -345,6 +524,7 @@ const loadLogFileDetail = async (path: string) => {
   const sequence = ++logDetailSequence;
   logDetailPath.value = entry.path;
   logDetailText.value = undefined;
+  logRetraceState.value = undefined;
   logDetailError.value = ``;
   logDetailLoading.value = true;
   try {
@@ -356,7 +536,17 @@ const loadLogFileDetail = async (path: string) => {
     ) {
       return;
     }
-    logDetailText.value = text;
+    const state = getRetraceTextState(`log:${entry.path}`, text);
+    logRetraceState.value = state;
+    logDetailText.value = getRetraceStateText(state);
+    autoRetraceText(
+      state,
+      `log`,
+      () => logRetraceState.value == state,
+      (retracedText) => {
+        if (logRetraceState.value == state) logDetailText.value = retracedText;
+      },
+    );
   } catch (error) {
     if (sequence != logDetailSequence) return;
     logDetailError.value =
@@ -450,6 +640,7 @@ const loadArchive = async (
   name: string,
   sequence = ++loadSequence,
 ) => {
+  resetBuildRetrace();
   previewSequence++;
   resetCrashData();
   resetDirectoryData();
@@ -461,10 +652,12 @@ const loadArchive = async (
   try {
     const result = await loadLogArchive(data, name || `log.zip`);
     if (sequence != loadSequence) return;
-    const [resolvedVersionInfo, resolvedSourceLinkContext] = await Promise.all([
-      getLogVersionInfo(result),
-      getArchiveSourceLinkContext(result),
-    ]);
+    const [resolvedVersionInfo, resolvedSourceLinkContext, resolvedBuildKey] =
+      await Promise.all([
+        getLogVersionInfo(result),
+        getArchiveSourceLinkContext(result),
+        getLogBuildKey(result),
+      ]);
     if (sequence != loadSequence) return;
     archive.value = result;
     logVersionInfo.value = resolvedVersionInfo
@@ -473,6 +666,7 @@ const loadArchive = async (
     sourceLinkContext.value = resolvedSourceLinkContext
       ? markRaw(resolvedSourceLinkContext)
       : undefined;
+    logBuildKey.value = resolvedBuildKey;
     const initialEntry = getDefaultLogEntry(result);
     if (initialEntry && isLogDirectoryPath(initialEntry.path)) {
       showLogDirectoryPreview();
@@ -593,6 +787,7 @@ const getRouteSource = () => {
 
 const loadFromRoute = async () => {
   activeFetchController?.abort();
+  resetBuildRetrace();
   const controller = new AbortController();
   activeFetchController = controller;
   const source = getRouteSource();
@@ -621,6 +816,11 @@ const loadFromRoute = async () => {
 };
 
 watch(() => route.fullPath, loadFromRoute, { immediate: true });
+
+onBeforeUnmount(() => {
+  activeFetchController?.abort();
+  resetBuildRetrace();
+});
 
 const submitUrl = async () => {
   const target = getLogRoute(inputUrl.value);
@@ -889,6 +1089,34 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
               {{ formatBytes(selectedEntry.size) }}
             </div>
           </div>
+          <div
+            v-if="previewKind == 'apps' && appsData"
+            name="apps-overview"
+            class="flex flex-none items-center gap-6px whitespace-nowrap text-13px"
+          >
+            <NButtonGroup size="small">
+              <NButton
+                :type="appsView == 'users' ? 'primary' : 'default'"
+                :secondary="appsView == 'users'"
+                @click="appsView = 'users'"
+              >
+                按用户查看
+              </NButton>
+              <NButton
+                :type="appsView == 'raw' ? 'primary' : 'default'"
+                :secondary="appsView == 'raw'"
+                @click="appsView = 'raw'"
+              >
+                原始 JSON
+              </NButton>
+            </NButtonGroup>
+            <span class="mx-6px h-16px border-l border-[#e2e8f0]" />
+            <span class="text-[#64748b]">应用安装记录</span>
+            <span class="font-600">{{ appsData.totalApps }}</span>
+            <span class="mx-4px text-[#cbd5e1]">·</span>
+            <span class="text-[#64748b]">设备用户</span>
+            <span class="font-600">{{ appsData.users.length }}</span>
+          </div>
         </div>
 
         <div name="preview-body" class="min-h-0 flex-1 p-12px">
@@ -912,6 +1140,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             </NAlert>
             <TextViewer
               :value="previewText"
+              :documentKey="selectedEntry?.path"
               search-placeholder="搜索当前文件"
               allow-wrap
               copyable
@@ -936,6 +1165,12 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
                     {{ formatBytes(selectedEntry.size) }}
                   </div>
                 </div>
+                <StackRetraceButton
+                  :available="!!logBuildKey && !!previewRetraceState?.available"
+                  :loading="previewRetraceState?.loading"
+                  :retraced="previewRetraceState?.active"
+                  @toggle="togglePreviewRetrace"
+                />
               </template>
             </TextViewer>
           </div>
@@ -950,8 +1185,12 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             :items="crashItems"
             :detail="crashDetail"
             :detailLoading="crashDetailLoading"
+            :retraceAvailable="!!logBuildKey && !!crashRetraceState?.available"
+            :retraceLoading="crashRetraceState?.loading"
+            :retraceActive="crashRetraceState?.active"
             :sourceLinkContext="sourceLinkContext"
             @select="loadCrashDetail"
+            @toggleRetrace="toggleCrashRetrace"
           />
           <LogDirectoryPreview
             v-else-if="previewKind == 'log-directory'"
@@ -960,8 +1199,12 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             :detailText="logDetailText"
             :detailError="logDetailError"
             :detailLoading="logDetailLoading"
+            :retraceAvailable="!!logBuildKey && !!logRetraceState?.available"
+            :retraceLoading="logRetraceState?.loading"
+            :retraceActive="logRetraceState?.active"
             :sourceLinkContext="sourceLinkContext"
             @select="loadLogFileDetail"
+            @toggleRetrace="toggleLogRetrace"
           />
           <SubscriptionDirectoryPreview
             v-else-if="previewKind == 'subscription-directory'"
@@ -977,6 +1220,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
             :data="appsData"
             :value="jsonValue"
             :raw="previewText"
+            :view="appsView"
           />
           <SubscriptionPreview
             v-else-if="

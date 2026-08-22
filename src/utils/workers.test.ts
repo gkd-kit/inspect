@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   detectRemoteSnapshot,
+  getBuildAsset,
   getSnapshotImportId,
   getWorkersProxyUrl,
 } from './workers.ts';
@@ -17,6 +18,36 @@ test(`查询快照映射使用 Workers API 新路由`, async () => {
   }) as typeof fetch;
   try {
     assert.equal(await getSnapshotImportId(123), 456);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test(`根据 buildKey 查询构建附件 ID`, async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input) => {
+    assert.equal(
+      String(input),
+      `https://api.gkd.li/build-asset/getBuildAsset?buildKey=gkd-build-123`,
+    );
+    return Response.json({ assetId: 456 });
+  }) as typeof fetch;
+  try {
+    assert.deepEqual(await getBuildAsset(`gkd-build-123`), { assetId: 456 });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test(`拒绝非法构建附件 ID`, async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    Response.json({ assetId: 0 })) as typeof fetch;
+  try {
+    await assert.rejects(
+      getBuildAsset(`gkd-build-123`),
+      /invalid build asset ID/,
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }

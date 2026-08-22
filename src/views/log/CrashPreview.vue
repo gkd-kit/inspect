@@ -2,8 +2,10 @@
 import type { DataTableColumns } from 'naive-ui';
 import type { CrashDetail, CrashSummary } from './crash_preview';
 import { formatCrashTimestamp } from './crash_preview';
+import DirectoryPreviewHeader from './DirectoryPreviewHeader.vue';
 import RawJsonPreview from './RawJsonPreview.vue';
 import type { SourceLinkContext } from './source_links';
+import StackRetraceButton from './StackRetraceButton.vue';
 import TextSearchInput from './TextSearchInput.vue';
 import TextViewer from './text_viewer/TextViewer.vue';
 import { createTextSearchOptions, matchesTextSearch } from './text_search';
@@ -12,11 +14,15 @@ const props = defineProps<{
   items: CrashSummary[];
   detail?: CrashDetail;
   detailLoading?: boolean;
+  retraceAvailable?: boolean;
+  retraceLoading?: boolean;
+  retraceActive?: boolean;
   sourceLinkContext?: SourceLinkContext;
 }>();
 
 const emit = defineEmits<{
   select: [path: string];
+  toggleRetrace: [];
 }>();
 
 const activeTab = shallowRef<`list` | `detail`>(`list`);
@@ -164,158 +170,146 @@ const rowProps = (item: CrashSummary) => ({
 
 <template>
   <div name="crash-preview" class="h-full min-h-0 flex flex-col">
+    <DirectoryPreviewHeader
+      title="崩溃记录"
+      :count="items.length"
+      listLabel="崩溃列表"
+      :listActive="activeTab == 'list'"
+      :detailText="selectedItem?.fileName"
+      :detailTitle="selectedItem?.path"
+      @selectList="activeTab = 'list'"
+    />
+
     <div
-      name="crash-title"
-      class="h-40px flex flex-none items-center gap-8px border-b border-[#e5e7eb] px-4px pb-10px font-600"
+      v-if="activeTab == 'list'"
+      name="crash-list"
+      class="min-h-0 flex flex-1 flex-col gap-10px"
     >
-      <span>崩溃记录</span>
-      <NTag size="small" round>{{ items.length }}</NTag>
+      <TextSearchInput
+        v-model="query"
+        v-model:match-case="searchOptions.matchCase"
+        v-model:whole-word="searchOptions.wholeWord"
+        v-model:use-regex="searchOptions.useRegex"
+        placeholder="搜索异常类型、消息、设备或版本"
+        class="flex-none"
+      />
+      <NEmpty
+        v-if="pagedItems.length == 0"
+        :description="query.trim() ? '没有匹配的崩溃记录' : '没有崩溃记录'"
+        class="min-h-0 flex-1"
+      />
+      <NDataTable
+        v-else
+        striped
+        flexHeight
+        virtualScroll
+        :columns="columns"
+        :data="pagedItems"
+        :pagination="false"
+        :rowKey="(item: CrashSummary) => item.path"
+        :rowProps="rowProps"
+        :scrollX="1510"
+        class="min-h-0 flex-1 [&_.n-data-table-wrapper]:h-full"
+      />
+      <NPagination
+        v-if="filteredItems.length > pageSize"
+        v-model:page="page"
+        :pageSize="pageSize"
+        :itemCount="filteredItems.length"
+        class="flex-none justify-end"
+      />
     </div>
 
-    <NTabs
-      v-model:value="activeTab"
-      type="line"
-      animated
-      class="min-h-0 flex-1 [&_.n-tab-pane]:h-full [&_.n-tab-pane]:min-h-0 [&_.n-tabs-pane-wrapper]:h-full [&_.n-tabs-pane-wrapper]:min-h-0"
+    <div
+      v-else
+      name="crash-detail"
+      class="min-h-0 flex flex-1 flex-col gap-10px"
     >
-      <NTabPane name="list" tab="崩溃列表">
-        <div name="crash-list" class="h-full min-h-0 flex flex-col gap-10px">
-          <TextSearchInput
-            v-model="query"
-            v-model:match-case="searchOptions.matchCase"
-            v-model:whole-word="searchOptions.wholeWord"
-            v-model:use-regex="searchOptions.useRegex"
-            placeholder="搜索异常类型、消息、设备或版本"
-            class="flex-none"
-          />
-          <NEmpty
-            v-if="pagedItems.length == 0"
-            :description="query.trim() ? '没有匹配的崩溃记录' : '没有崩溃记录'"
-            class="min-h-0 flex-1"
-          />
-          <NDataTable
-            v-else
-            striped
-            virtualScroll
-            :columns="columns"
-            :data="pagedItems"
-            :pagination="false"
-            :rowKey="(item: CrashSummary) => item.path"
-            :rowProps="rowProps"
-            :scrollX="1510"
-            class="min-h-0 flex-1 [&_.n-data-table-wrapper]:h-full"
-          />
-          <NPagination
-            v-if="filteredItems.length > pageSize"
-            v-model:page="page"
-            :pageSize="pageSize"
-            :itemCount="filteredItems.length"
-            class="flex-none justify-end"
-          />
-        </div>
-      </NTabPane>
+      <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
+      <NEmpty v-else-if="!detail" description="请选择一条崩溃记录" />
+      <template v-else>
+        <NAlert
+          v-if="detail.error"
+          type="warning"
+          title="该记录无法完整解析"
+          class="flex-none"
+        >
+          {{ detail.error }}
+        </NAlert>
+        <NDescriptions
+          bordered
+          size="small"
+          :column="3"
+          labelPlacement="left"
+          class="flex-none"
+        >
+          <NDescriptionsItem label="时间">
+            {{ formatCrashTimestamp(detail.timestamp) }}
+          </NDescriptionsItem>
+          <NDescriptionsItem label="线程">
+            {{ detail.thread || '-' }}
+          </NDescriptionsItem>
+          <NDescriptionsItem label="GKD 版本">
+            {{ getVersionText(detail.versionName, detail.versionCode) }}
+          </NDescriptionsItem>
+          <NDescriptionsItem label="Android">
+            {{
+              getVersionText(
+                detail.androidVersionName,
+                detail.androidVersionCode,
+              )
+            }}
+          </NDescriptionsItem>
+          <NDescriptionsItem label="设备" :span="2">
+            {{ detail.device || '-' }}
+          </NDescriptionsItem>
+        </NDescriptions>
 
-      <NTabPane name="detail" tab="详情" :disabled="!selectedPath">
-        <div name="crash-detail" class="h-full min-h-0 flex flex-col gap-10px">
-          <div
-            name="crash-detail-toolbar"
-            class="flex flex-none items-center gap-10px"
-          >
-            <NButton size="small" @click="activeTab = 'list'">
-              返回崩溃列表
-            </NButton>
-            <span
-              class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-600"
-              :title="selectedItem?.path"
+        <NTabs
+          type="line"
+          animated
+          class="min-h-0 flex-1 [&_.n-tab-pane]:h-full [&_.n-tab-pane]:min-h-0 [&_.n-tabs-pane-wrapper]:h-full [&_.n-tabs-pane-wrapper]:min-h-0"
+        >
+          <NTabPane name="stack" tab="堆栈">
+            <TextViewer
+              v-if="detail.stackTrace"
+              :value="detail.stackTrace"
+              :documentKey="detail.path"
+              search-placeholder="搜索崩溃堆栈"
+              allow-wrap
+              copyable
+              :sourceLinkContext="sourceLinkContext"
+              class="h-full"
             >
-              {{ selectedItem?.fileName }}
-            </span>
-          </div>
-
-          <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
-          <NEmpty v-else-if="!detail" description="请选择一条崩溃记录" />
-          <template v-else>
-            <NAlert
-              v-if="detail.error"
-              type="warning"
-              title="该记录无法完整解析"
-              class="flex-none"
-            >
-              {{ detail.error }}
-            </NAlert>
-            <NAlert
-              :type="detail.status == 'valid' ? 'error' : 'warning'"
-              :title="detail.name || '未知异常'"
-              class="flex-none"
-            >
-              {{ detail.message || '未记录异常消息' }}
-            </NAlert>
-            <NDescriptions
-              bordered
-              size="small"
-              :column="3"
-              labelPlacement="left"
-              class="flex-none"
-            >
-              <NDescriptionsItem label="时间">
-                {{ formatCrashTimestamp(detail.timestamp) }}
-              </NDescriptionsItem>
-              <NDescriptionsItem label="线程">
-                {{ detail.thread || '-' }}
-              </NDescriptionsItem>
-              <NDescriptionsItem label="GKD 版本">
-                {{ getVersionText(detail.versionName, detail.versionCode) }}
-              </NDescriptionsItem>
-              <NDescriptionsItem label="Android">
-                {{
-                  getVersionText(
-                    detail.androidVersionName,
-                    detail.androidVersionCode,
-                  )
-                }}
-              </NDescriptionsItem>
-              <NDescriptionsItem label="设备" :span="2">
-                {{ detail.device || '-' }}
-              </NDescriptionsItem>
-            </NDescriptions>
-
-            <NTabs
-              type="line"
-              animated
-              class="min-h-0 flex-1 [&_.n-tab-pane]:h-full [&_.n-tab-pane]:min-h-0 [&_.n-tabs-pane-wrapper]:h-full [&_.n-tabs-pane-wrapper]:min-h-0"
-            >
-              <NTabPane name="stack" tab="堆栈">
-                <TextViewer
-                  v-if="detail.stackTrace"
-                  :value="detail.stackTrace"
-                  search-placeholder="搜索崩溃堆栈"
-                  allow-wrap
-                  copyable
-                  :sourceLinkContext="sourceLinkContext"
-                  class="h-full"
+              <template #toolbar-start>
+                <StackRetraceButton
+                  :available="retraceAvailable"
+                  :loading="retraceLoading"
+                  :retraced="retraceActive"
+                  @toggle="emit('toggleRetrace')"
                 />
-                <NEmpty v-else description="该记录没有堆栈信息" />
-              </NTabPane>
-              <NTabPane name="raw" tab="原始 JSON">
-                <RawJsonPreview
-                  v-if="detail.parsed"
-                  :value="detail.value"
-                  :raw="detail.raw"
-                />
-                <TextViewer
-                  v-else-if="detail.raw"
-                  :value="detail.raw"
-                  search-placeholder="搜索原始内容"
-                  allow-wrap
-                  copyable
-                  class="h-full"
-                />
-                <NEmpty v-else description="无法读取原始内容" />
-              </NTabPane>
-            </NTabs>
-          </template>
-        </div>
-      </NTabPane>
-    </NTabs>
+              </template>
+            </TextViewer>
+            <NEmpty v-else description="该记录没有堆栈信息" />
+          </NTabPane>
+          <NTabPane name="raw" tab="原始 JSON">
+            <RawJsonPreview
+              v-if="detail.parsed"
+              :value="detail.value"
+              :raw="detail.raw"
+            />
+            <TextViewer
+              v-else-if="detail.raw"
+              :value="detail.raw"
+              search-placeholder="搜索原始内容"
+              allow-wrap
+              copyable
+              class="h-full"
+            />
+            <NEmpty v-else description="无法读取原始内容" />
+          </NTabPane>
+        </NTabs>
+      </template>
+    </div>
   </div>
 </template>

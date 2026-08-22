@@ -4,6 +4,8 @@ import {
   createSourceLinkContext,
   getSourceLineTokens,
   getShortestUniquePathLabels,
+  isLogVersionPath,
+  parseLogBuildKey,
   parseLogVersionInfo,
 } from './source_links.ts';
 
@@ -13,6 +15,25 @@ const versionRaw = JSON.stringify({
   commitUrl: `https://github.com/gkd-kit/gkd/commit/${commitId}`,
   versionName: `1.12.1-61d4346`,
   versionCode: 92,
+});
+
+test(`识别日志包版本信息文件`, () => {
+  assert.equal(isLogVersionPath(`gkd.json`), true);
+  assert.equal(isLogVersionPath(`GKD.JSON`), true);
+  assert.equal(isLogVersionPath(`gkd-1.12.1.json`), true);
+  assert.equal(isLogVersionPath(`gkd-.json`), false);
+  assert.equal(isLogVersionPath(`log/gkd.json`), false);
+  assert.equal(isLogVersionPath(`gkd.json.bak`), false);
+});
+
+test(`从 gkd.json 解析可选构建标识`, () => {
+  assert.equal(
+    parseLogBuildKey(JSON.stringify({ buildKey: ` gkd-build-123 ` })),
+    `gkd-build-123`,
+  );
+  assert.equal(parseLogBuildKey(JSON.stringify({ buildKey: `` })), undefined);
+  assert.equal(parseLogBuildKey(JSON.stringify({ buildKey: 123 })), undefined);
+  assert.equal(parseLogBuildKey(`invalid json`), undefined);
 });
 
 test(`解析日志包版本名称、版本代码和提交链接`, () => {

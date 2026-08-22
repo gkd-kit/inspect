@@ -18,6 +18,7 @@ import { getVirtualTextLines, type VirtualTextLine } from '../virtual_text';
 
 type TextViewerOptions = {
   value: Readonly<Ref<string>>;
+  documentKey: Readonly<Ref<string | undefined>>;
   searchPlaceholder: Readonly<Ref<string>>;
   allowWrap: Readonly<Ref<boolean>>;
   copyable: Readonly<Ref<boolean>>;
@@ -172,12 +173,12 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       message.success(`已复制当前文件内容`);
     };
 
-    watch(options.value, () => {
+    watch(options.documentKey, () => {
       query.value = ``;
       resultIndex.value = -1;
     });
 
-    watch([options.value, wrap], async () => {
+    watch([options.documentKey, wrap], async () => {
       scrollTop.value = 0;
       await nextTick();
       scrollContainer.value?.scrollTo({ top: 0 });

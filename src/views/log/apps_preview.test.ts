@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { getAppsPreviewData } from './apps_preview.ts';
 
@@ -91,4 +92,15 @@ test(`缺少 apps 数组时不启用专用预览`, () => {
 
 test(`应用数量超出结构化上限时降级展示`, () => {
   assert.equal(getAppsPreviewData({ apps: new Array(10_001) }), undefined);
+});
+
+test(`应用虚拟列表同时启用弹性高度以保留表头和滚动区域`, () => {
+  const component = readFileSync(
+    new URL(`./AppsPreview.vue`, import.meta.url),
+    `utf8`,
+  );
+  assert.match(
+    component,
+    /<NDataTable[\s\S]*?\bflexHeight\b[\s\S]*?\bvirtualScroll\b[\s\S]*?\/>/,
+  );
 });

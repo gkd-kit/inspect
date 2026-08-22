@@ -34,6 +34,19 @@ const maxSourcePathSize = 1024;
 const maxSourcePathDepth = 64;
 const maxSourcePathSegmentSize = 255;
 
+export const isLogVersionPath = (path: string) =>
+  /^gkd(?:-[^/]+)?\.json$/i.test(path);
+
+export const parseLogBuildKey = (raw: string): string | undefined => {
+  try {
+    const value: unknown = JSON.parse(stripByteOrderMark(raw));
+    if (!isObject(value) || typeof value.buildKey != `string`) return;
+    const buildKey = value.buildKey.trim();
+    if (!buildKey || buildKey.length > 256) return;
+    return buildKey;
+  } catch {}
+};
+
 const isObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value == `object` && value != null && !Array.isArray(value);
 };
