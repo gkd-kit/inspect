@@ -20,7 +20,7 @@ export default defineConfig(() => {
       tsconfigPaths: true,
     },
     optimizeDeps: {
-      exclude: [`retrace-wasm`],
+      exclude: [`regex-wasm`, `retrace-wasm`],
     },
     plugins: [
       svgMinify(),

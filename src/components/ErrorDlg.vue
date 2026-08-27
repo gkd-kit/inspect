@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const globalStore = useGlobalStore();
-const { settingsStore } = useStorageStore();
 </script>
 <template>
   <NModal
@@ -51,26 +50,5 @@ const { settingsStore } = useStorageStore();
         github.com
       </a>
     </div>
-  </NModal>
-  <NModal
-    v-model:show="globalStore.wasmErrorDlgVisible"
-    preset="dialog"
-    title="浏览器不支持或版本过低"
-    type="warning"
-    positiveText="确定"
-  >
-    <div>
-      选择器的正则表达式一致性需要使用
-      <a
-        href="https://developer.chrome.com/blog/wasmgc?hl=zh-cn"
-        target="_blank"
-        rel="noopener noreferrer"
-        >WASM(GC)</a
-      >
-    </div>
-    <div mt-10px>请使用 Chrome119/Edge119/Firefox120 或最新版本</div>
-    <NCheckbox v-model:checked="settingsStore.ignoreWasmWarn" class="mt-10px">
-      不关注一致性, 不再提醒
-    </NCheckbox>
   </NModal>
 </template>

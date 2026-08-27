@@ -4,7 +4,6 @@ import {
   getStringAttr,
   getStringInvoke,
   initDefaultTypeInfo,
-  updateWasmToMatches,
   MatchOption,
   QueryResult,
   Transform,
@@ -34,26 +33,7 @@ import {
   UnitSelectorExpression,
   NotSelectorExpression,
 } from '@gkd-kit/selector';
-import matchesInstantiate from '@gkd-kit/wasm_matches';
-import matchesWasmUrl from '@gkd-kit/wasm_matches/dist/mod.wasm?url';
 import { isRawNode } from './node';
-
-export const wasmLoadTask = matchesInstantiate(fetch(matchesWasmUrl))
-  .then((mod) => {
-    const toMatches = mod.exports.toMatches;
-    updateWasmToMatches(toMatches as any);
-    useGlobalStore().wasmSupported = true;
-    if (import.meta.env.PROD) {
-      console.log('use wasm matches');
-    }
-  })
-  .catch((e) => {
-    useGlobalStore().wasmSupported = false;
-    console.error(e);
-    if (import.meta.env.PROD) {
-      console.log('use js matches');
-    }
-  });
 
 const getNodeAttr = (target: RawNode, name: string) => {
   if (name == '_id') return target.id;
@@ -202,14 +182,6 @@ export const parseSelector = (source: string): ResolvedSelector => {
       );
     },
   };
-  for (const exp of binaryExpressionList) {
-    if (exp.operator.key == '~=' && !useGlobalStore().wasmSupported) {
-      if (!settingsStore.ignoreWasmWarn) {
-        useGlobalStore().wasmErrorDlgVisible = true;
-        break;
-      }
-    }
-  }
   return selector;
 };
 

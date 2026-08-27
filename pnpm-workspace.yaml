@@ -9,7 +9,6 @@ catalog:
   '@eslint/js': ^10.0.1
   '@gkd-kit/api': ^0.9.3
   '@gkd-kit/selector': ^0.5.23
-  '@gkd-kit/wasm_matches': ^0.0.1
   '@tsconfig/node20': ^20.1.9
   '@types/file-saver': ^2.0.7
   '@types/fs-extra': ^11.0.4
@@ -42,6 +41,7 @@ catalog:
   p-limit: ^7.3.0
   pkg-exports: ^0.2.0
   prettier: ^3.8.3
+  regex-wasm: ^0.1.0
   retrace-wasm: ^0.1.1
   sass: ^1.99.0
   simple-git: ^3.36.0
@@ -74,3 +74,6 @@ allowBuilds:
   # for cloudflare/wrangler-action
   sharp: true
   workerd: true
+
+minimumReleaseAgeExclude:
+  - regex-wasm@0.1.0

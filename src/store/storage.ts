@@ -51,7 +51,6 @@ export const settingsStore = useReactiveStorage<SettingsStore>(
   () => ({
     autoUploadImport: false,
     ignoreUploadWarn: false,
-    ignoreWasmWarn: false,
     maxShowNodeSize: 2000,
   }),
 );

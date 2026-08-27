@@ -149,13 +149,10 @@ type SearchResult = SelectorSearchResult | StringSearchResult;
 interface SettingsStore {
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;
-  ignoreWasmWarn: boolean;
   maxShowNodeSize: number;
 }
 
 interface GlobalStore {
   networkErrorDlgVisible: boolean;
   githubErrorDlgVisible: boolean;
-  wasmErrorDlgVisible: boolean;
-  wasmSupported?: boolean;
 }

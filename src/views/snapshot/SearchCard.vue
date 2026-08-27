@@ -5,7 +5,7 @@ import { message } from '@/utils/discrete';
 import { errorTry, errorWrap } from '@/utils/error';
 import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
-import { parseSelector, wasmLoadTask } from '@/utils/selector';
+import { parseSelector } from '@/utils/selector';
 import { gkdWidth, vw } from '@/utils/size';
 import { getImagUrl, getImportUrl } from '@/utils/url';
 import { FastQuery, GkdException } from '@gkd-kit/selector';
@@ -131,8 +131,7 @@ const searchBySelector = errorTry(() => {
   refreshExpandedKeys();
 });
 
-onMounted(async () => {
-  await wasmLoadTask;
+onMounted(() => {
   let count = 0;
   if (route.query.gkd) {
     count += searchSelector(base64url.decode(route.query.gkd as string)) || 0;

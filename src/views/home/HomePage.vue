@@ -403,10 +403,6 @@ const inputImportRef = shallowRef();
       关闭生成分享链接弹窗提醒
     </NCheckbox>
     <div h-1px my-10px bg="#eee" />
-    <NCheckbox v-model:checked="settingsStore.ignoreWasmWarn">
-      关闭浏览器版本正则表达式 WASM(GC) 提醒
-    </NCheckbox>
-    <div h-1px my-10px bg="#eee" />
     <div flex gap-10px>
       <NSwitch v-model:value="settingsStore.autoUploadImport" />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>

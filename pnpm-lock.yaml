@@ -217,9 +217,6 @@ catalogs:
     '@gkd-kit/selector':
       specifier: ^0.5.23
       version: 0.5.23
-    '@gkd-kit/wasm_matches':
-      specifier: ^0.0.1
-      version: 0.0.1
     '@tsconfig/node20':
       specifier: ^20.1.9
       version: 20.1.9
@@ -316,6 +313,9 @@ catalogs:
     prettier:
       specifier: ^3.8.3
       version: 3.8.3
+    regex-wasm:
+      specifier: ^0.1.0
+      version: 0.1.0
     retrace-wasm:
       specifier: ^0.1.1
       version: 0.1.1
@@ -402,9 +402,6 @@ importers:
       '@gkd-kit/selector':
         specifier: 'catalog:'
         version: 0.5.23
-      '@gkd-kit/wasm_matches':
-        specifier: 'catalog:'
-        version: 0.0.1
       '@tsconfig/node20':
         specifier: 'catalog:'
         version: 20.1.9
@@ -501,6 +498,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.8.3
+      regex-wasm:
+        specifier: 'catalog:'
+        version: 0.1.0
       retrace-wasm:
         specifier: 'catalog:'
         version: 0.1.1
@@ -1295,9 +1295,6 @@ packages:
 
   '@gkd-kit/selector@0.5.23':
     resolution: {integrity: sha512-HTegxwogKIxopvGup5wTEGzxW9ko7iS9mXEEpZi6SvbVUEumjGptJtIXd4ixNKJ2RyOWX3wfoyArbrDOUiTFYw==}
-
-  '@gkd-kit/wasm_matches@0.0.1':
-    resolution: {integrity: sha512-PUYa98MXyumiIVuYHozbYThhPnYwrdvEwyL+tBmneonIq1Vm2CmeUfk3FbJXxaMQE2/3JBa7utfk0HAu/03xDQ==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -3329,6 +3326,9 @@ packages:
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
 
+  regex-wasm@0.1.0:
+    resolution: {integrity: sha512-tfshxdzeA83Y3olXoN1W0GRiEmVp3+GzxMol29UKDXwWoG54ii0R6bnpx5Ki8J9Zeletbln8OIB400culT/Q/Q==}
+
   regexp-tree@0.1.27:
     resolution: {integrity: sha512-iETxpjK6YoRWJG5o6hXLwvjYAoW+FEZn9os0PD/b6AP6xQwsa/Y7lCVgIixBbUPMfhu+i2LtdeAqVTgGlQarfA==}
     hasBin: true
@@ -4860,8 +4860,6 @@ snapshots:
   '@gkd-kit/api@0.9.3': {}
 
   '@gkd-kit/selector@0.5.23': {}
-
-  '@gkd-kit/wasm_matches@0.0.1': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -6783,6 +6781,8 @@ snapshots:
   regenerate@1.4.2: {}
 
   regenerator-runtime@0.14.1: {}
+
+  regex-wasm@0.1.0: {}
 
   regexp-tree@0.1.27: {}
 
