@@ -71,9 +71,6 @@ allowBuilds:
   core-js: true
   esbuild: true
   simple-git-hooks: true
-  # for cloudflare/wrangler-action
-  sharp: true
-  workerd: true
 
 minimumReleaseAgeExclude:
   - regex-wasm@0.1.0
