@@ -130,6 +130,11 @@ const searchBySelector = errorTry(() => {
   }
   refreshExpandedKeys();
 });
+const handleSearchKeydown = (event: KeyboardEvent) => {
+  if (event.key != 'Enter' || event.shiftKey || event.isComposing) return;
+  event.preventDefault();
+  searchBySelector();
+};
 
 onMounted(() => {
   let count = 0;
@@ -239,19 +244,37 @@ const shareResult = (result: SearchResult) => {
           </template>
         </NButton>
       </div>
-      <NInputGroup>
+      <div
+        class="w-full overflow-hidden rounded-6px border border-[#e5e7eb] bg-white transition-colors duration-200 focus-within:border-[#18a058]"
+      >
         <NInput
           v-model:value="searchText"
+          class="gkd_code"
+          type="textarea"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
-          :inputProps="{ class: 'gkd_code' }"
-          @keyup.enter="searchBySelector"
+          :autosize="{ minRows: 1, maxRows: 10 }"
+          :bordered="false"
+          @keydown="handleSearchKeydown"
         />
-        <NButton @click="searchBySelector">
-          <template #icon>
-            <SvgIcon name="search" />
-          </template>
-        </NButton>
-      </NInputGroup>
+        <div class="flex items-center justify-between gap-4px px-6px pb-4px">
+          <span class="select-none text-11px leading-22px text-[#94a3b8]">
+            Enter 搜索 · Shift+Enter 换行
+          </span>
+          <NButton
+            circle
+            type="primary"
+            secondary
+            size="tiny"
+            title="搜索"
+            aria-label="搜索"
+            @click="searchBySelector"
+          >
+            <template #icon>
+              <SvgIcon name="search" />
+            </template>
+          </NButton>
+        </div>
+      </div>
       <div p-5px />
       <NCollapse v-model:expandedNames="expandedKeys">
         <NCollapseItem

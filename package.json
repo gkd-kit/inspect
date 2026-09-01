@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "test:log": "node --test --experimental-strip-types src/views/log/*.test.ts",
+    "test:snapshot": "node --test --experimental-strip-types src/views/snapshot/*.test.ts",
     "test:workers": "node --test --experimental-strip-types src/utils/workers.test.ts",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint --cache --fix .",
