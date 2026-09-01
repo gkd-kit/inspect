@@ -314,11 +314,11 @@ catalogs:
       specifier: ^3.8.3
       version: 3.8.3
     regex-wasm:
-      specifier: ^0.1.0
-      version: 0.1.0
-    retrace-wasm:
       specifier: ^0.1.1
       version: 0.1.1
+    retrace-wasm:
+      specifier: ^0.1.2
+      version: 0.1.2
     sass:
       specifier: ^1.99.0
       version: 1.99.0
@@ -500,10 +500,10 @@ importers:
         version: 3.8.3
       regex-wasm:
         specifier: 'catalog:'
-        version: 0.1.0
+        version: 0.1.1
       retrace-wasm:
         specifier: 'catalog:'
-        version: 0.1.1
+        version: 0.1.2
       sass:
         specifier: 'catalog:'
         version: 1.99.0
@@ -1342,9 +1342,6 @@ packages:
 
   '@jridgewell/source-map@0.3.11':
     resolution: {integrity: sha512-ZMp1V8ZFcPG5dIWnQLr3NSI1MiCU7UETdS/A0G8V/XWHvJv3ZsFqutJn1Y5RPmAPX6F3BiE397OqveU/9NCuIA==}
-
-  '@jridgewell/sourcemap-codec@1.5.0':
-    resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
@@ -3326,8 +3323,8 @@ packages:
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
 
-  regex-wasm@0.1.0:
-    resolution: {integrity: sha512-tfshxdzeA83Y3olXoN1W0GRiEmVp3+GzxMol29UKDXwWoG54ii0R6bnpx5Ki8J9Zeletbln8OIB400culT/Q/Q==}
+  regex-wasm@0.1.1:
+    resolution: {integrity: sha512-bWkfffC4bnzYbKxqDTGEZYBBiy1g6e94rZ+mXAx2KvaimO0Hb9RAY1eom7l7yRZwFOyjRlhdB8mVnmkJR8rDEw==}
 
   regexp-tree@0.1.27:
     resolution: {integrity: sha512-iETxpjK6YoRWJG5o6hXLwvjYAoW+FEZn9os0PD/b6AP6xQwsa/Y7lCVgIixBbUPMfhu+i2LtdeAqVTgGlQarfA==}
@@ -3353,8 +3350,8 @@ packages:
     resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
     engines: {node: '>=18'}
 
-  retrace-wasm@0.1.1:
-    resolution: {integrity: sha512-W2EoYGIftKfzlBWVTVTwYyCO/CX1zqrP6YYOGnJhjjJekSWyAFVL0OAwQx9VTlxqH/YewOVzOFBRHsgZo8qb6w==}
+  retrace-wasm@0.1.2:
+    resolution: {integrity: sha512-YbICSQNX1/5n/tA8W4CVDrXGeK71KBEEP5uBteWQ+lNEJhWjtHteI6lEXhgwoCyXGZ/F3x7iWHAuSX8AZmMC6g==}
     engines: {node: '>=26.6.0'}
 
   rfdc@1.4.1:
@@ -4887,13 +4884,13 @@ snapshots:
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.5
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
       '@jridgewell/set-array': 1.2.1
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.5
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/remapping@2.3.5':
@@ -4910,14 +4907,12 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.31
 
-  '@jridgewell/sourcemap-codec@1.5.0': {}
-
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@jridgewell/trace-mapping@0.3.31':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   '@juggle/resize-observer@3.4.0': {}
 
@@ -6782,7 +6777,7 @@ snapshots:
 
   regenerator-runtime@0.14.1: {}
 
-  regex-wasm@0.1.0: {}
+  regex-wasm@0.1.1: {}
 
   regexp-tree@0.1.27: {}
 
@@ -6813,7 +6808,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retrace-wasm@0.1.1: {}
+  retrace-wasm@0.1.2: {}
 
   rfdc@1.4.1: {}
 

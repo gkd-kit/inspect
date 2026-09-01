@@ -19,9 +19,6 @@ export default defineConfig(() => {
     resolve: {
       tsconfigPaths: true,
     },
-    optimizeDeps: {
-      exclude: [`regex-wasm`, `retrace-wasm`],
-    },
     plugins: [
       svgMinify(),
       vue(),
