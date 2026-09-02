@@ -12,7 +12,7 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import { useBatchActions } from '@/composables/useBatchActions';
 
-const { settingsStore } = useStorageStore();
+const { settingsStore, storageActions } = useStorageStore();
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const loading = shallowRef(true);
@@ -20,6 +20,7 @@ const updateSnapshots = async () => {
   loading.value = true;
   snapshots.value = (await shallowSnapshotStorage.getAllItems()).reverse();
   checkedRowKeys.value = [];
+  updateColumnFilterOptions();
   loading.value = false;
 };
 onMounted(updateSnapshots);
@@ -29,6 +30,7 @@ const filterOption = shallowReactive({
   updateQuery: () => {
     filterOption.actualQuery = filterOption.query.trim();
     checkedRowKeys.value = [];
+    updateColumnFilterOptions();
   },
 });
 const filterSnapshots = computed(() => {
@@ -69,50 +71,21 @@ const {
   resetColWidth,
 } = useSnapshotColumns();
 
-watchEffect(() => {
-  const set = filterSnapshots.value.reduce(
-    (p, c) => (p.add(renderDevice(c)), p),
-    new Set<string>(),
+const toFilterOptions = (values: Iterable<string>) => {
+  const uniqueValues = [...new Set(values)];
+  if (uniqueValues.length <= 1) return undefined;
+  return uniqueValues.map((value) => ({ value, label: value }));
+};
+function updateColumnFilterOptions() {
+  const currentSnapshots = filterSnapshots.value;
+  deviceCol.filterOptions = toFilterOptions(currentSnapshots.map(renderDevice));
+  appNameCol.filterOptions = toFilterOptions(
+    currentSnapshots.map((snapshot) => getAppInfo(snapshot).name),
   );
-  if (set.size <= 1) {
-    deviceCol.filterOptions = undefined;
-    return;
-  }
-  deviceCol.filterOptions = [...set.values()].map((s) => ({
-    value: s,
-    label: s,
-  }));
-});
-
-watchEffect(() => {
-  const set = filterSnapshots.value.reduce(
-    (p, c) => (p.add(getAppInfo(c).name), p),
-    new Set<string>(),
+  activityIdCol.filterOptions = toFilterOptions(
+    currentSnapshots.map((snapshot) => snapshot.activityId),
   );
-  if (set.size <= 1) {
-    appNameCol.filterOptions = undefined;
-    return;
-  }
-  appNameCol.filterOptions = [...set.values()].map((s) => ({
-    value: s,
-    label: s,
-  }));
-});
-
-watchEffect(() => {
-  const set = filterSnapshots.value.reduce(
-    (p, c) => (p.add(c.activityId), p),
-    new Set<string>(),
-  );
-  if (set.size <= 1) {
-    activityIdCol.filterOptions = undefined;
-    return;
-  }
-  activityIdCol.filterOptions = [...set.values()].map((s) => ({
-    value: s,
-    label: s,
-  }));
-});
+}
 
 const columns: DataTableColumns<Snapshot> = reactive([
   {
@@ -144,13 +117,14 @@ const pagination = shallowReactive<PaginationProps>({
   pageSizes: [50, 100],
   onChange: (page: number) => {
     pagination.page = page;
+    resetColWidth();
   },
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize;
     pagination.page = 1;
+    resetColWidth();
   },
 });
-watch(pagination, resetColWidth);
 
 const handleSorterChange = (sorter: SortState) => {
   [ctimeCol, mtimeCol].forEach((c) => {
@@ -399,12 +373,22 @@ const inputImportRef = shallowRef();
     style="width: 600px"
     @positiveClick="settingsDlgShow = false"
   >
-    <NCheckbox v-model:checked="settingsStore.ignoreUploadWarn">
+    <NCheckbox
+      :checked="settingsStore.ignoreUploadWarn"
+      @update:checked="
+        storageActions.updateSettings({ ignoreUploadWarn: $event })
+      "
+    >
       关闭生成分享链接弹窗提醒
     </NCheckbox>
     <div h-1px my-10px bg="#eee" />
     <div flex gap-10px>
-      <NSwitch v-model:value="settingsStore.autoUploadImport" />
+      <NSwitch
+        :value="settingsStore.autoUploadImport"
+        @update:value="
+          storageActions.updateSettings({ autoUploadImport: $event })
+        "
+      />
       <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
     </div>
   </NModal>

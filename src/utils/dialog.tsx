@@ -1,4 +1,5 @@
 import { dialog, message } from './discrete';
+import { storageActions } from '@/store/storage';
 
 export const showTextDLg = ({ title = `批量分享链接`, content = '' }) => {
   dialog.success({
@@ -43,7 +44,7 @@ const NoticeCheckbox = defineComponent(() => {
       <NCheckbox
         checked={settingsStore.ignoreUploadWarn}
         onUpdateChecked={(value) => {
-          settingsStore.ignoreUploadWarn = value;
+          storageActions.updateSettings({ ignoreUploadWarn: value });
         }}
         focusable={false}
       >

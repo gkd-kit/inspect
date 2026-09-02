@@ -1,4 +1,5 @@
 import Compressor from 'compressorjs';
+import { storageActions } from '@/store/storage';
 import { saveAs } from 'file-saver';
 import pLimit from 'p-limit';
 import { JSZipAsync } from './chunk';
@@ -104,7 +105,7 @@ export const exportSnapshotAsImageId = async (snapshot: Snapshot) => {
       if (!imageId) {
         throw new Error('imageId not found');
       }
-      snapshotImageId[snapshot.id] = imageId;
+      storageActions.setSnapshotImageId(snapshot.id, imageId);
       return imageId;
     })
   );
@@ -117,8 +118,8 @@ export const exportSnapshotAsImportId = async (snapshot: Snapshot) => {
       await snapshotAsZip(snapshot).then((r) => r.arrayBuffer()),
       'file.zip',
     ).then((r) => {
-      snapshotImportId[snapshot.id] = r.id;
-      importSnapshotId[r.id] = snapshot.id;
+      storageActions.setSnapshotImportId(snapshot.id, r.id);
+      storageActions.setImportSnapshotId(r.id, snapshot.id);
       void detectFetchSnapshot(snapshot.id, r.id).catch(() => undefined);
       return r.id;
     })

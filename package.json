@@ -46,6 +46,7 @@
     "@vitejs/plugin-vue-jsx": "catalog:",
     "@vueuse/components": "catalog:",
     "@vueuse/core": "catalog:",
+    "@vueuse/router": "catalog:",
     "browser-fs-access": "catalog:",
     "compressorjs": "catalog:",
     "cross-env": "catalog:",

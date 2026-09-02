@@ -1,4 +1,5 @@
 import localforage from 'localforage';
+import { storageActions } from '@/store/storage';
 
 const useStorage = <T>(options: LocalForageOptions = {}) => {
   options.driver ??= localforage.INDEXEDDB;
@@ -54,7 +55,7 @@ snapshotStorage.removeItem = async (key) => {
     snapshotRemoveItem(key),
     shallowSnapshotStorage.removeItem(key),
     screenshotStorage.removeItem(key),
-    snapshotImportTime[key] && delete snapshotImportTime[key],
+    snapshotImportTime[key] && storageActions.setSnapshotImportTime(key),
   ]);
 };
 
@@ -71,16 +72,16 @@ export const screenshotStorage = useStorage<ArrayBuffer>({
 export const setSnapshot = async (snapshot: Snapshot, bf: ArrayBuffer) => {
   Object.entries(importSnapshotId).forEach(([k, v]) => {
     if (v == snapshot.id) {
-      delete importSnapshotId[k];
+      storageActions.setImportSnapshotId(k);
     }
   });
   if (snapshotImageId[snapshot.id]) {
-    delete snapshotImageId[snapshot.id];
+    storageActions.setSnapshotImageId(snapshot.id);
   }
   if (snapshotImportId[snapshot.id]) {
-    delete snapshotImportId[snapshot.id];
+    storageActions.setSnapshotImportId(snapshot.id);
   }
-  snapshotImportTime[snapshot.id] = Date.now();
+  storageActions.setSnapshotImportTime(snapshot.id, Date.now());
   await Promise.all([
     snapshotStorage.setItem(snapshot.id, snapshot),
     screenshotStorage.setItem(snapshot.id, bf),

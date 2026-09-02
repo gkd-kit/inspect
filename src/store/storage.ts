@@ -17,7 +17,7 @@ const tryRun = <T>(fn: () => T, fallback: () => T): T => {
   }
 };
 
-const useReactiveStorage = <T extends object>(
+const loadLocalStorage = <T extends object>(
   key: string,
   fallback: () => T,
   getter: (v: any) => T = directReturn,
@@ -26,44 +26,32 @@ const useReactiveStorage = <T extends object>(
   const initData = str
     ? tryRun(() => getter(JSON.parse(str)), fallback)
     : fallback();
-  const data = shallowReactive(initData);
-  watch(data, () => {
-    localStorage.setItem(key, JSON.stringify(toRaw(data)));
-  });
-  return data as T;
+  return shallowReactive(initData) as T;
 };
 
-const useReactiveIndexedDB = async <T extends object>(
+const loadIndexedDB = async <T extends object>(
   key: string,
   fallback: () => T,
   getter: (v: any) => T = directReturn,
 ): Promise<T> => {
   const initData = await localforage.getItem(key);
-  const data = shallowReactive(initData ? getter(initData) : fallback());
-  watch(data, async () => {
-    await localforage.setItem(key, toRaw(data));
-  });
-  return data as T;
+  return shallowReactive(initData ? getter(initData) : fallback()) as T;
 };
 
-export const settingsStore = useReactiveStorage<SettingsStore>(
-  'settings',
-  () => ({
-    autoUploadImport: false,
-    ignoreUploadWarn: false,
-    maxShowNodeSize: 2000,
-  }),
-);
+const settingsData = loadLocalStorage<SettingsStore>('settings', () => ({
+  autoUploadImport: false,
+  ignoreUploadWarn: false,
+  maxShowNodeSize: 2000,
+}));
 
 // snapshot id -> import time
-export const snapshotImportTime = await useReactiveIndexedDB<
-  Record<string, number>
->('importTime', () => ({}));
+const snapshotImportTimeData = await loadIndexedDB<Record<string, number>>(
+  'importTime',
+  () => ({}),
+);
 
 // snapshot id -> github image id
-export const snapshotImageId = await useReactiveIndexedDB<
-  Record<string, string>
->(
+const snapshotImageIdData = await loadIndexedDB<Record<string, string>>(
   'githubJpg',
   () => ({}),
   (obj) => {
@@ -83,9 +71,7 @@ export const snapshotImageId = await useReactiveIndexedDB<
 );
 
 // snapshot id -> import id
-export const snapshotImportId = await useReactiveIndexedDB<
-  Record<string, number>
->(
+const snapshotImportIdData = await loadIndexedDB<Record<string, number>>(
   'githubZip',
   () => ({}),
   (obj) => {
@@ -107,9 +93,7 @@ export const snapshotImportId = await useReactiveIndexedDB<
 );
 
 //  import id -> snapshot id
-export const importSnapshotId = await useReactiveIndexedDB<
-  Record<string, number>
->(
+const importSnapshotIdData = await loadIndexedDB<Record<string, number>>(
   'url',
   () => ({}),
   (obj) => {
@@ -128,10 +112,62 @@ export const importSnapshotId = await useReactiveIndexedDB<
   },
 );
 
+export const settingsStore = readonly(settingsData) as Readonly<SettingsStore>;
+export const snapshotImportTime = readonly(snapshotImportTimeData) as Readonly<
+  Record<string, number>
+>;
+export const snapshotImageId = readonly(snapshotImageIdData) as Readonly<
+  Record<string, string>
+>;
+export const snapshotImportId = readonly(snapshotImportIdData) as Readonly<
+  Record<string, number>
+>;
+export const importSnapshotId = readonly(importSnapshotIdData) as Readonly<
+  Record<string, number>
+>;
+
+const persistSettings = () => {
+  localStorage.setItem('settings', JSON.stringify(toRaw(settingsData)));
+};
+const persistRecord = (key: string, value: object) => {
+  void localforage.setItem(key, toRaw(value));
+};
+const setRecordValue = <T>(
+  record: Record<string, T>,
+  storageKey: string,
+  key: string | number,
+  value: T | undefined,
+) => {
+  const normalizedKey = String(key);
+  if (value === undefined) delete record[normalizedKey];
+  else record[normalizedKey] = value;
+  persistRecord(storageKey, record);
+};
+
+export const storageActions = {
+  updateSettings(patch: Partial<SettingsStore>) {
+    Object.assign(settingsData, patch);
+    persistSettings();
+  },
+  setSnapshotImportTime(snapshotId: string | number, value?: number) {
+    setRecordValue(snapshotImportTimeData, 'importTime', snapshotId, value);
+  },
+  setSnapshotImageId(snapshotId: string | number, value?: string) {
+    setRecordValue(snapshotImageIdData, 'githubJpg', snapshotId, value);
+  },
+  setSnapshotImportId(snapshotId: string | number, value?: number) {
+    setRecordValue(snapshotImportIdData, 'githubZip', snapshotId, value);
+  },
+  setImportSnapshotId(importId: string | number, value?: number) {
+    setRecordValue(importSnapshotIdData, 'url', importId, value);
+  },
+};
+
 export const useStorageStore = () => ({
   settingsStore,
   snapshotImportTime,
   snapshotImageId,
   snapshotImportId,
   importSnapshotId,
+  storageActions,
 });

@@ -39,10 +39,9 @@ const showUnitResults = computed(() => {
   return allUnitResults.value.filter((v) => v.context.prev);
 });
 
-const filterUnitResults = shallowRef<QueryResult.UnitResult<RawNode>[]>([]);
-watchEffect(() => {
-  filterUnitResults.value = showUnitResults.value;
-});
+const filterUnitResults = shallowRef<QueryResult.UnitResult<RawNode>[]>([
+  ...showUnitResults.value,
+]);
 const switchUnitResult = (unitResult: QueryResult.UnitResult<RawNode>) => {
   if (filterUnitResults.value.includes(unitResult)) {
     filterUnitResults.value = filterUnitResults.value.filter(

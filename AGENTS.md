@@ -23,3 +23,12 @@
 - 项目源码、脚本和工具配置只能使用 `.ts`、`.tsx` 或 `.vue` 文件。
 - 禁止新增 `.js`、`.mjs`、`.cjs`、`.jsx`、`.mts` 或 `.cts` 文件；ESLint 会将这些扩展名报告为错误。
 - `dist` 构建产物、`node_modules` 依赖及源码中的 JavaScript 输出文件名字符串不受此限制。
+
+## 响应式状态修改
+
+- 业务状态和共享状态只能在命名 action 中修改；用户事件、路由钩子和生命周期钩子必须显式调用相应 action。
+- `computed` 必须保持纯计算，不得在计算过程中修改其他状态或触发路由、网络、存储等副作用。
+- 禁止使用 `watch`、`watchEffect`、`watchImmediate`、VueUse watcher、`whenever`、`syncRef` 等观察器隐式修改状态或启动业务流程。
+- URL、持久化存储、网络请求和加载状态应在触发操作的 action 中显式更新；异步 action 必须处理过期结果，避免旧请求覆盖新状态。
+- 只有隔离 DOM、动画或第三方命令式实例的适配器可以使用 watcher；适配器文件必须加入 ESLint 明确白名单，且不得修改业务或共享状态。
+- Store 对外只暴露只读状态和命名 action，不暴露可由调用方直接修改的响应式对象。

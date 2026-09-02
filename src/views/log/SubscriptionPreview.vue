@@ -62,7 +62,9 @@ const filteredApps = computed(() => {
       matchesTextSearch(app.name || ``, query, appSearchOptions),
   );
 });
-watch(filteredApps, () => (appPage.value = 1));
+const resetAppPage = () => {
+  appPage.value = 1;
+};
 const pagedApps = computed(() => {
   const offset = (appPage.value - 1) * appPageSize;
   return filteredApps.value.slice(offset, offset + appPageSize);
@@ -210,6 +212,10 @@ const categoryColumns: DataTableColumns<
             v-model:whole-word="appSearchOptions.wholeWord"
             v-model:use-regex="appSearchOptions.useRegex"
             placeholder="搜索应用名称或包名"
+            @update:modelValue="resetAppPage"
+            @update:matchCase="resetAppPage"
+            @update:wholeWord="resetAppPage"
+            @update:useRegex="resetAppPage"
           />
           <NEmpty v-if="pagedApps.length == 0" description="没有匹配的应用" />
           <NCollapse v-else accordion class="min-h-0 flex-1 overflow-auto">

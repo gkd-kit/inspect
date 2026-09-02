@@ -151,7 +151,11 @@ const loadData = async () => {
   }
 };
 
-watch(selectedTableName, loadData);
+const selectTable = async (tableName: string) => {
+  if (selectedTableName.value == tableName) return;
+  selectedTableName.value = tableName;
+  await loadData();
+};
 
 const init = async () => {
   loading.value = true;
@@ -167,6 +171,7 @@ const init = async () => {
     );
     tables.value = result.tables;
     selectedTableName.value = result.tables[0]?.name || ``;
+    await loadData();
   } catch (error) {
     errorText.value = error instanceof Error ? error.message : String(error);
   } finally {
@@ -306,7 +311,7 @@ const tableRows = computed(() => {
             text
             :type="table.name == selectedTableName ? 'primary' : 'default'"
             class="h-34px justify-between px-6px"
-            @click="selectedTableName = table.name"
+            @click="selectTable(table.name)"
           >
             <span
               class="flex-1 overflow-hidden text-left text-ellipsis leading-20px"

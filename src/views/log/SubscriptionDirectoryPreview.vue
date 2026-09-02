@@ -48,16 +48,9 @@ const filteredItems = computed(() => {
   });
 });
 
-watch(filteredItems, () => (page.value = 1));
-watch(
-  () => props.items,
-  (items) => {
-    if (!items.some((item) => item.path == selectedPath.value)) {
-      selectedPath.value = ``;
-      activeTab.value = `list`;
-    }
-  },
-);
+const resetPage = () => {
+  page.value = 1;
+};
 
 const pagedItems = computed(() => {
   const offset = (page.value - 1) * pageSize;
@@ -184,6 +177,10 @@ const rowProps = (item: SubscriptionFileSummary) => ({
         v-model:use-regex="searchOptions.useRegex"
         placeholder="搜索订阅 ID、名称、作者或版本"
         class="flex-none"
+        @update:modelValue="resetPage"
+        @update:matchCase="resetPage"
+        @update:wholeWord="resetPage"
+        @update:useRegex="resetPage"
       />
       <NEmpty
         v-if="pagedItems.length == 0"
@@ -232,6 +229,7 @@ const rowProps = (item: SubscriptionFileSummary) => ({
           </NAlert>
           <TextViewer
             v-if="detail.raw"
+            :key="detail.path"
             :value="detail.raw"
             search-placeholder="搜索原始内容"
             allow-wrap

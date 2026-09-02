@@ -54,16 +54,9 @@ const filteredItems = computed(() => {
   });
 });
 
-watch(filteredItems, () => (page.value = 1));
-watch(
-  () => props.items,
-  (items) => {
-    if (!items.some((item) => item.path == selectedPath.value)) {
-      selectedPath.value = ``;
-      activeTab.value = `list`;
-    }
-  },
-);
+const resetPage = () => {
+  page.value = 1;
+};
 
 const pagedItems = computed(() => {
   const offset = (page.value - 1) * pageSize;
@@ -192,6 +185,10 @@ const rowProps = (item: CrashSummary) => ({
         v-model:use-regex="searchOptions.useRegex"
         placeholder="搜索异常类型、消息、设备或版本"
         class="flex-none"
+        @update:modelValue="resetPage"
+        @update:matchCase="resetPage"
+        @update:wholeWord="resetPage"
+        @update:useRegex="resetPage"
       />
       <NEmpty
         v-if="pagedItems.length == 0"
@@ -273,6 +270,7 @@ const rowProps = (item: CrashSummary) => ({
           <NTabPane name="stack" tab="堆栈">
             <TextViewer
               v-if="detail.stackTrace"
+              :key="`${detail.path}:stack`"
               :value="detail.stackTrace"
               :documentKey="detail.path"
               search-placeholder="搜索崩溃堆栈"
@@ -300,6 +298,7 @@ const rowProps = (item: CrashSummary) => ({
             />
             <TextViewer
               v-else-if="detail.raw"
+              :key="`${detail.path}:raw`"
               :value="detail.raw"
               search-placeholder="搜索原始内容"
               allow-wrap

@@ -7,26 +7,83 @@ import ScreenshotCard from './ScreenshotCard.vue';
 import SearchCard from './SearchCard.vue';
 import WindowCard from './WindowCard.vue';
 import { useSnapshotStore } from './snapshot';
+import { useSnapshotUrlState } from './snapshot_url_state';
 import TrackCard from '@/components/TrackCard.vue';
 import FullScreenDialog from '@/components/FullScreenDialog.vue';
+import type { RouteLocationNormalized } from 'vue-router';
 
-const { snapshot, rootNode, loading, redirected, trackData, trackShow } =
-  useSnapshotStore();
+const route = useRoute();
+const snapshotStore = useSnapshotStore();
+const {
+  snapshot,
+  rootNode,
+  loading,
+  redirected,
+  trackData,
+  trackShow,
+  loadFromRoute: loadSnapshotFromRoute,
+  applyUrlFocus,
+  closeTrack,
+  clearTrack,
+} = snapshotStore;
+const snapshotUrlState = useSnapshotUrlState();
+const searchRevision = shallowRef(0);
+let activePath = ``;
 
-watchEffect(() => {
-  if (loading.value) {
-    loadingBar.start();
-  } else {
-    loadingBar.finish();
+const loadPageFromRoute = async (
+  target: Pick<RouteLocationNormalized, 'path' | 'params' | 'query'>,
+  initial = false,
+) => {
+  const pathChanged = initial || activePath != target.path;
+  let failed = false;
+  if (pathChanged) loadingBar.start();
+  try {
+    const urlChanged = await snapshotUrlState.loadFromRoute(target);
+    if (snapshotUrlState.error.value) {
+      message.error(snapshotUrlState.error.value.message);
+    }
+    if (pathChanged) {
+      await loadSnapshotFromRoute(target);
+      searchRevision.value += 1;
+    } else if (urlChanged) {
+      await applyUrlFocus();
+      searchRevision.value += 1;
+    }
+    activePath = target.path;
+  } catch (error) {
+    failed = true;
+    message.error(error instanceof Error ? error.message : String(error));
+    if (pathChanged) loadingBar.error();
+  } finally {
+    if (pathChanged && !failed) loadingBar.finish();
   }
-});
+};
 
-const searchShow = useStorage('searchShow', true, sessionStorage);
-const ruleShow = useStorage('ruleShow', false, sessionStorage);
-const attrShow = useStorage('attrShow', true, sessionStorage);
+onBeforeMount(() => loadPageFromRoute(route, true));
+onBeforeRouteUpdate((to) => loadPageFromRoute(to));
+
+const getSessionBoolean = (key: string, fallback: boolean) => {
+  const value = sessionStorage.getItem(key);
+  return value == null ? fallback : value == 'true';
+};
+const searchShow = shallowRef(getSessionBoolean('searchShow', true));
+const ruleShow = shallowRef(getSessionBoolean('ruleShow', false));
+const attrShow = shallowRef(getSessionBoolean('attrShow', true));
+const setPanelVisible = (
+  key: 'searchShow' | 'ruleShow' | 'attrShow',
+  visible: boolean,
+) => {
+  const target = { searchShow, ruleShow, attrShow }[key];
+  if (!target) return;
+  target.value = visible;
+  sessionStorage.setItem(key, String(visible));
+};
 
 const clickSettings = () => {
   message.info('暂未实现');
+};
+const setTrackVisible = (visible: boolean) => {
+  if (!visible) closeTrack();
 };
 </script>
 <template>
@@ -62,7 +119,7 @@ const clickSettings = () => {
         <div />
         <NTooltip placement="right">
           <template #trigger>
-            <NButton text @click="searchShow = !searchShow">
+            <NButton text @click="setPanelVisible('searchShow', !searchShow)">
               <SvgIcon name="search-list" />
             </NButton>
           </template>
@@ -70,7 +127,7 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton text @click="attrShow = !attrShow">
+            <NButton text @click="setPanelVisible('attrShow', !attrShow)">
               <SvgIcon name="prop" />
             </NButton>
           </template>
@@ -78,7 +135,7 @@ const clickSettings = () => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton text @click="ruleShow = !ruleShow">
+            <NButton text @click="setPanelVisible('ruleShow', !ruleShow)">
               <SvgIcon name="test" />
             </NButton>
           </template>
@@ -122,16 +179,30 @@ const clickSettings = () => {
       <WindowCard class="flex-1" />
     </div>
 
-    <SearchCard :show="searchShow" @updateShow="searchShow = $event" />
-    <RuleCard :show="ruleShow" @updateShow="ruleShow = $event" />
-    <AttrCard :show="attrShow" @updateShow="attrShow = $event" />
+    <SearchCard
+      :key="searchRevision"
+      :show="searchShow"
+      @updateShow="setPanelVisible('searchShow', $event)"
+    />
+    <RuleCard
+      :show="ruleShow"
+      @updateShow="setPanelVisible('ruleShow', $event)"
+    />
+    <AttrCard
+      :show="attrShow"
+      @updateShow="setPanelVisible('attrShow', $event)"
+    />
     <OverlapCard />
-    <FullScreenDialog v-model:show="trackShow" @closed="trackData = undefined">
+    <FullScreenDialog
+      :show="trackShow"
+      @update:show="setTrackVisible"
+      @closed="clearTrack"
+    >
       <TrackCard
         v-if="trackData"
         class="bg-white"
         v-bind="trackData"
-        @close="trackShow = false"
+        @close="closeTrack"
       />
     </FullScreenDialog>
   </template>

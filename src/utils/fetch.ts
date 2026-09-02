@@ -30,6 +30,6 @@ export const enhanceFetch = async (
       });
     }
   }
-  useGlobalStore().networkErrorDlgVisible = true;
+  useGlobalStore().setNetworkErrorDialogVisible(true);
   throw new Error(`gm is not supported`);
 };

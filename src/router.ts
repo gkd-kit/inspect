@@ -51,18 +51,17 @@ const router = createRouter({
     {
       path: '/i/:github_asset_id',
       component: snapshotPage,
-      beforeEnter(to, _, next) {
+      beforeEnter(to) {
         const github_asset_id = getGithubAssetId(to.params.github_asset_id);
         if (!github_asset_id) {
-          return next({ path: '/404' });
+          return { path: '/404' };
         }
         if (github_asset_id != String(to.params.github_asset_id)) {
-          return next({
+          return {
             path: '/i/' + github_asset_id,
             query: to.query,
-          });
+          };
         }
-        next();
       },
       meta: { title: '快照' },
     },
@@ -82,15 +81,14 @@ const router = createRouter({
     {
       path: '/device',
       component: recordModule(() => import('@/views/DevicePage.vue')),
-      beforeEnter(to, _, next) {
+      beforeEnter(to) {
         const u = toValidURL(String(to.query.url));
         if (u) {
           localStorage.setItem('device_link', u.origin);
           const query = { ...to.query };
           delete query.url;
-          return next({ ...to, query });
+          return { path: to.path, query, hash: to.hash };
         }
-        next();
       },
       meta: { title: '连接设备' },
     },

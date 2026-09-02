@@ -30,7 +30,7 @@ const state = useProvideTextViewerState({
   sourceLinkContext: toRef(props, `sourceLinkContext`),
 });
 
-const { allowWrap: allowWrapRef, wrap } = state;
+const { allowWrap: allowWrapRef, wrap, setWrap } = state;
 </script>
 
 <template>
@@ -42,7 +42,7 @@ const { allowWrap: allowWrapRef, wrap } = state;
       <slot name="toolbar-start" />
       <div name="text-viewer-toolbar-spacer" class="min-w-0 flex-1" />
       <SearchBar />
-      <NCheckbox v-if="allowWrapRef" v-model:checked="wrap">
+      <NCheckbox v-if="allowWrapRef" :checked="wrap" @update:checked="setWrap">
         自动换行
       </NCheckbox>
     </div>

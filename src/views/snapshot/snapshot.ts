@@ -9,10 +9,12 @@ import { findNodesByXy, getAppInfo, listToTree } from '@/utils/node';
 import { toFixedNumber, toInteger } from '@/utils/others';
 import type { ResolvedSelector } from '@/utils/selector';
 import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
-import { useTask } from '@/utils/task';
 import { getImportFileUrl } from '@/utils/url';
 import { getSnapshotImportId } from '@/utils/workers';
 import type { QueryResult } from '@gkd-kit/selector';
+import type { RouteLocationNormalized } from 'vue-router';
+import { storageActions } from '@/store/storage';
+import { useSnapshotUrlState } from './snapshot_url_state';
 
 if (import.meta.hot) {
   import.meta.hot.accept(() => {
@@ -29,21 +31,21 @@ const getGithubAssetId = (v: unknown): number | undefined => {
   return toInteger(String(v).match(/^\d+/)?.[0]);
 };
 
+const getRouteSource = (
+  target: Pick<RouteLocationNormalized, 'params'>,
+): SnapshotRouteSource => {
+  const snapshotId = toInteger(target.params.snapshotId);
+  if (snapshotId) return { type: 'snapshot', snapshotId };
+  const importId = getGithubAssetId(target.params.github_asset_id);
+  if (importId) return { type: 'import', importId };
+};
+
 export const useSnapshotStore = createSharedComposable(() => {
   const route = useRoute();
   const router = useRouter();
+  const snapshotUrlState = useSnapshotUrlState();
 
-  const routeSource = computed<SnapshotRouteSource>(() => {
-    const snapshotId = toInteger(route.params.snapshotId);
-    if (snapshotId) {
-      return { type: 'snapshot', snapshotId };
-    }
-    const importId = getGithubAssetId(route.params.github_asset_id);
-    if (importId) {
-      return { type: 'import', importId };
-    }
-    return undefined;
-  });
+  const routeSource = computed(() => getRouteSource(route));
   const snapshotId = shallowRef<number>();
   const importId = computed(() => {
     if (snapshotId.value) {
@@ -59,12 +61,6 @@ export const useSnapshotStore = createSharedComposable(() => {
     return undefined;
   });
   const snapshot = shallowRef<Snapshot>();
-  watchEffect(() => {
-    if (snapshot.value) {
-      document.title =
-        '快照-' + (getAppInfo(snapshot.value).name || snapshot.value.appId);
-    }
-  });
   const screenshot = shallowRef<ArrayBuffer>();
   const screenshotUrl = computed(() => {
     if (screenshot.value) {
@@ -78,12 +74,15 @@ export const useSnapshotStore = createSharedComposable(() => {
     snapshot.value = undefined;
     screenshot.value = undefined;
   };
-  const loadLocalSnapshot = async (id: number) => {
-    snapshotId.value = id;
+  let loadRevision = 0;
+  const loading = shallowRef(false);
+  const loadLocalSnapshot = async (id: number, revision: number) => {
     const [localSnapshot, localScreenshot] = await Promise.all([
       snapshotStorage.getItem(id),
       screenshotStorage.getItem(id),
     ]);
+    if (revision != loadRevision) return false;
+    snapshotId.value = id;
     snapshot.value = localSnapshot || undefined;
     screenshot.value = localSnapshot ? localScreenshot || undefined : undefined;
     return Boolean(localSnapshot);
@@ -92,34 +91,36 @@ export const useSnapshotStore = createSharedComposable(() => {
     const entry = Object.entries(snapshotImportId).find(([, v]) => v == id);
     return toInteger(entry?.[0]);
   };
-  const loadImportSnapshot = async (id: number) => {
+  const loadImportSnapshot = async (id: number, revision: number) => {
     const localSnapshotId =
       importSnapshotId[id] || findSnapshotIdByImportId(id);
     if (localSnapshotId) {
-      const hasSnapshot = await loadLocalSnapshot(localSnapshotId);
+      const hasSnapshot = await loadLocalSnapshot(localSnapshotId, revision);
+      if (revision != loadRevision) return false;
       if (hasSnapshot) {
-        importSnapshotId[id] = localSnapshotId;
-        snapshotImportId[localSnapshotId] = id;
+        storageActions.setImportSnapshotId(id, localSnapshotId);
+        storageActions.setSnapshotImportId(localSnapshotId, id);
         return true;
       }
-      delete importSnapshotId[id];
+      storageActions.setImportSnapshotId(id);
       if (snapshotImportId[localSnapshotId] == id) {
-        delete snapshotImportId[localSnapshotId];
+        storageActions.setSnapshotImportId(localSnapshotId);
       }
     }
 
     const [remoteSnapshot] =
       (await importFromNetwork(getImportFileUrl(id))) || [];
+    if (revision != loadRevision) return false;
     if (remoteSnapshot?.id) {
-      importSnapshotId[id] = remoteSnapshot.id;
-      snapshotImportId[remoteSnapshot.id] = id;
-      await loadLocalSnapshot(remoteSnapshot.id);
+      storageActions.setImportSnapshotId(id, remoteSnapshot.id);
+      storageActions.setSnapshotImportId(remoteSnapshot.id, id);
+      await loadLocalSnapshot(remoteSnapshot.id, revision);
       return true;
     }
-    resetSnapshot();
+    if (revision == loadRevision) resetSnapshot();
     return false;
   };
-  const update = useTask(async (source: SnapshotRouteSource) => {
+  const update = async (source: SnapshotRouteSource, revision: number) => {
     redirected.value = false;
     if (!source) {
       resetSnapshot();
@@ -127,17 +128,18 @@ export const useSnapshotStore = createSharedComposable(() => {
     }
 
     if (source.type == 'snapshot') {
-      const hasSnapshot = await loadLocalSnapshot(source.snapshotId);
+      const hasSnapshot = await loadLocalSnapshot(source.snapshotId, revision);
+      if (revision != loadRevision) return;
       const localImportId = snapshotImportId[source.snapshotId];
       if (localImportId) {
-        importSnapshotId[localImportId] = source.snapshotId;
+        storageActions.setImportSnapshotId(localImportId, source.snapshotId);
         redirected.value = !hasSnapshot;
         router.replace({
           path: '/i/' + localImportId,
           query: route.query,
         });
         if (!hasSnapshot) {
-          await loadImportSnapshot(localImportId);
+          await loadImportSnapshot(localImportId, revision);
           redirected.value = false;
         }
         return;
@@ -147,13 +149,14 @@ export const useSnapshotStore = createSharedComposable(() => {
         const remoteImportId = await getSnapshotImportId(
           source.snapshotId,
         ).catch(() => null);
+        if (revision != loadRevision) return;
         if (remoteImportId && Number.isSafeInteger(remoteImportId)) {
           redirected.value = true;
           router.replace({
             path: '/i/' + remoteImportId,
             query: route.query,
           });
-          await loadImportSnapshot(remoteImportId);
+          await loadImportSnapshot(remoteImportId, revision);
           redirected.value = false;
           return;
         }
@@ -161,40 +164,10 @@ export const useSnapshotStore = createSharedComposable(() => {
       return;
     }
 
-    await loadImportSnapshot(source.importId);
-  });
-  const loading = computed(() => update.loading);
-  watchImmediate(() => routeSource.value, update.invoke);
-  watchEffect(() => {
-    if (routeSource.value?.type == 'snapshot' && importId.value) {
-      router.replace({
-        path: '/i/' + importId.value,
-        query: route.query,
-      });
-    }
-  });
-  watchEffect(() => {
-    if (
-      importId.value &&
-      !importSnapshotId[importId.value] &&
-      snapshotId.value
-    ) {
-      detectSnapshot(snapshotId.value, importId.value);
-    }
-  });
+    await loadImportSnapshot(source.importId, revision);
+  };
   const autoUpload = computed(() => {
     return gmOk() && settingsStore.autoUploadImport;
-  });
-  watchEffect(() => {
-    if (autoUpload.value && snapshot.value && !imageId.value) {
-      exportSnapshotAsImageId(snapshot.value);
-    }
-    if (autoUpload.value && snapshot.value && !importId.value) {
-      exportSnapshotAsImportId(snapshot.value);
-    }
-    if (autoUpload.value && snapshot.value && importId.value) {
-      detectSnapshot(snapshot.value.id, importId.value);
-    }
   });
   const nodes = computed(() => {
     if (snapshot.value) {
@@ -224,20 +197,98 @@ export const useSnapshotStore = createSharedComposable(() => {
   const focusTime = shallowRef(0);
   const focusPosition = shallowRef<Position>();
   const overlapNodes = shallowRef<RawNode[]>();
-  const updateFocusNode = async (node: RawNode) => {
+  type FocusListener = (node: RawNode, scrollTree: boolean) => void;
+  const focusListeners = new Set<FocusListener>();
+  const subscribeFocus = (listener: FocusListener) => {
+    focusListeners.add(listener);
+    if (focusNode.value) listener(focusNode.value, false);
+    return () => focusListeners.delete(listener);
+  };
+  const updateFocusNode = async (
+    node: RawNode,
+    options: { syncUrl?: boolean; scrollTree?: boolean } = {},
+  ) => {
+    const { syncUrl = true, scrollTree = true } = options;
     focusNode.value = node;
     focusTime.value = Date.now();
+    if (syncUrl) {
+      snapshotUrlState.setFocusNodeId(
+        node.id == rootNode.value?.id ? undefined : node.id,
+      );
+    }
+    focusListeners.forEach((listener) => listener(node, scrollTree));
     await nextTick();
     if (overlapNodes.value && !overlapNodes.value.includes(node)) {
       focusPosition.value = undefined;
       overlapNodes.value = undefined;
     }
   };
-  watchEffect(() => {
-    if (rootNode.value) {
-      updateFocusNode(rootNode.value);
+  const applyUrlFocus = async () => {
+    const root = rootNode.value;
+    if (!root || !snapshotUrlState.ready.value) return;
+    const focusNodeId = snapshotUrlState.state.value.focusNodeId;
+    const targetNode =
+      nodes.value.find((node) => node.id == focusNodeId) || root;
+    if (focusNode.value !== targetNode) {
+      await updateFocusNode(targetNode, { syncUrl: false });
     }
-  });
+    const canonicalFocusNodeId =
+      targetNode.id == root.id ? undefined : targetNode.id;
+    if (focusNodeId != canonicalFocusNodeId) {
+      snapshotUrlState.setFocusNodeId(canonicalFocusNodeId);
+    }
+  };
+
+  const runPostLoadActions = async (
+    source: SnapshotRouteSource,
+    revision: number,
+  ) => {
+    const currentSnapshot = snapshot.value;
+    if (!currentSnapshot || revision != loadRevision) return;
+    document.title =
+      '快照-' + (getAppInfo(currentSnapshot).name || currentSnapshot.appId);
+    await applyUrlFocus();
+
+    let currentImportId = importId.value;
+    if (autoUpload.value) {
+      const tasks: Promise<unknown>[] = [];
+      if (!imageId.value) tasks.push(exportSnapshotAsImageId(currentSnapshot));
+      if (!currentImportId) {
+        tasks.push(
+          exportSnapshotAsImportId(currentSnapshot).then((id) => {
+            currentImportId = id;
+          }),
+        );
+      }
+      await Promise.allSettled(tasks);
+    }
+    if (revision != loadRevision) return;
+    currentImportId = importId.value || currentImportId;
+    if (currentImportId && !importSnapshotId[currentImportId]) {
+      void detectSnapshot(currentSnapshot.id, currentImportId);
+    }
+    if (source?.type == 'snapshot' && currentImportId) {
+      await router.replace({
+        path: '/i/' + currentImportId,
+        query: route.query,
+      });
+    }
+  };
+
+  const loadFromRoute = async (
+    target: Pick<RouteLocationNormalized, 'params'> = route,
+  ) => {
+    const source = getRouteSource(target);
+    const revision = ++loadRevision;
+    loading.value = true;
+    resetSnapshot();
+    try {
+      await update(source, revision);
+      if (revision == loadRevision) void runPostLoadActions(source, revision);
+    } finally {
+      if (revision == loadRevision) loading.value = false;
+    }
+  };
   const updatePosition = (position: Position) => {
     focusPosition.value = position;
     const resultNodes = findNodesByXy(nodes.value, focusPosition.value);
@@ -264,26 +315,37 @@ export const useSnapshotStore = createSharedComposable(() => {
       queryResult: result,
     };
   };
+  const closeTrack = () => {
+    trackShow.value = false;
+  };
+  const clearTrack = () => {
+    trackData.value = undefined;
+  };
 
   return {
-    snapshotId,
-    snapshot,
+    snapshotId: shallowReadonly(snapshotId),
+    snapshot: shallowReadonly(snapshot),
     rootNode,
     screenshotUrl,
-    loading,
-    redirected,
+    loading: shallowReadonly(loading),
+    loadFromRoute,
+    redirected: shallowReadonly(redirected),
     importId,
     imageId,
-    focusNode,
+    focusNode: shallowReadonly(focusNode),
     updateFocusNode,
-    focusTime,
-    overlapNodes,
+    applyUrlFocus,
+    focusTime: shallowReadonly(focusTime),
+    subscribeFocus,
+    overlapNodes: shallowReadonly(overlapNodes),
     missNodeSize,
-    focusPosition,
+    focusPosition: shallowReadonly(focusPosition),
     updatePosition,
-    trackData,
-    trackShow,
+    trackData: shallowReadonly(trackData),
+    trackShow: shallowReadonly(trackShow),
     showTrack,
+    closeTrack,
+    clearTrack,
   };
 });
 

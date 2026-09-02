@@ -9,6 +9,8 @@ const {
   matchCount,
   displayedResultIndex,
   invalidRegex,
+  updateQuery,
+  toggleSearchOption,
   selectRelativeResult,
   handleSearchEnter,
 } = useTextViewerState();
@@ -55,13 +57,14 @@ const {
       </button>
     </div>
     <NInput
-      v-model:value="query"
+      :value="query"
       clearable
       size="small"
       :status="invalidRegex ? 'error' : undefined"
       :placeholder="searchPlaceholder"
       class="min-w-0 flex-1"
       @keydown.enter.prevent="handleSearchEnter"
+      @update:value="updateQuery"
     >
       <template #suffix>
         <div
@@ -80,7 +83,7 @@ const {
             aria-label="区分大小写"
             title="区分大小写"
             @mousedown.prevent
-            @click="searchOptions.matchCase = !searchOptions.matchCase"
+            @click="toggleSearchOption('matchCase')"
           >
             Aa
           </button>
@@ -96,7 +99,7 @@ const {
             aria-label="全词匹配"
             title="全词匹配"
             @mousedown.prevent
-            @click="searchOptions.wholeWord = !searchOptions.wholeWord"
+            @click="toggleSearchOption('wholeWord')"
           >
             ab
           </button>
@@ -112,7 +115,7 @@ const {
             aria-label="使用正则表达式"
             title="使用正则表达式"
             @mousedown.prevent
-            @click="searchOptions.useRegex = !searchOptions.useRegex"
+            @click="toggleSearchOption('useRegex')"
           >
             .*
           </button>

@@ -3,10 +3,11 @@ const globalStore = useGlobalStore();
 </script>
 <template>
   <NModal
-    v-model:show="globalStore.githubErrorDlgVisible"
+    :show="globalStore.state.githubErrorDlgVisible"
     preset="dialog"
     title="生成分享链接失败"
     type="error"
+    @update:show="globalStore.setGithubErrorDialogVisible"
   >
     <div>生成分享链接需要以下条件</div>
     <div>
@@ -17,10 +18,11 @@ const globalStore = useGlobalStore();
     </div>
   </NModal>
   <NModal
-    v-model:show="globalStore.networkErrorDlgVisible"
+    :show="globalStore.state.networkErrorDlgVisible"
     preset="dialog"
     title="访问其它域名资源失败"
     type="error"
+    @update:show="globalStore.setNetworkErrorDialogVisible"
   >
     <div>访问其它域名资源需要以下条件</div>
     <div>

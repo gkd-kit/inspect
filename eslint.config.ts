@@ -7,6 +7,14 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import autoImportGlobals from './.eslintrc-auto-import.json' with { type: 'json' };
 import projectRules from './eslint-rules/native-element-allowlist.ts';
+import stateRules from './eslint-rules/no-implicit-state-watchers.ts';
+
+const combinedProjectRules = {
+  rules: {
+    ...projectRules.rules,
+    ...stateRules.rules,
+  },
+};
 
 export default defineConfig(
   {
@@ -27,7 +35,7 @@ export default defineConfig(
   {
     files: ['**/*.{js,mjs,cjs,jsx,mts,cts}'],
     plugins: {
-      project: projectRules,
+      project: combinedProjectRules,
     },
     rules: {
       'project/typescript-source-files-only': 'error',
@@ -63,7 +71,7 @@ export default defineConfig(
     files: ['**/*.{ts,tsx,vue}'],
     plugins: {
       'unused-imports': unusedImports,
-      project: projectRules,
+      project: combinedProjectRules,
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -80,6 +88,7 @@ export default defineConfig(
       'vue/custom-event-name-casing': ['error', 'camelCase'],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       'project/native-element-allowlist': 'error',
+      'project/no-implicit-state-watchers': 'error',
       'no-empty': 'off',
       'no-useless-assignment': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -98,6 +107,20 @@ export default defineConfig(
           argsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+
+  // Watchers are reserved for isolated adapters around imperative UI APIs.
+  {
+    files: [
+      'src/components/DraggableCard.vue',
+      'src/components/FullScreenDialog.vue',
+      'src/components/SvgIcon.vue',
+      'src/components/TrackGraph.vue',
+      'src/utils/draggable.ts',
+    ],
+    rules: {
+      'project/no-implicit-state-watchers': 'off',
     },
   },
 

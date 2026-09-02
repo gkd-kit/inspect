@@ -53,7 +53,7 @@ export const uploadAsset = async (
     fetch: enhanceFetch,
   }).catch(async (e) => {
     if (e instanceof UploadError) {
-      useGlobalStore().githubErrorDlgVisible = true;
+      useGlobalStore().setGithubErrorDialogVisible(true);
     }
     throw e;
   });

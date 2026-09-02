@@ -2,7 +2,7 @@
 import DraggableCard from '@/components/DraggableCard.vue';
 import SelectorText from '@/components/SelectorText.vue';
 import { message } from '@/utils/discrete';
-import { errorTry, errorWrap } from '@/utils/error';
+import { errorTry } from '@/utils/error';
 import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import { parseSelector } from '@/utils/selector';
@@ -10,10 +10,14 @@ import { gkdWidth, vw } from '@/utils/size';
 import { getImagUrl, getImportUrl } from '@/utils/url';
 import { FastQuery, GkdException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
-import * as base64url from 'universal-base64url';
 import type { ShallowRef } from 'vue';
 import JSON5 from 'json5';
 import { useSnapshotStore } from './snapshot';
+import {
+  encodeSnapshotUrlState,
+  type SnapshotUrlQuery,
+} from './snapshot_url_codec';
+import { useSnapshotUrlState } from './snapshot_url_state';
 
 withDefaults(
   defineProps<{
@@ -25,10 +29,10 @@ withDefaults(
   },
 );
 
-const route = useRoute();
 const { snapshotImportId, snapshotImageId } = useStorageStore();
 
 const snapshotStore = useSnapshotStore();
+const snapshotUrlState = useSnapshotUrlState();
 const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
 const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
 const { focusNode, updateFocusNode } = snapshotStore;
@@ -37,76 +41,124 @@ const searchText = shallowRef(``);
 
 const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
-const searchSelector = (text: string) => {
-  const selector = errorWrap(
-    () => parseSelector(text),
-    (e) => {
-      if (typeof e == 'string') {
-        return e;
-      }
-      if (e instanceof GkdException) {
-        return `非法选择器:` + e.outMessage;
-      }
-      return `非法选择器:` + (e instanceof Error ? e.message : e);
-    },
+let nextResultKey = Date.now();
+const getNextResultKey = () => nextResultKey++;
+
+const getSelectorError = (error: unknown): string => {
+  if (typeof error == 'string') {
+    return error;
+  }
+  if (error instanceof GkdException) {
+    return `非法选择器:` + error.outMessage;
+  }
+  return (
+    `非法选择器:` + (error instanceof Error ? error.message : String(error))
   );
+};
+
+const searchSelector = (text: string, notify = true) => {
+  let selector;
+  try {
+    selector = parseSelector(text);
+  } catch (error) {
+    if (notify) {
+      message.error(getSelectorError(error));
+    }
+    return;
+  }
   if (
     selectorResults.find(
-      (s) =>
-        typeof s.selector == 'object' &&
-        s.selector.toString() == selector.toString(),
+      (result) =>
+        typeof result.selector == 'object' &&
+        result.selector.toString() == selector.toString(),
     )
   ) {
-    message.warning(`不可重复选择`);
+    if (notify) {
+      message.warning(`不可重复选择`);
+    }
     return;
   }
 
   const results = selector.querySelfOrSelectorAllContext(rootNode.value);
   if (results.length == 0) {
-    message.success(`没有选择到节点`);
+    if (notify) {
+      message.success(`没有选择到节点`);
+    }
     return;
   }
-  message.success(`选择到 ${results.length} 个节点`);
+  if (notify) {
+    message.success(`选择到 ${results.length} 个节点`);
+  }
   selectorResults.unshift({
     selector,
-    nodes: results.map((r) => r.target),
+    nodes: results.map((result) => result.target),
     results,
-    key: Date.now(),
+    key: getNextResultKey(),
     gkd: true,
   });
   return results.length;
 };
-const searchString = (text: string) => {
+const searchString = (text: string, notify = true) => {
   if (
     selectorResults.find(
-      (s) => typeof s.selector == 'string' && s.selector.toString() == text,
+      (result) => typeof result.selector == 'string' && result.selector == text,
     )
   ) {
-    message.warning(`不可重复搜索`);
+    if (notify) {
+      message.warning(`不可重复搜索`);
+    }
     return;
   }
   const results: RawNode[] = [];
   const stack: RawNode[] = [rootNode.value];
   while (stack.length > 0) {
-    const n = stack.pop()!;
-    if (getNodeLabel(n).includes(text)) {
-      results.push(n);
+    const node = stack.pop()!;
+    if (getNodeLabel(node).includes(text)) {
+      results.push(node);
     }
-    stack.push(...[...n.children].reverse());
+    stack.push(...[...node.children].reverse());
   }
   if (results.length == 0) {
-    message.success(`没有搜索到节点`);
+    if (notify) {
+      message.success(`没有搜索到节点`);
+    }
     return;
   }
-  message.success(`搜索到 ${results.length} 个节点`);
+  if (notify) {
+    message.success(`搜索到 ${results.length} 个节点`);
+  }
   selectorResults.unshift({
     gkd: false,
     selector: text,
     nodes: results,
-    key: Date.now(),
+    key: getNextResultKey(),
   });
   return results.length;
 };
+
+const getResultQuery = (result: SearchResult): SnapshotUrlQuery => ({
+  type: result.gkd ? 'selector' : 'text',
+  value: result.selector.toString(),
+});
+const getResultQueries = () => selectorResults.map(getResultQuery);
+const syncQueryHistory = () => {
+  snapshotUrlState.setQueries(getResultQueries());
+};
+
+const restoreQueryHistory = () => {
+  if (!snapshotUrlState.ready.value || !rootNode.value) return;
+  for (const query of [
+    ...(snapshotUrlState.state.value.queries ?? []),
+  ].reverse()) {
+    if (query.type == 'selector') {
+      searchSelector(query.value, false);
+    } else {
+      searchString(query.value, false);
+    }
+  }
+  if (selectorResults[0]) expandedKeys.value = [selectorResults[0].key];
+};
+restoreQueryHistory();
 const refreshExpandedKeys = () => {
   const newResult = selectorResults[0];
   const newNode = newResult.nodes[0];
@@ -129,25 +181,13 @@ const searchBySelector = errorTry(() => {
     if (!searchString(text)) return;
   }
   refreshExpandedKeys();
+  syncQueryHistory();
 });
 const handleSearchKeydown = (event: KeyboardEvent) => {
   if (event.key != 'Enter' || event.shiftKey || event.isComposing) return;
   event.preventDefault();
   searchBySelector();
 };
-
-onMounted(() => {
-  let count = 0;
-  if (route.query.gkd) {
-    count += searchSelector(base64url.decode(route.query.gkd as string)) || 0;
-  }
-  if (route.query.str) {
-    count += searchString(route.query.str as string) || 0;
-  }
-  if (count > 0) {
-    refreshExpandedKeys();
-  }
-});
 
 const generateRules = errorTry(async (result: SelectorSearchResult) => {
   const imageId = snapshotImageId[snapshot.value.id];
@@ -202,18 +242,35 @@ const enableSearchBySelector = shallowRef(true);
 const hasZipId = computed(() => {
   return snapshotImportId[snapshot.value.id];
 });
-const shareResult = (result: SearchResult) => {
+const shareResult = async (result: SearchResult) => {
   if (!hasZipId.value) return;
-  const importUrl = new URL(getImportUrl(snapshotImportId[snapshot.value.id]));
-  if (typeof result.selector == 'object') {
-    importUrl.searchParams.set(
-      'gkd',
-      base64url.encode(result.selector.toString()),
+  try {
+    const importUrl = new URL(
+      getImportUrl(snapshotImportId[snapshot.value.id]),
     );
-  } else {
-    importUrl.searchParams.set('str', result.selector.toString());
+    importUrl.searchParams.set(
+      'state',
+      await encodeSnapshotUrlState({
+        focusNodeId:
+          focusNode.value?.id == rootNode.value.id
+            ? undefined
+            : focusNode.value?.id,
+        queries: [getResultQuery(result)],
+      }),
+    );
+    await copy(importUrl.toString());
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : String(error));
   }
-  copy(importUrl.toString());
+};
+const deleteResult = (index: number) => {
+  const [deletedResult] = selectorResults.splice(index, 1);
+  if (deletedResult) {
+    expandedKeys.value = expandedKeys.value.filter(
+      (key) => key != deletedResult.key,
+    );
+    syncQueryHistory();
+  }
 };
 </script>
 <template>
@@ -336,7 +393,7 @@ const shareResult = (result: SearchResult) => {
               <NButton
                 size="small"
                 title="删除记录"
-                @click.stop="selectorResults.splice(index, 1)"
+                @click.stop="deleteResult(index)"
               >
                 <template #icon>
                   <SvgIcon name="delete" />

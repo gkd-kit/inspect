@@ -84,6 +84,7 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       rangeIndex: number;
     }>();
     const activeMatchElement = shallowRef<HTMLElement>();
+    let searchRevision = 0;
     const lineHeight = 20;
     const overscan = 8;
 
@@ -118,17 +119,6 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       const height = entries[0]?.contentRect.height;
       if (height) viewportHeight.value = height;
     });
-
-    const selectRelativeResult = (offset: number) => {
-      if (!normalizedQuery.value || !matchCount.value) return;
-      const current = resultIndex.value >= 0 ? resultIndex.value : 0;
-      resultIndex.value =
-        (current + offset + matchCount.value) % matchCount.value;
-    };
-
-    const handleSearchEnter = (event: KeyboardEvent) => {
-      selectRelativeResult(event.shiftKey ? -1 : 1);
-    };
 
     const handleScroll = () => {
       scrollTop.value = scrollContainer.value?.scrollTop || 0;
@@ -173,95 +163,88 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       message.success(`已复制当前文件内容`);
     };
 
-    watch(options.documentKey, () => {
-      query.value = ``;
-      resultIndex.value = -1;
-    });
-
-    watch([options.documentKey, wrap], async () => {
+    const resetScroll = async () => {
       scrollTop.value = 0;
       await nextTick();
       scrollContainer.value?.scrollTo({ top: 0 });
       virtualList.value?.scrollTo({ index: 0 });
-    });
+    };
 
-    watch(
-      [
-        query,
-        () => searchOptions.matchCase,
-        () => searchOptions.wholeWord,
-        () => searchOptions.useRegex,
-        matchCount,
-      ],
-      (
-        [actualQuery, actualMatchCase, actualWholeWord, actualUseRegex, count],
-        previous,
-      ) => {
-        if (!actualQuery.trim() || !count) {
-          resultIndex.value = -1;
-          return;
+    const syncActiveMatch = async (revision: number) => {
+      if (revision != searchRevision) return;
+      activeMatch.value = undefined;
+      activeMatchElement.value = undefined;
+      const actualQuery = normalizedQuery.value;
+      const actualResultIndex = resultIndex.value;
+      if (!actualQuery || actualResultIndex < 0) return;
+      let remaining = actualResultIndex;
+      let lineIndex = -1;
+      for (let index = 0; index < lines.value.length; index++) {
+        const line = lines.value[index];
+        if (!line) continue;
+        const ranges = getTextMatchRanges(
+          line.text,
+          actualQuery,
+          searchOptions,
+        );
+        if (remaining < ranges.length) {
+          lineIndex = index;
+          activeMatch.value = { lineKey: line.key, rangeIndex: remaining };
+          break;
         }
-        const criteriaChanged =
-          !previous ||
-          actualQuery != previous[0] ||
-          actualMatchCase != previous[1] ||
-          actualWholeWord != previous[2] ||
-          actualUseRegex != previous[3];
-        if (
-          criteriaChanged ||
-          resultIndex.value < 0 ||
-          resultIndex.value >= count
-        ) {
-          resultIndex.value = 0;
-        }
-      },
-      { immediate: true },
-    );
-
-    watch(
-      [
-        normalizedQuery,
-        () => searchOptions.matchCase,
-        () => searchOptions.wholeWord,
-        () => searchOptions.useRegex,
-        resultIndex,
-      ],
-      async ([actualQuery, , , , actualResultIndex]) => {
-        activeMatch.value = undefined;
-        activeMatchElement.value = undefined;
-        if (!actualQuery || actualResultIndex < 0) return;
-        let remaining = actualResultIndex;
-        let lineIndex = -1;
-        for (let index = 0; index < lines.value.length; index++) {
-          const line = lines.value[index];
-          if (!line) continue;
-          const ranges = getTextMatchRanges(
-            line.text,
-            actualQuery,
-            searchOptions,
-          );
-          if (remaining < ranges.length) {
-            lineIndex = index;
-            activeMatch.value = { lineKey: line.key, rangeIndex: remaining };
-            break;
-          }
-          remaining -= ranges.length;
-        }
-        if (lineIndex < 0) return;
-        scrollTop.value = lineIndex * lineHeight;
-        await nextTick();
-        scrollContainer.value?.scrollTo({ top: scrollTop.value });
-        virtualList.value?.scrollTo({ index: lineIndex });
-        await nextTick();
-        requestAnimationFrame(() => {
-          activeMatchElement.value?.scrollIntoView({
-            block: `nearest`,
-            inline: `nearest`,
-          });
+        remaining -= ranges.length;
+      }
+      if (lineIndex < 0) return;
+      scrollTop.value = lineIndex * lineHeight;
+      await nextTick();
+      if (revision != searchRevision) return;
+      scrollContainer.value?.scrollTo({ top: scrollTop.value });
+      virtualList.value?.scrollTo({ index: lineIndex });
+      await nextTick();
+      requestAnimationFrame(() => {
+        if (revision != searchRevision) return;
+        activeMatchElement.value?.scrollIntoView({
+          block: `nearest`,
+          inline: `nearest`,
         });
-      },
-      { flush: `post` },
-    );
+      });
+    };
+
+    const applySearchCriteria = async () => {
+      const revision = ++searchRevision;
+      const count = matchCount.value;
+      resultIndex.value = normalizedQuery.value && count ? 0 : -1;
+      await syncActiveMatch(revision);
+    };
+
+    const updateQuery = (value: string) => {
+      query.value = value;
+      void applySearchCriteria();
+    };
+
+    const toggleSearchOption = (
+      key: 'matchCase' | 'wholeWord' | 'useRegex',
+    ) => {
+      searchOptions[key] = !searchOptions[key];
+      void applySearchCriteria();
+    };
+
+    const selectRelativeResult = (offset: number) => {
+      if (!normalizedQuery.value || !matchCount.value) return;
+      const current = resultIndex.value >= 0 ? resultIndex.value : 0;
+      resultIndex.value =
+        (current + offset + matchCount.value) % matchCount.value;
+      void syncActiveMatch(++searchRevision);
+    };
+
+    const handleSearchEnter = (event: KeyboardEvent) => {
+      selectRelativeResult(event.shiftKey ? -1 : 1);
+    };
+
+    const setWrap = (value: boolean) => {
+      wrap.value = value;
+      void resetScroll();
+    };
 
     return {
       ...options,
@@ -280,12 +263,15 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       matchCount,
       displayedResultIndex,
       invalidRegex,
+      updateQuery,
+      toggleSearchOption,
       selectRelativeResult,
       handleSearchEnter,
       handleScroll,
       setActiveMatchElement,
       getLineTokens,
       copyText,
+      setWrap,
     };
   },
 );

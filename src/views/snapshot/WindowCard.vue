@@ -17,58 +17,48 @@ import { useSnapshotStore } from './snapshot';
 const router = useRouter();
 
 const snapshotStore = useSnapshotStore();
-const { updateFocusNode, focusNode, focusTime } = snapshotStore;
+const { updateFocusNode, focusNode, subscribeFocus } = snapshotStore;
 const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
 const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
 
-let lastClickId = Number.NaN;
 const expandedKeys = shallowRef<number[]>([]);
 const selectedKeys = shallowRef<number[]>([]);
 const treeContainer = useTemplateRef('treeContainerRef');
-watch([() => focusNode.value, () => focusTime.value], async () => {
-  if (!focusNode.value) return;
-  const key = focusNode.value.id;
-  nextTick().then(async () => {
-    await delay(300);
-    if (key === focusNode.value?.id) {
-      if (lastClickId === key) {
-        // 当点击节点树中的节点时, 不滚动
-        lastClickId = Number.NaN;
-        return;
-      }
-      selectedKeys.value = [key];
-      if (!treeContainer.value) return;
-      const nodeRef = treeContainer.value.querySelector(
-        `[data-node-id="${key}"]`,
-      );
-      if (nodeRef) {
-        nodeRef.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        });
-      } else {
-        await delay(300);
-        treeRef.value?.scrollTo({ key, behavior: 'smooth', debounce: true });
-      }
-    }
-  });
-  let parent = focusNode.value.parent;
-  if (!parent) {
-    return;
-  }
+const syncTreeToFocus = async (node: RawNode, scrollTree: boolean) => {
+  const key = node.id;
+  selectedKeys.value = [key];
+  let parent = node.parent;
   const s = new Set(expandedKeys.value);
   while (parent) {
     s.add(parent.id);
     parent = parent.parent;
   }
   if (
-    s.size == expandedKeys.value.length &&
-    expandedKeys.value.every((v) => s.has(v))
+    s.size != expandedKeys.value.length ||
+    !expandedKeys.value.every((v) => s.has(v))
   ) {
-    return;
+    expandedKeys.value = [...s];
   }
-  expandedKeys.value = [...s];
+  if (!scrollTree) return;
+  await nextTick();
+  await delay(300);
+  if (key !== focusNode.value?.id || !treeContainer.value) return;
+  const nodeRef = treeContainer.value.querySelector(`[data-node-id="${key}"]`);
+  if (nodeRef) {
+    nodeRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    await delay(300);
+    treeRef.value?.scrollTo({ key, behavior: 'smooth', debounce: true });
+  }
+};
+
+let unsubscribeFocus: (() => boolean) | undefined;
+onMounted(() => {
+  unsubscribeFocus = subscribeFocus((node, scrollTree) => {
+    void syncTreeToFocus(node, scrollTree);
+  });
 });
+onBeforeUnmount(() => unsubscribeFocus?.());
 
 const treeRef = shallowRef<TreeInst>();
 
@@ -81,8 +71,7 @@ const treeNodeProps = (info: {
   const style = getNodeStyle(info.option, focusNode.value);
   return {
     onClick: () => {
-      lastClickId = info.option.id;
-      updateFocusNode(info.option);
+      updateFocusNode(info.option, { scrollTree: false });
     },
     style: {
       '--n-node-text-color': style.color,

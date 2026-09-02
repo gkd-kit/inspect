@@ -17,7 +17,17 @@ import { useBatchActions } from '@/composables/useBatchActions';
 
 const router = useRouter();
 const { api, origin, serverInfo } = useDeviceApi();
-const link = useStorage(`device_link`, ``);
+const link = shallowRef(localStorage.getItem(`device_link`) || ``);
+const subsText = shallowRef(``);
+const snapshots = shallowRef<Snapshot[]>([]);
+const updateLink = (value: string) => {
+  link.value = value;
+};
+const loadSnapshots = async () => {
+  const result = await api.getSnapshots();
+  result.sort((a, b) => b.id - a.id);
+  snapshots.value = result;
+};
 const connect = useTask(async () => {
   if (!link.value) return;
   origin.value = errorWrap(
@@ -25,7 +35,11 @@ const connect = useTask(async () => {
     () => `非法设备地址`,
   ).origin;
   link.value = origin.value;
+  localStorage.setItem(`device_link`, link.value);
   serverInfo.value = await api.getServerInfo();
+  document.title = serverTitle.value;
+  await loadSnapshots();
+  subsText.value = ``;
 });
 
 const serverTitle = computed(() => {
@@ -42,25 +56,13 @@ onMounted(async () => {
   }
 });
 
-const snapshots = shallowRef<Snapshot[]>([]);
-watchEffect(async () => {
-  if (!serverInfo.value) return;
-  document.title = serverTitle.value;
-  const result = await api.getSnapshots();
-  result.sort((a, b) => b.id - a.id);
-  snapshots.value = result;
-  subsText.value = '';
-});
-
 const captureSnapshot = useTask(async () => {
   const snapshot = await api.captureSnapshot();
   const screenshot = await api.getScreenshot({ id: snapshot.id });
   await snapshotStorage.setItem(snapshot.id, snapshot);
   await screenshotStorage.setItem(snapshot.id, screenshot);
   message.success(`捕获并保存快照成功`);
-  const result = await api.getSnapshots();
-  result.sort((a, b) => b.id - a.id);
-  snapshots.value = result;
+  await loadSnapshots();
 });
 const downloadAllSnapshot = useTask(async () => {
   const snapshotIds = (await api.getSnapshots()).map((s) => s.id);
@@ -167,9 +169,7 @@ const checkedRowKeys = ref<number[]>([]);
 const { batchDelete } = useBatchActions(checkedRowKeys, {
   beforeDeleteItem: async (id) => await api.deleteSnapshot({ id }),
   onAfterDelete: async () => {
-    const result = await api.getSnapshots();
-    result.sort((a, b) => b.id - a.id);
-    snapshots.value = result;
+    await loadSnapshots();
   },
 });
 
@@ -180,16 +180,16 @@ const pagination = shallowReactive<PaginationProps>({
   pageSizes: [50, 100],
   onChange: (page: number) => {
     pagination.page = page;
+    resetColWidth();
   },
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize;
     pagination.page = 1;
+    resetColWidth();
   },
 });
-watch(pagination, resetColWidth);
 
 const showSubsModel = shallowRef(false);
-const subsText = shallowRef(``);
 const updateSubs = useTask(async () => {
   const data = errorWrap(() => JSON5.parse(subsText.value.trim()));
   if (!data) return;
@@ -415,11 +415,12 @@ const placeholder = `
       </RouterLink>
       <NInputGroup>
         <NInput
-          v-model:value="link"
+          :value="link"
           placeholder="请输入设备地址"
           class="gkd_code"
           :style="{ width: `240px` }"
           @keyup.enter="connect.invoke"
+          @update:value="updateLink"
         >
           <template #suffix>
             <NTooltip>

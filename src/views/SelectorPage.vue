@@ -11,28 +11,45 @@ import * as base64url from 'universal-base64url';
 const route = useRoute();
 const router = useRouter();
 
-const getTextFromRoute = () => {
-  const t = String(route.query.gkd || '');
+const getTextFromRoute = (value: unknown) => {
+  const t = String(value || '');
   if (!t) return t;
   try {
     return base64url.decode(t);
   } catch {
-    setTextToRoute('');
     return '';
   }
 };
-const setTextToRoute = (t: string) => {
-  router.replace({ query: { gkd: t ? base64url.encode(t) : undefined } });
+const setTextToRoute = async (value: string) => {
+  await router.replace({
+    query: { gkd: value ? base64url.encode(value) : undefined },
+  });
 };
 
-const inputText = shallowRef(getTextFromRoute());
-const lazyText = useDebounce(inputText, 500);
-const text = computed(() => {
-  return (inputText.value && lazyText.value).trim();
-});
-watch(text, () => {
-  setTextToRoute(text.value);
-});
+const initialText = getTextFromRoute(route.query.gkd);
+const inputText = shallowRef(initialText);
+const text = shallowRef(initialText.trim());
+let inputRevision = 0;
+const applyInputText = useDebounceFn(
+  async (revision: number, value: string) => {
+    if (revision != inputRevision) return;
+    text.value = value.trim();
+    await setTextToRoute(text.value);
+  },
+  500,
+);
+const updateInputText = (value: string) => {
+  inputText.value = value;
+  void applyInputText(++inputRevision, value);
+};
+const loadTextFromRoute = (value: unknown) => {
+  const nextText = getTextFromRoute(value);
+  if (nextText == inputText.value && nextText.trim() == text.value) return;
+  inputRevision += 1;
+  inputText.value = nextText;
+  text.value = nextText.trim();
+};
+onBeforeRouteUpdate((to) => loadTextFromRoute(to.query.gkd));
 const result = computed(() => {
   if (!text.value) return;
   try {
@@ -86,7 +103,7 @@ const error = computed(() => {
   </div>
   <div flex flex-col items-center p-8px text="40px/52px">
     <NInput
-      v-model:value="inputText"
+      :value="inputText"
       type="textarea"
       placeholder="请输入选择器"
       class="gkd_code py-4px"
@@ -95,6 +112,7 @@ const error = computed(() => {
         minRows: 3,
         maxRows: 8,
       }"
+      @update:value="updateInputText"
     />
     <div h-20px />
     <div

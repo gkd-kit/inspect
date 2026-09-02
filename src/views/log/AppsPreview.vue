@@ -13,10 +13,6 @@ const props = defineProps<{
 }>();
 
 const selectedUserId = shallowRef(props.data.users[0]?.id);
-watch(
-  () => props.data,
-  (data) => (selectedUserId.value = data.users[0]?.id),
-);
 const selectedUser = computed(() => {
   return (
     props.data.users.find((user) => user.id == selectedUserId.value) ||

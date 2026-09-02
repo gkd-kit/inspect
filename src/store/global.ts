@@ -1,6 +1,17 @@
 export const useGlobalStore = createGlobalState(() => {
-  return shallowReactive<GlobalStore>({
+  const state = shallowReactive<GlobalStore>({
     networkErrorDlgVisible: false,
     githubErrorDlgVisible: false,
-  }) as GlobalStore;
+  });
+  const setNetworkErrorDialogVisible = (visible: boolean) => {
+    state.networkErrorDlgVisible = visible;
+  };
+  const setGithubErrorDialogVisible = (visible: boolean) => {
+    state.githubErrorDlgVisible = visible;
+  };
+  return {
+    state: readonly(state),
+    setNetworkErrorDialogVisible,
+    setGithubErrorDialogVisible,
+  };
 });

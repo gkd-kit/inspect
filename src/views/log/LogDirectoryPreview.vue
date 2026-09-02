@@ -41,16 +41,6 @@ const filteredItems = computed(() => {
   });
 });
 
-watch(
-  () => props.items,
-  (items) => {
-    if (!items.some((item) => item.path == selectedPath.value)) {
-      selectedPath.value = ``;
-      activeTab.value = `list`;
-    }
-  },
-);
-
 const selectedItem = computed(() => {
   return props.items.find((item) => item.path == selectedPath.value);
 });

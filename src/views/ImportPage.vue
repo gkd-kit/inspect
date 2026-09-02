@@ -16,13 +16,13 @@ const goToSnapshot = async (snapshotId: number) => {
   router.replace({
     name: 'snapshot',
     params: { snapshotId },
-    query: filterQuery(route.query, ['str', 'gkd']),
+    query: filterQuery(route.query, ['state', 'str', 'gkd']),
   });
 };
 
 const url = String(route.query.url || ``);
 const importId = getImportId(url);
-const { importSnapshotId, snapshotImportId } = useStorageStore();
+const { importSnapshotId, storageActions } = useStorageStore();
 
 onMounted(async () => {
   if (!isValidUrl(url)) {
@@ -41,7 +41,7 @@ onMounted(async () => {
         goToSnapshot(snapshotId);
         return;
       } else {
-        delete importSnapshotId[importId];
+        storageActions.setImportSnapshotId(importId);
       }
     }
   }
@@ -54,8 +54,8 @@ onMounted(async () => {
       loadingBar.finish();
       if (snapshot?.id) {
         if (importId) {
-          importSnapshotId[importId] = snapshot.id;
-          snapshotImportId[snapshot.id] = importId;
+          storageActions.setImportSnapshotId(importId, snapshot.id);
+          storageActions.setSnapshotImportId(snapshot.id, importId);
         }
         loading.value = false;
         await delay(500);

@@ -78,6 +78,7 @@ import {
 } from './log_cache';
 import { LazyBuildRetracer } from './retrace_client';
 import { hasRetraceableStack } from './retrace_text';
+import type { RouteLocationNormalized } from 'vue-router';
 
 type PreviewKind =
   | `none`
@@ -780,17 +781,21 @@ const fetchArchive = async (
   if (loaded) void setLogArchiveCache(source.url, name, data);
 };
 
-const getRouteSource = () => {
-  if (route.path == `/log`) return getLogQuerySource(route.query.url);
-  return getLogPathSource(route.params.pathMatch);
+const getRouteSource = (
+  target: Pick<RouteLocationNormalized, 'path' | 'query' | 'params'>,
+) => {
+  if (target.path == `/log`) return getLogQuerySource(target.query.url);
+  return getLogPathSource(target.params.pathMatch);
 };
 
-const loadFromRoute = async () => {
+const loadFromRoute = async (
+  target: Pick<RouteLocationNormalized, 'path' | 'query' | 'params'> = route,
+) => {
   activeFetchController?.abort();
   resetBuildRetrace();
   const controller = new AbortController();
   activeFetchController = controller;
-  const source = getRouteSource();
+  const source = getRouteSource(target);
   const sequence = ++loadSequence;
   previewSequence++;
   resetCrashData();
@@ -815,7 +820,8 @@ const loadFromRoute = async () => {
   }
 };
 
-watch(() => route.fullPath, loadFromRoute, { immediate: true });
+onMounted(() => loadFromRoute(route));
+onBeforeRouteUpdate((to) => loadFromRoute(to));
 
 onBeforeUnmount(() => {
   activeFetchController?.abort();
@@ -1139,6 +1145,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
               {{ jsonError }}
             </NAlert>
             <TextViewer
+              :key="selectedEntry?.path"
               :value="previewText"
               :documentKey="selectedEntry?.path"
               search-placeholder="搜索当前文件"
@@ -1182,6 +1189,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
           />
           <CrashPreview
             v-else-if="previewKind == 'crash'"
+            :key="selectedPath"
             :items="crashItems"
             :detail="crashDetail"
             :detailLoading="crashDetailLoading"
@@ -1194,6 +1202,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
           />
           <LogDirectoryPreview
             v-else-if="previewKind == 'log-directory'"
+            :key="selectedPath"
             :items="logItems"
             :detailPath="logDetailPath"
             :detailText="logDetailText"
@@ -1208,6 +1217,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
           />
           <SubscriptionDirectoryPreview
             v-else-if="previewKind == 'subscription-directory'"
+            :key="selectedPath"
             :items="subscriptionItems"
             :detail="subscriptionDetail"
             :detailStructured="subscriptionDetailStructured"
