@@ -3,8 +3,13 @@ import DraggableCard from '@/components/DraggableCard.vue';
 import { getNodeLabel, getNodeStyle } from '@/utils/node';
 import { useSnapshotStore } from './snapshot';
 
-const { focusNode, overlapNodes, focusPosition, updateFocusNode } =
-  useSnapshotStore();
+const {
+  focusNode,
+  overlapNodes,
+  focusPosition,
+  updateFocusNode,
+  closeOverlap,
+} = useSnapshotStore();
 const _1vw = document.documentElement.scrollWidth / 100;
 const left = _1vw * 25.5;
 </script>
@@ -19,7 +24,7 @@ const left = _1vw * 25.5;
       v-if="overlapNodes && focusPosition"
       size="small"
       closable
-      @close="overlapNodes = undefined"
+      @close="closeOverlap"
     >
       <template #header>
         <div :ref="onRef" cursor-move>

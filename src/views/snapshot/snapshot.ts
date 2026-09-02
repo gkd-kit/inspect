@@ -301,6 +301,9 @@ export const useSnapshotStore = createSharedComposable(() => {
       overlapNodes.value = undefined;
     }
   };
+  const closeOverlap = () => {
+    overlapNodes.value = undefined;
+  };
 
   const trackShow = shallowRef(false);
   const trackData = shallowRef<TrackCardProps>();
@@ -341,6 +344,7 @@ export const useSnapshotStore = createSharedComposable(() => {
     missNodeSize,
     focusPosition: shallowReadonly(focusPosition),
     updatePosition,
+    closeOverlap,
     trackData: shallowReadonly(trackData),
     trackShow: shallowReadonly(trackShow),
     showTrack,
