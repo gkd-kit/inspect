@@ -1,13 +1,13 @@
-import { showTextDLg, waitShareAgree } from '@/utils/dialog';
+import { showTextDLg, waitShareAgree } from '@/domain/snapshot/dialog';
 import { dialog, message } from '@/utils/discrete';
 import {
   batchCreateImageId,
   batchCreateZipUrl,
   batchImageDownloadZip,
   batchZipDownloadZip,
-} from '@/utils/export';
+} from '@/domain/snapshot/export';
 import { withTimeout, DELETE_TIMEOUT } from '@/utils/others';
-import { snapshotStorage } from '@/utils/snapshot';
+import { snapshotStorage } from '@/domain/snapshot/storage';
 import { useTask } from '@/utils/task';
 import { getImagUrl, getImportUrl } from '@/utils/url';
 

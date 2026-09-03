@@ -113,11 +113,11 @@ export default defineConfig(
   // Watchers are reserved for isolated adapters around imperative UI APIs.
   {
     files: [
-      'src/components/DraggableCard.vue',
-      'src/components/FullScreenDialog.vue',
-      'src/components/SvgIcon.vue',
-      'src/components/TrackGraph.vue',
-      'src/utils/draggable.ts',
+      'src/components/base/DraggableCard.vue',
+      'src/components/base/FullScreenDialog.vue',
+      'src/components/base/SvgIcon.vue',
+      'src/components/base/draggable.ts',
+      'src/components/selector/TrackGraph.vue',
     ],
     rules: {
       'project/no-implicit-state-watchers': 'off',

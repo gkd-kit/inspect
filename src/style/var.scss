@@ -1,4 +1,23 @@
 :root {
   --gkd-w: max(1200px, 100vw);
   --gkd-h: max(700px, 100vh);
+  --app-bg: #ffffff;
+  --app-panel: #ffffff;
+  --app-text: #1f2937;
+  --app-muted: #64748b;
+  --app-border: #e5e7eb;
+  --app-subtle: #f3f4f6;
+  --app-viewed-bg: #ecfdf3;
+  --app-viewed-border: #bbf7d0;
+}
+
+:root[data-theme='dark'] {
+  --app-bg: #101014;
+  --app-panel: #18181c;
+  --app-text: #e5e7eb;
+  --app-muted: #a3a3a3;
+  --app-border: #34343a;
+  --app-subtle: #27272a;
+  --app-viewed-bg: #10291d;
+  --app-viewed-border: #1f6b43;
 }

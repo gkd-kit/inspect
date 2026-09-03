@@ -1,7 +1,7 @@
 import type { LocationQuery } from 'vue-router';
 import { message } from './discrete';
 import { Teleport } from 'vue';
-import BodyScrollbar from '@/components/BodyScrollbar.vue';
+import BodyScrollbar from '@/components/base/BodyScrollbar.vue';
 
 export const obj2form = (...objs: Record<string, unknown>[]) => {
   const fd = new FormData();

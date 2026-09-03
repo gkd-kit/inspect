@@ -24,6 +24,12 @@
 - 禁止新增 `.js`、`.mjs`、`.cjs`、`.jsx`、`.mts` 或 `.cts` 文件；ESLint 会将这些扩展名报告为错误。
 - `dist` 构建产物、`node_modules` 依赖及源码中的 JavaScript 输出文件名字符串不受此限制。
 
+## SVG 图标
+
+- SVG 图标文件的根 `<svg>` 元素必须且只能包含 `viewBox` 属性，禁止设置 `xmlns`、`fill`、`stroke`、`width`、`height`、`class`、`style` 等其他属性。
+- 单色图标的 `fill`、`stroke`、`stroke-width`、`stroke-linecap`、`stroke-linejoin` 等呈现属性必须写在 `<path>`、`<rect>` 等内部元素上；需要继承组件颜色时使用 `currentColor`。
+- 多色图标的颜色、透明度和其他呈现属性也必须写在对应的内部元素上，不得通过根 `<svg>` 统一设置。
+
 ## 响应式状态修改
 
 - 业务状态和共享状态只能在命名 action 中修改；用户事件、路由钩子和生命周期钩子必须显式调用相应 action。

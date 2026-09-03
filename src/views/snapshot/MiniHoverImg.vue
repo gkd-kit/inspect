@@ -18,7 +18,6 @@ const {
     <!-- 渲染在外部防止被遮挡 -->
     <div
       v-show="imgHover"
-      class="MiniHoverImg"
       :style="{
         left: imgBounding.right.value + 4 + 'px',
         top: imgBounding.top.value + 'px',
@@ -27,7 +26,7 @@ const {
       fixed
       overflow-hidden
       z-2
-      bg-white
+      class="MiniHoverImg app-panel"
       h-200px
       w-200px
       border-1px

@@ -6,9 +6,13 @@ const searchCardSource = readFileSync(
   new URL('./SearchCard.vue', import.meta.url),
   'utf8',
 );
+const selectorSyntaxInputSource = readFileSync(
+  new URL('./SelectorSyntaxInput.vue', import.meta.url),
+  'utf8',
+);
 
 test(`搜索框的真实 textarea 与自动高度镜像继承相同字体`, () => {
-  const inputTag = searchCardSource.match(/<NInput\b[\s\S]*?\/>/)?.[0];
+  const inputTag = selectorSyntaxInputSource.match(/<NInput\b[\s\S]*?\/>/)?.[0];
   assert.ok(inputTag, `未找到搜索输入框`);
   assert.match(
     inputTag,
@@ -20,4 +24,11 @@ test(`搜索框的真实 textarea 与自动高度镜像继承相同字体`, () =
     /inputProps[\s\S]*gkd_code/,
     `不能只给真实 textarea 设置等宽字体，否则软换行高度会少算`,
   );
+});
+
+test(`选择器语法错误高亮不会接管输入事件`, () => {
+  assert.match(searchCardSource, /<SelectorSyntaxInput\b/);
+  assert.match(selectorSyntaxInputSource, /pointer-events-none/);
+  assert.match(selectorSyntaxInputSource, /aria-hidden="true"/);
+  assert.match(selectorSyntaxInputSource, /addEventListener\('scroll'/);
 });

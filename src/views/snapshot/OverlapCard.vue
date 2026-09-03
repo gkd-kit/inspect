@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import DraggableCard from '@/components/DraggableCard.vue';
-import { getNodeLabel, getNodeStyle } from '@/utils/node';
+import DraggableCard from '@/components/base/DraggableCard.vue';
+import { getNodeLabel, getNodeStyle } from '@/domain/snapshot/node';
 import { useSnapshotStore } from './snapshot';
 
 const {
@@ -29,7 +29,7 @@ const left = _1vw * 25.5;
       <template #header>
         <div :ref="onRef" cursor-move>
           位置
-          <span bg="#eee" px-2px>{{
+          <span class="app-subtle" px-2px>{{
             `${focusPosition.x.toFixed(0)},${focusPosition.y.toFixed(0)}`
           }}</span>
           存在 {{ overlapNodes.length }} 个层叠节点

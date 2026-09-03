@@ -4,6 +4,10 @@ import { test } from 'node:test';
 import { createSharedTaskPool } from './retrace_client.ts';
 
 const source = readFileSync(new URL(`./LogPage.vue`, import.meta.url), `utf8`);
+const retraceSource = readFileSync(
+  new URL(`./useLogRetrace.ts`, import.meta.url),
+  `utf8`,
+);
 const clientSource = readFileSync(
   new URL(`./retrace_client.ts`, import.meta.url),
   `utf8`,
@@ -29,7 +33,7 @@ test(`打开普通文本、日志文件和崩溃文件时自动触发堆栈还�
 
 test(`自动触发只处理混淆堆栈且不会把已还原的缓存状态切回原文`, () => {
   assert.match(
-    source,
+    retraceSource,
     /const autoRetraceText[\s\S]*?if \(!state\?\.available \|\| state\.autoAttempted\) return;[\s\S]*?state\.autoAttempted = true;[\s\S]*?void toggleRetraceText/,
   );
 });
@@ -81,9 +85,9 @@ test(`注册失败会清理附件缓存且 Worker 停止后允许重新初始化
 });
 
 test(`过期会话不会显示还原结果或错误`, () => {
-  assert.match(source, /if \(!isCurrent\(\)\) return;/);
+  assert.match(retraceSource, /if \(!isCurrent\(\)\) return;/);
   assert.match(
-    source,
+    retraceSource,
     /if \(error instanceof DOMException && error\.name == `AbortError`\)/,
   );
 });

@@ -8,14 +8,16 @@ import SearchCard from './SearchCard.vue';
 import WindowCard from './WindowCard.vue';
 import { useSnapshotStore } from './snapshot';
 import { useSnapshotUrlState } from './snapshot_url_state';
-import TrackCard from '@/components/TrackCard.vue';
-import FullScreenDialog from '@/components/FullScreenDialog.vue';
+import TrackCard from '@/components/selector/TrackCard.vue';
+import FullScreenDialog from '@/components/base/FullScreenDialog.vue';
+import SettingsModal from '@/components/app/SettingsModal.vue';
 import type { RouteLocationNormalized } from 'vue-router';
 
 const route = useRoute();
 const snapshotStore = useSnapshotStore();
 const {
   snapshot,
+  screenshotUrl,
   rootNode,
   loading,
   redirected,
@@ -79,8 +81,13 @@ const setPanelVisible = (
   sessionStorage.setItem(key, String(visible));
 };
 
-const clickSettings = () => {
-  message.info('暂未实现');
+const settingsShow = shallowRef(false);
+const setSettingsVisible = (visible: boolean) => {
+  settingsShow.value = visible;
+};
+const redactionShow = shallowRef(false);
+const setRedactionVisible = (visible: boolean) => {
+  redactionShow.value = visible;
 };
 const setTrackVisible = (visible: boolean) => {
   if (!visible) closeTrack();
@@ -102,7 +109,7 @@ const setTrackVisible = (visible: boolean) => {
           <template #trigger>
             <NButton text>
               <RouterLink to="/">
-                <SvgIcon name="home" />
+                <SvgIcon name="arrow" class="rotate-90" />
               </RouterLink>
             </NButton>
           </template>
@@ -110,13 +117,25 @@ const setTrackVisible = (visible: boolean) => {
         </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
-            <NButton text @click="clickSettings">
+            <NButton text @click="setSettingsVisible(true)">
               <SvgIcon name="settings" />
             </NButton>
           </template>
           设置
         </NTooltip>
         <div />
+        <NTooltip v-if="screenshotUrl" placement="right">
+          <template #trigger>
+            <NButton
+              text
+              aria-label="创建脱敏副本"
+              @click="setRedactionVisible(true)"
+            >
+              <SvgIcon name="privacy" />
+            </NButton>
+          </template>
+          创建脱敏副本
+        </NTooltip>
         <NTooltip placement="right">
           <template #trigger>
             <NButton text @click="setPanelVisible('searchShow', !searchShow)">
@@ -175,7 +194,10 @@ const setTrackVisible = (visible: boolean) => {
           分享须知
         </NTooltip>
       </div>
-      <ScreenshotCard />
+      <ScreenshotCard
+        :redactionShow="redactionShow"
+        @update:redactionShow="setRedactionVisible"
+      />
       <WindowCard class="flex-1" />
     </div>
 
@@ -185,6 +207,7 @@ const setTrackVisible = (visible: boolean) => {
       @updateShow="setPanelVisible('searchShow', $event)"
     />
     <RuleCard
+      :key="searchRevision"
       :show="ruleShow"
       @updateShow="setPanelVisible('ruleShow', $event)"
     />
@@ -200,7 +223,7 @@ const setTrackVisible = (visible: boolean) => {
     >
       <TrackCard
         v-if="trackData"
-        class="bg-white"
+        class="app-panel"
         v-bind="trackData"
         @close="closeTrack"
       />
@@ -221,4 +244,5 @@ const setTrackVisible = (visible: boolean) => {
       </a>
     </div>
   </div>
+  <SettingsModal :show="settingsShow" @update:show="setSettingsVisible" />
 </template>

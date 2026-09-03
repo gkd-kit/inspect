@@ -1,8 +1,5 @@
 <script lang="tsx" setup>
-import type { RawSubscription } from '@gkd-kit/api';
-import type { TreeOption } from 'naive-ui';
 import { message } from '@/utils/discrete';
-import { enhanceFetch } from '@/utils/fetch';
 import {
   getLogPathSource,
   getLogQuerySource,
@@ -10,9 +7,7 @@ import {
   type LogSource,
 } from '@/utils/log_url';
 import { getDragEventFiles } from '@/utils/others';
-import AppsPreview from './AppsPreview.vue';
 import { getAppsPreviewData, type AppsPreviewData } from './apps_preview';
-import CrashPreview from './CrashPreview.vue';
 import {
   CRASH_TREE_KEY,
   getCrashEntries,
@@ -43,18 +38,9 @@ import {
   type SubscriptionFileSummary,
 } from './directory_preview';
 import { isJsonTreeTooLarge } from './json_preview';
-import JsonPreview from './JsonPreview.vue';
-import LogDirectoryPreview from './LogDirectoryPreview.vue';
-import { readLimitedResponse } from './response';
 import type { LogVersionInfo, SourceLinkContext } from './source_links';
-import SubscriptionPreview from './SubscriptionPreview.vue';
-import SubscriptionDirectoryPreview from './SubscriptionDirectoryPreview.vue';
-import SqlitePreview from './SqlitePreview.vue';
-import StackRetraceButton from './StackRetraceButton.vue';
-import TextViewer from './text_viewer/TextViewer.vue';
 import {
   decodeLogText,
-  formatBytes,
   getLogAppNames,
   getArchiveSourceLinkContext,
   getLogBuildKey,
@@ -65,7 +51,6 @@ import {
   isRawSubscription,
   loadLogArchive,
   MAX_JSON_SIZE,
-  MAX_ZIP_SIZE,
   readEntryBytes,
   shouldUseSubscriptionPreview,
   type LogArchive,
@@ -76,31 +61,15 @@ import {
   removeLogArchiveCache,
   setLogArchiveCache,
 } from './log_cache';
-import { LazyBuildRetracer } from './retrace_client';
-import { hasRetraceableStack } from './retrace_text';
 import type { RouteLocationNormalized } from 'vue-router';
-
-type PreviewKind =
-  | `none`
-  | `text`
-  | `json`
-  | `apps`
-  | `crash`
-  | `log-directory`
-  | `subscription-directory`
-  | `subscription`
-  | `invalid-json`
-  | `database`
-  | `unsupported`;
-
-type StackRetraceTextState = {
-  originalText: string;
-  retracedText?: string;
-  available: boolean;
-  loading: boolean;
-  active: boolean;
-  autoAttempted: boolean;
-};
+import { buildLogTreeData } from './log_tree';
+import { downloadLogArchive } from './log_archive_fetch';
+import LogArchiveSidebar from './LogArchiveSidebar.vue';
+import LogEmptyState from './LogEmptyState.vue';
+import LogPreviewPanel from './LogPreviewPanel.vue';
+import LogToolbar from './LogToolbar.vue';
+import type { PreviewKind } from './log_page_types';
+import { useLogRetrace } from './useLogRetrace';
 
 const route = useRoute();
 const router = useRouter();
@@ -115,6 +84,12 @@ const previewText = shallowRef(``);
 const jsonValue = shallowRef<unknown>();
 const appsData = shallowRef<AppsPreviewData>();
 const appsView = shallowRef<`users` | `raw`>(`users`);
+const clearError = () => {
+  errorText.value = ``;
+};
+const updateAppsView = (value: `users` | `raw`) => {
+  appsView.value = value;
+};
 const crashItems = shallowRef<CrashSummary[]>([]);
 const crashDetail = shallowRef<CrashDetail>();
 const crashDetailLoading = shallowRef(false);
@@ -126,9 +101,6 @@ const logDetailLoading = shallowRef(false);
 const sourceLinkContext = shallowRef<SourceLinkContext>();
 const logVersionInfo = shallowRef<LogVersionInfo>();
 const logBuildKey = shallowRef<string>();
-const previewRetraceState = shallowRef<StackRetraceTextState>();
-const crashRetraceState = shallowRef<StackRetraceTextState>();
-const logRetraceState = shallowRef<StackRetraceTextState>();
 const subscriptionItems = shallowRef<SubscriptionFileSummary[]>([]);
 const subscriptionDetail = shallowRef<SubscriptionFileDetail>();
 const subscriptionDetailStructured = shallowRef(false);
@@ -138,8 +110,8 @@ const databaseData = shallowRef<Uint8Array>();
 const walData = shallowRef<Uint8Array>();
 const appNames = shallowRef<Record<string, string>>({});
 const subscriptionNames = shallowRef<Record<string, string>>({});
-const localFileInput = shallowRef<HTMLInputElement>();
 const filePanelCollapsed = shallowRef(false);
+const logToolbarRef = useTemplateRef('logToolbarRef');
 let loadSequence = 0;
 let previewSequence = 0;
 let crashDetailSequence = 0;
@@ -148,131 +120,28 @@ let logDetailSequence = 0;
 let subscriptionDetailSequence = 0;
 let subscriptionSummaryTask: Promise<SubscriptionFileSummary[]> | undefined;
 let activeFetchController: AbortController | undefined;
-let buildRetracer: LazyBuildRetracer | undefined;
-const retraceTextStates = new Map<string, StackRetraceTextState>();
+
+const {
+  autoRetraceText,
+  crashRetraceState,
+  getRetraceStateText,
+  getRetraceTextState,
+  logRetraceState,
+  previewRetraceState,
+  resetBuildRetrace,
+  toggleCrashRetrace,
+  toggleLogRetrace,
+  togglePreviewRetrace,
+} = useLogRetrace({
+  buildKey: logBuildKey,
+  crashDetail,
+  logDetailText,
+  previewText,
+});
 
 const selectedEntry = computed(() =>
   archive.value?.entryMap.get(selectedPath.value),
 );
-
-const resetBuildRetrace = () => {
-  buildRetracer?.dispose();
-  buildRetracer = undefined;
-  logBuildKey.value = undefined;
-  retraceTextStates.clear();
-  previewRetraceState.value = undefined;
-  crashRetraceState.value = undefined;
-  logRetraceState.value = undefined;
-};
-
-const getRetraceTextState = (key: string, originalText: string) => {
-  const previous = retraceTextStates.get(key);
-  if (previous?.originalText == originalText) return previous;
-  const state = reactive<StackRetraceTextState>({
-    originalText,
-    available: hasRetraceableStack(originalText),
-    loading: false,
-    active: false,
-    autoAttempted: false,
-  });
-  retraceTextStates.set(key, state);
-  return state;
-};
-
-const getRetraceStateText = (state: StackRetraceTextState) => {
-  return state.active && state.retracedText != null
-    ? state.retracedText
-    : state.originalText;
-};
-
-const toggleRetraceText = async (
-  state: StackRetraceTextState | undefined,
-  kind: `crash` | `log`,
-  isCurrent: () => boolean,
-  applyText: (text: string) => void,
-) => {
-  const buildKey = logBuildKey.value;
-  if (!state || !state.available || !buildKey || state.loading) return;
-  if (state.active) {
-    state.active = false;
-    applyText(state.originalText);
-    return;
-  }
-  if (state.retracedText != null) {
-    state.active = true;
-    applyText(state.retracedText);
-    return;
-  }
-  const retracer = (buildRetracer ||= new LazyBuildRetracer(buildKey));
-  state.loading = true;
-  try {
-    const result = await retracer.retrace(state.originalText, kind);
-    if (result == state.originalText) {
-      if (isCurrent()) message.warning(`没有找到与当前 mapping 匹配的堆栈`);
-      return;
-    }
-    state.retracedText = result;
-    state.active = true;
-    if (!isCurrent()) return;
-    applyText(result);
-  } catch (error) {
-    if (error instanceof DOMException && error.name == `AbortError`) return;
-    if (!isCurrent()) return;
-    message.error(
-      `堆栈还原失败: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  } finally {
-    state.loading = false;
-  }
-};
-
-const autoRetraceText = (
-  state: StackRetraceTextState | undefined,
-  kind: `crash` | `log`,
-  isCurrent: () => boolean,
-  applyText: (text: string) => void,
-) => {
-  if (!state?.available || state.autoAttempted) return;
-  state.autoAttempted = true;
-  void toggleRetraceText(state, kind, isCurrent, applyText);
-};
-
-const togglePreviewRetrace = () => {
-  const state = previewRetraceState.value;
-  void toggleRetraceText(
-    state,
-    `log`,
-    () => previewRetraceState.value == state,
-    (text) => {
-      if (previewRetraceState.value == state) previewText.value = text;
-    },
-  );
-};
-
-const toggleCrashRetrace = () => {
-  const state = crashRetraceState.value;
-  void toggleRetraceText(
-    state,
-    `crash`,
-    () => crashRetraceState.value == state,
-    (stackTrace) => {
-      if (crashRetraceState.value != state || !crashDetail.value) return;
-      crashDetail.value = markRaw({ ...crashDetail.value, stackTrace });
-    },
-  );
-};
-
-const toggleLogRetrace = () => {
-  const state = logRetraceState.value;
-  void toggleRetraceText(
-    state,
-    `log`,
-    () => logRetraceState.value == state,
-    (text) => {
-      if (logRetraceState.value == state) logDetailText.value = text;
-    },
-  );
-};
 
 const clearCrashDetail = () => {
   crashDetailSequence++;
@@ -694,29 +563,6 @@ const loadArchive = async (
   }
 };
 
-const getResponseName = (response: Response, source: LogSource) => {
-  const disposition = response.headers.get(`content-disposition`) || ``;
-  const utf8Name = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
-  const plainName = disposition.match(/filename="?([^";]+)"?/i)?.[1];
-  const candidate = utf8Name || plainName;
-  if (candidate) {
-    try {
-      return decodeURIComponent(candidate);
-    } catch {
-      return candidate;
-    }
-  }
-  if (source.name?.toLowerCase().endsWith(`.zip`)) return source.name;
-  try {
-    const finalName = new URL(response.url || source.url).pathname
-      .split(`/`)
-      .filter(Boolean)
-      .at(-1);
-    if (finalName) return decodeURIComponent(finalName);
-  } catch {}
-  return `log.zip`;
-};
-
 const fetchArchive = async (
   source: LogSource,
   sequence: number,
@@ -733,50 +579,8 @@ const fetchArchive = async (
     errorText.value = ``;
   }
 
-  let downloadTooLarge = false;
-  let response: Response;
-  try {
-    response = await enhanceFetch(
-      source.url,
-      { credentials: `omit`, signal: controller.signal },
-      (details) => ({
-        ...details,
-        anonymous: true,
-        onprogress(progress) {
-          details.onprogress?.call(progress, progress);
-          if (progress.loaded > MAX_ZIP_SIZE) {
-            downloadTooLarge = true;
-            controller.abort();
-          }
-        },
-      }),
-    );
-  } catch (error) {
-    if (downloadTooLarge) {
-      throw new Error(`ZIP 文件不能超过 ${formatBytes(MAX_ZIP_SIZE)}`, {
-        cause: error,
-      });
-    }
-    throw error;
-  }
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const declaredSize = Number(response.headers.get(`content-length`) || 0);
-  if (declaredSize > MAX_ZIP_SIZE) {
-    throw new Error(`ZIP 文件不能超过 ${formatBytes(MAX_ZIP_SIZE)}`);
-  }
-  let data: ArrayBuffer;
-  try {
-    data = await readLimitedResponse(response, MAX_ZIP_SIZE);
-  } catch (error) {
-    if (error instanceof Error && error.message == `响应内容超过大小限制`) {
-      throw new Error(`ZIP 文件不能超过 ${formatBytes(MAX_ZIP_SIZE)}`, {
-        cause: error,
-      });
-    }
-    throw error;
-  }
+  const { data, name } = await downloadLogArchive(source, controller);
   if (sequence != loadSequence) return;
-  const name = getResponseName(response, source);
   const loaded = await loadArchive(data, name, sequence);
   if (loaded) void setLogArchiveCache(source.url, name, data);
 };
@@ -850,13 +654,12 @@ const importLocalFile = async (files: File[]) => {
   await loadArchive(file, file.name);
 };
 
-const openLocalFile = () => localFileInput.value?.click();
-const handleLocalFile = () => {
-  const input = localFileInput.value;
-  if (!input) return;
-  const files = [...(input.files || [])];
-  input.value = ``;
-  void importLocalFile(files);
+const openLocalFile = () => logToolbarRef.value?.openLocalFile();
+const updateInputUrl = (value: string) => {
+  inputUrl.value = value;
+};
+const updateFilePanelCollapsed = (collapsed: boolean) => {
+  filePanelCollapsed.value = collapsed;
 };
 
 useEventListener(document.body, `dragover`, (event) => event.preventDefault());
@@ -870,72 +673,7 @@ useEventListener(document.body, `drop`, (event) => {
   void importLocalFile(files);
 });
 
-type LogTreeOption = TreeOption & {
-  path?: string;
-  isFile?: boolean;
-};
-const treeData = computed<LogTreeOption[]>(() => {
-  const roots: LogTreeOption[] = [];
-  const nodes = new Map<string, LogTreeOption>();
-  const entries = archive.value?.entries || [];
-  const crashEntries = getCrashEntries(entries);
-  const logEntries = getLogDirectoryEntries(entries);
-  const subscriptionEntries = getSubscriptionDirectoryEntries(entries);
-  for (const entry of entries) {
-    if (
-      isCrashPath(entry.path) ||
-      isLogDirectoryPath(entry.path) ||
-      isSubscriptionDirectoryPath(entry.path)
-    ) {
-      continue;
-    }
-    const parts = entry.path.split(`/`).filter(Boolean);
-    let parentChildren = roots;
-    let currentPath = ``;
-    parts.forEach((part, index) => {
-      currentPath = currentPath ? `${currentPath}/${part}` : part;
-      let node = nodes.get(currentPath);
-      if (!node) {
-        const isFile = index == parts.length - 1;
-        node = {
-          key: currentPath,
-          label: part,
-          path: isFile ? entry.path : undefined,
-          isFile,
-          children: isFile ? undefined : [],
-        };
-        nodes.set(currentPath, node);
-        parentChildren.push(node);
-      }
-      parentChildren = (node.children || []) as LogTreeOption[];
-    });
-  }
-  if (crashEntries.length) {
-    roots.push({
-      key: CRASH_TREE_KEY,
-      label: `crash (${crashEntries.length})`,
-      isFile: true,
-    });
-  }
-  if (logEntries.length) {
-    roots.push({
-      key: LOG_TREE_KEY,
-      label: `log (${logEntries.length})`,
-      isFile: true,
-    });
-  }
-  if (subscriptionEntries.length) {
-    roots.push({
-      key: SUBSCRIPTION_TREE_KEY,
-      label: `subscription (${subscriptionEntries.length})`,
-      isFile: true,
-    });
-  }
-  roots.sort((a, b) =>
-    String(a.label || ``).localeCompare(String(b.label || ``), `zh-CN`),
-  );
-  return roots;
-});
+const treeData = computed(() => buildLogTreeData(archive.value));
 
 const updateSelectedKeys = (keys: Array<string | number>) => {
   const path = String(keys[0] || ``);
@@ -962,46 +700,17 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
     page-size
     class="box-border flex min-h-700px min-w-1200px flex-col gap-10px bg-[#f8fafc] p-10px"
   >
-    <div name="log-toolbar" class="h-42px flex items-center gap-10px">
-      <RouterLink to="/" flex items-center>
-        <NButton quaternary>返回首页</NButton>
-      </RouterLink>
-      <div name="log-title" class="flex-none text-18px font-600">
-        日志包查看器
-      </div>
-      <a
-        v-if="logVersionInfo"
-        :href="logVersionInfo.commitUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="flex-none text-14px text-[#2563eb] hover:underline"
-      >
-        {{ logVersionInfo.versionName }} ({{ logVersionInfo.versionCode }})
-      </a>
-      <NInputGroup class="ml-auto min-w-420px max-w-720px">
-        <NInput
-          v-model:value="inputUrl"
-          clearable
-          placeholder="粘贴 GitHub、f.gkd.li 或其他 ZIP 链接"
-          @keyup.enter="submitUrl"
-        />
-        <NButton type="primary" :loading="archiveLoading" @click="submitUrl">
-          加载链接
-        </NButton>
-      </NInputGroup>
-      <NButton :disabled="archiveLoading" @click="openLocalFile">
-        选择本地 ZIP
-      </NButton>
-      <input
-        ref="localFileInput"
-        hidden
-        type="file"
-        accept=".zip,application/zip"
-        @change="handleLocalFile"
-      />
-    </div>
+    <LogToolbar
+      ref="logToolbarRef"
+      :archiveLoading="archiveLoading"
+      :inputUrl="inputUrl"
+      :logVersionInfo="logVersionInfo"
+      @update:inputUrl="updateInputUrl"
+      @submit="submitUrl"
+      @files="importLocalFile"
+    />
 
-    <NAlert v-if="errorText" type="error" closable @close="errorText = ``">
+    <NAlert v-if="errorText" type="error" closable @close="clearError">
       {{ errorText }}
     </NAlert>
 
@@ -1010,272 +719,56 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
       name="log-workspace"
       class="flex min-h-0 flex-1 gap-10px"
     >
-      <div
-        name="log-file-panel"
-        class="box-border flex min-h-0 flex-col rounded-6px border border-[#e2e8f0] bg-white transition-[width,min-width] duration-180 ease"
-        :class="
-          filePanelCollapsed ? 'w-44px min-w-44px' : 'w-300px min-w-300px'
-        "
-      >
-        <div
-          name="archive-meta"
-          class="flex min-w-0 items-start gap-8px"
-          :class="
-            filePanelCollapsed
-              ? 'justify-center border-b-0 p-8px'
-              : 'border-b border-[#e5e7eb] p-12px'
-          "
-        >
-          <div
-            v-if="!filePanelCollapsed"
-            name="archive-meta-content"
-            class="min-w-0 flex-1"
-          >
-            <div
-              name="archive-name"
-              class="overflow-hidden text-ellipsis whitespace-nowrap font-600"
-              :title="archive.name"
-            >
-              {{ archive.name }}
-            </div>
-            <div name="archive-stats" class="mt-3px text-12px text-[#64748b]">
-              {{ archive.entries.length }} 个文件 ·
-              {{ formatBytes(archive.uncompressedSize) }}
-            </div>
-          </div>
-          <button
-            type="button"
-            class="inline-grid h-26px w-26px flex-none cursor-pointer place-items-center rounded-4px border-0 bg-transparent p-0 text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
-            :aria-expanded="!filePanelCollapsed"
-            :aria-label="filePanelCollapsed ? '展开文件列表' : '收起文件列表'"
-            :title="filePanelCollapsed ? '展开文件列表' : '收起文件列表'"
-            @click="filePanelCollapsed = !filePanelCollapsed"
-          >
-            <SvgIcon
-              name="arrow"
-              class="h-17px w-17px transition-transform duration-180 ease"
-              :class="filePanelCollapsed ? '-rotate-90' : 'rotate-90'"
-            />
-          </button>
-        </div>
-        <NTree
-          v-if="!filePanelCollapsed"
-          blockLine
-          virtualScroll
-          defaultExpandAll
-          :data="treeData"
-          :selectedKeys="selectedPath ? [selectedPath] : []"
-          class="min-h-0 flex-1 p-8px"
-          @update:selectedKeys="updateSelectedKeys"
-        />
-      </div>
+      <LogArchiveSidebar
+        :archive="archive"
+        :collapsed="filePanelCollapsed"
+        :selectedPath="selectedPath"
+        :treeData="treeData"
+        @update:collapsed="updateFilePanelCollapsed"
+        @select="updateSelectedKeys"
+      />
 
-      <div
-        name="log-preview-panel"
-        class="box-border flex min-h-0 min-w-0 flex-1 flex-col rounded-6px border border-[#e2e8f0] bg-white"
-      >
-        <div
-          v-if="
-            selectedEntry &&
-            selectedEntry.kind != 'text' &&
-            previewKind != 'invalid-json'
-          "
-          name="preview-header"
-          class="box-border min-h-52px flex items-center gap-10px border-b border-[#e5e7eb] px-12px py-8px [&>:first-child]:flex-1"
-        >
-          <div min-w-0>
-            <div
-              name="preview-path"
-              class="overflow-hidden text-ellipsis whitespace-nowrap font-600"
-              :title="selectedEntry.path"
-            >
-              {{ selectedEntry.path }}
-            </div>
-            <div name="preview-size" class="mt-3px text-12px text-[#64748b]">
-              {{ formatBytes(selectedEntry.size) }}
-            </div>
-          </div>
-          <div
-            v-if="previewKind == 'apps' && appsData"
-            name="apps-overview"
-            class="flex flex-none items-center gap-6px whitespace-nowrap text-13px"
-          >
-            <NButtonGroup size="small">
-              <NButton
-                :type="appsView == 'users' ? 'primary' : 'default'"
-                :secondary="appsView == 'users'"
-                @click="appsView = 'users'"
-              >
-                按用户查看
-              </NButton>
-              <NButton
-                :type="appsView == 'raw' ? 'primary' : 'default'"
-                :secondary="appsView == 'raw'"
-                @click="appsView = 'raw'"
-              >
-                原始 JSON
-              </NButton>
-            </NButtonGroup>
-            <span class="mx-6px h-16px border-l border-[#e2e8f0]" />
-            <span class="text-[#64748b]">应用安装记录</span>
-            <span class="font-600">{{ appsData.totalApps }}</span>
-            <span class="mx-4px text-[#cbd5e1]">·</span>
-            <span class="text-[#64748b]">设备用户</span>
-            <span class="font-600">{{ appsData.users.length }}</span>
-          </div>
-        </div>
-
-        <div name="preview-body" class="min-h-0 flex-1 p-12px">
-          <NSpin v-if="previewLoading" show class="h-full w-full" />
-          <NEmpty
-            v-else-if="previewKind == 'none'"
-            description="该日志包没有可预览内容"
-          />
-          <div
-            v-else-if="previewKind == 'text' || previewKind == 'invalid-json'"
-            name="text-preview-wrapper"
-            class="h-full min-h-0 flex flex-col gap-8px"
-          >
-            <NAlert
-              v-if="previewKind == 'invalid-json'"
-              type="warning"
-              title="JSON 解析失败，以下为原始内容"
-              class="flex-none"
-            >
-              {{ jsonError }}
-            </NAlert>
-            <TextViewer
-              :key="selectedEntry?.path"
-              :value="previewText"
-              :documentKey="selectedEntry?.path"
-              search-placeholder="搜索当前文件"
-              allow-wrap
-              copyable
-            >
-              <template #toolbar-start>
-                <div
-                  v-if="selectedEntry"
-                  name="text-preview-file-meta"
-                  class="min-w-0 max-w-260px flex-[0_1_260px] text-left"
-                >
-                  <div
-                    name="preview-path"
-                    class="overflow-hidden text-ellipsis whitespace-nowrap font-600"
-                    :title="selectedEntry.path"
-                  >
-                    {{ selectedEntry.path }}
-                  </div>
-                  <div
-                    name="preview-size"
-                    class="mt-3px text-12px text-[#64748b]"
-                  >
-                    {{ formatBytes(selectedEntry.size) }}
-                  </div>
-                </div>
-                <StackRetraceButton
-                  :available="!!logBuildKey && !!previewRetraceState?.available"
-                  :loading="previewRetraceState?.loading"
-                  :retraced="previewRetraceState?.active"
-                  @toggle="togglePreviewRetrace"
-                />
-              </template>
-            </TextViewer>
-          </div>
-          <JsonPreview
-            v-else-if="previewKind == 'json'"
-            :key="selectedPath"
-            :value="jsonValue"
-            :raw="previewText"
-          />
-          <CrashPreview
-            v-else-if="previewKind == 'crash'"
-            :key="selectedPath"
-            :items="crashItems"
-            :detail="crashDetail"
-            :detailLoading="crashDetailLoading"
-            :retraceAvailable="!!logBuildKey && !!crashRetraceState?.available"
-            :retraceLoading="crashRetraceState?.loading"
-            :retraceActive="crashRetraceState?.active"
-            :sourceLinkContext="sourceLinkContext"
-            @select="loadCrashDetail"
-            @toggleRetrace="toggleCrashRetrace"
-          />
-          <LogDirectoryPreview
-            v-else-if="previewKind == 'log-directory'"
-            :key="selectedPath"
-            :items="logItems"
-            :detailPath="logDetailPath"
-            :detailText="logDetailText"
-            :detailError="logDetailError"
-            :detailLoading="logDetailLoading"
-            :retraceAvailable="!!logBuildKey && !!logRetraceState?.available"
-            :retraceLoading="logRetraceState?.loading"
-            :retraceActive="logRetraceState?.active"
-            :sourceLinkContext="sourceLinkContext"
-            @select="loadLogFileDetail"
-            @toggleRetrace="toggleLogRetrace"
-          />
-          <SubscriptionDirectoryPreview
-            v-else-if="previewKind == 'subscription-directory'"
-            :key="selectedPath"
-            :items="subscriptionItems"
-            :detail="subscriptionDetail"
-            :detailStructured="subscriptionDetailStructured"
-            :detailLoading="subscriptionDetailLoading"
-            @select="loadSubscriptionDetail"
-          />
-          <AppsPreview
-            v-else-if="previewKind == 'apps' && appsData"
-            :key="selectedPath"
-            :data="appsData"
-            :value="jsonValue"
-            :raw="previewText"
-            :view="appsView"
-          />
-          <SubscriptionPreview
-            v-else-if="
-              previewKind == 'subscription' && isRawSubscription(jsonValue)
-            "
-            :key="selectedPath"
-            :value="jsonValue as RawSubscription"
-            :raw="previewText"
-          />
-          <SqlitePreview
-            v-else-if="previewKind == 'database' && databaseData"
-            :key="selectedPath"
-            :database="databaseData"
-            :wal="walData"
-            :app-names="appNames"
-            :subscription-names="subscriptionNames"
-          />
-          <NEmpty v-else description="该文件不支持预览" />
-        </div>
-      </div>
+      <LogPreviewPanel
+        :selectedEntry="selectedEntry"
+        :selectedPath="selectedPath"
+        :previewKind="previewKind"
+        :previewLoading="previewLoading"
+        :previewText="previewText"
+        :jsonError="jsonError"
+        :jsonValue="jsonValue"
+        :appsData="appsData"
+        :appsView="appsView"
+        :logBuildKey="logBuildKey"
+        :previewRetraceState="previewRetraceState"
+        :crashItems="crashItems"
+        :crashDetail="crashDetail"
+        :crashDetailLoading="crashDetailLoading"
+        :crashRetraceState="crashRetraceState"
+        :logItems="logItems"
+        :logDetailPath="logDetailPath"
+        :logDetailText="logDetailText"
+        :logDetailError="logDetailError"
+        :logDetailLoading="logDetailLoading"
+        :logRetraceState="logRetraceState"
+        :sourceLinkContext="sourceLinkContext"
+        :subscriptionItems="subscriptionItems"
+        :subscriptionDetail="subscriptionDetail"
+        :subscriptionDetailStructured="subscriptionDetailStructured"
+        :subscriptionDetailLoading="subscriptionDetailLoading"
+        :databaseData="databaseData"
+        :walData="walData"
+        :appNames="appNames"
+        :subscriptionNames="subscriptionNames"
+        @update:appsView="updateAppsView"
+        @togglePreviewRetrace="togglePreviewRetrace"
+        @selectCrash="loadCrashDetail"
+        @toggleCrashRetrace="toggleCrashRetrace"
+        @selectLog="loadLogFileDetail"
+        @toggleLogRetrace="toggleLogRetrace"
+        @selectSubscription="loadSubscriptionDetail"
+      />
     </div>
 
-    <div
-      v-else
-      name="log-empty-state"
-      class="grid min-h-0 flex-1 place-items-center"
-    >
-      <NSpin :show="archiveLoading">
-        <div
-          name="drop-zone"
-          class="box-border h-300px w-620px flex cursor-pointer flex-col items-center justify-center rounded-12px border-2 border-[#94a3b8] border-dashed bg-white transition-colors duration-200 hover:border-[#18a058]"
-          @click="openLocalFile"
-        >
-          <SvgIcon name="import" class="mb-18px h-48px w-48px" />
-          <div name="drop-title" class="text-20px font-600">
-            {{ archiveLoading ? '正在下载并解析日志包…' : '拖拽 ZIP 到这里' }}
-          </div>
-          <div name="drop-description" class="mt-8px text-[#64748b]">
-            或点击选择本地 ZIP 文件
-          </div>
-          <div name="privacy-tip" class="mt-24px text-12px text-[#94a3b8]">
-            文件只在当前浏览器中解析，不会上传；远程日志会在本机缓存最多 7 天
-          </div>
-        </div>
-      </NSpin>
-    </div>
+    <LogEmptyState v-else :loading="archiveLoading" @open="openLocalFile" />
   </div>
 </template>

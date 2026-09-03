@@ -2,13 +2,14 @@ import {
   detectSnapshot,
   exportSnapshotAsImageId,
   exportSnapshotAsImportId,
-} from '@/utils/export';
+} from '@/domain/snapshot/export';
 import { gmOk } from '@/utils/gm';
-import { importFromNetwork } from '@/utils/import';
-import { findNodesByXy, getAppInfo, listToTree } from '@/utils/node';
+import { importFromNetwork } from '@/domain/snapshot/import';
+import { findNodesByXy, getAppInfo, listToTree } from '@/domain/snapshot/node';
 import { toFixedNumber, toInteger } from '@/utils/others';
-import type { ResolvedSelector } from '@/utils/selector';
-import { screenshotStorage, snapshotStorage } from '@/utils/snapshot';
+import type { ResolvedSelector } from '@/domain/selector/parser';
+import type { SelectorTrackData } from '@/domain/selector/types';
+import { screenshotStorage, snapshotStorage } from '@/domain/snapshot/storage';
 import { getImportFileUrl } from '@/utils/url';
 import { getSnapshotImportId } from '@/utils/workers';
 import type { QueryResult } from '@gkd-kit/selector';
@@ -245,6 +246,7 @@ export const useSnapshotStore = createSharedComposable(() => {
   ) => {
     const currentSnapshot = snapshot.value;
     if (!currentSnapshot || revision != loadRevision) return;
+    storageActions.setSnapshotViewedTime(currentSnapshot.id, Date.now());
     document.title =
       '快照-' + (getAppInfo(currentSnapshot).name || currentSnapshot.appId);
     await applyUrlFocus();
@@ -306,7 +308,7 @@ export const useSnapshotStore = createSharedComposable(() => {
   };
 
   const trackShow = shallowRef(false);
-  const trackData = shallowRef<TrackCardProps>();
+  const trackData = shallowRef<SelectorTrackData>();
   const showTrack = (
     selector: ResolvedSelector,
     result: QueryResult<RawNode>,

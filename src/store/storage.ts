@@ -38,15 +38,35 @@ const loadIndexedDB = async <T extends object>(
   return shallowReactive(initData ? getter(initData) : fallback()) as T;
 };
 
-const settingsData = loadLocalStorage<SettingsStore>('settings', () => ({
+const createDefaultSettings = (): SettingsStore => ({
   autoUploadImport: false,
   ignoreUploadWarn: false,
   maxShowNodeSize: 2000,
-}));
+  themeMode: 'system',
+});
+
+const settingsData = loadLocalStorage<SettingsStore>(
+  'settings',
+  createDefaultSettings,
+  (value) => ({
+    ...createDefaultSettings(),
+    ...value,
+    themeMode:
+      value?.themeMode == 'light' || value?.themeMode == 'dark'
+        ? value.themeMode
+        : 'system',
+  }),
+);
 
 // snapshot id -> import time
 const snapshotImportTimeData = await loadIndexedDB<Record<string, number>>(
   'importTime',
+  () => ({}),
+);
+
+// snapshot id -> last successfully viewed time
+const snapshotViewedTimeData = await loadIndexedDB<Record<string, number>>(
+  'snapshotViewedTime',
   () => ({}),
 );
 
@@ -116,6 +136,9 @@ export const settingsStore = readonly(settingsData) as Readonly<SettingsStore>;
 export const snapshotImportTime = readonly(snapshotImportTimeData) as Readonly<
   Record<string, number>
 >;
+export const snapshotViewedTime = readonly(snapshotViewedTimeData) as Readonly<
+  Record<string, number>
+>;
 export const snapshotImageId = readonly(snapshotImageIdData) as Readonly<
   Record<string, string>
 >;
@@ -152,6 +175,14 @@ export const storageActions = {
   setSnapshotImportTime(snapshotId: string | number, value?: number) {
     setRecordValue(snapshotImportTimeData, 'importTime', snapshotId, value);
   },
+  setSnapshotViewedTime(snapshotId: string | number, value?: number) {
+    setRecordValue(
+      snapshotViewedTimeData,
+      'snapshotViewedTime',
+      snapshotId,
+      value,
+    );
+  },
   setSnapshotImageId(snapshotId: string | number, value?: string) {
     setRecordValue(snapshotImageIdData, 'githubJpg', snapshotId, value);
   },
@@ -166,6 +197,7 @@ export const storageActions = {
 export const useStorageStore = () => ({
   settingsStore,
   snapshotImportTime,
+  snapshotViewedTime,
   snapshotImageId,
   snapshotImportId,
   importSnapshotId,

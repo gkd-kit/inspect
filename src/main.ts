@@ -7,7 +7,7 @@ import App from './App.vue';
 import router from './router';
 import commitLog from './utils/commit.data';
 import root from './utils/root';
-import SvgIcon from './components/SvgIcon.vue';
+import SvgIcon from './components/base/SvgIcon.vue';
 
 updateWasmToMatches(toMatches);
 

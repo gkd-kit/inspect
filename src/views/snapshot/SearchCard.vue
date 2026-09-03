@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import DraggableCard from '@/components/DraggableCard.vue';
-import SelectorText from '@/components/SelectorText.vue';
+import DraggableCard from '@/components/base/DraggableCard.vue';
 import { message } from '@/utils/discrete';
 import { errorTry } from '@/utils/error';
-import { getAppInfo, getNodeLabel, getNodeStyle } from '@/utils/node';
+import { getAppInfo, getNodeLabel } from '@/domain/snapshot/node';
 import { buildEmptyFn, copy } from '@/utils/others';
-import { parseSelector } from '@/utils/selector';
-import { gkdWidth, vw } from '@/utils/size';
+import { parseSelector } from '@/domain/selector/parser';
+import { gkdWidth, vw } from './size';
 import { getImagUrl, getImportUrl } from '@/utils/url';
-import { FastQuery, GkdException } from '@gkd-kit/selector';
+import { GkdException } from '@gkd-kit/selector';
 import dayjs from 'dayjs';
 import type { ShallowRef } from 'vue';
 import JSON5 from 'json5';
@@ -18,6 +17,15 @@ import {
   type SnapshotUrlQuery,
 } from './snapshot_url_codec';
 import { useSnapshotUrlState } from './snapshot_url_state';
+import type { SearchResult, SelectorSearchResult } from './search_types';
+import SelectorSyntaxDiagnostic from './SelectorSyntaxDiagnostic.vue';
+import SelectorSyntaxInput from './SelectorSyntaxInput.vue';
+import SearchResultList from './SearchResultList.vue';
+import {
+  getFastQueryEvidence,
+  inspectSelectorSyntax,
+  type SelectorSyntaxDiagnostic as SelectorSyntaxDiagnosticValue,
+} from './selector_diagnostics';
 
 withDefaults(
   defineProps<{
@@ -38,6 +46,9 @@ const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
 const { focusNode, updateFocusNode } = snapshotStore;
 
 const searchText = shallowRef(``);
+const selectorSyntax = shallowRef<SelectorSyntaxDiagnosticValue>({
+  status: 'empty',
+});
 
 const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
@@ -95,6 +106,7 @@ const searchSelector = (text: string, notify = true) => {
     results,
     key: getNextResultKey(),
     gkd: true,
+    fastQueryEvidence: getFastQueryEvidence(selector, results),
   });
   return results.length;
 };
@@ -189,6 +201,41 @@ const handleSearchKeydown = (event: KeyboardEvent) => {
   searchBySelector();
 };
 
+let selectorSyntaxRevision = 0;
+const runSelectorSyntaxDiagnostic = (value: string, revision: number) => {
+  if (
+    revision != selectorSyntaxRevision ||
+    searchText.value != value ||
+    !enableSearchBySelector.value ||
+    !value.trim()
+  ) {
+    return;
+  }
+  const diagnostic = inspectSelectorSyntax(value);
+  selectorSyntax.value =
+    diagnostic.status == 'invalid' ? diagnostic : { status: 'empty' };
+};
+const runSelectorSyntaxDiagnosticDebounced = useDebounceFn(
+  runSelectorSyntaxDiagnostic,
+  300,
+);
+const scheduleSelectorSyntaxDiagnostic = (value: string) => {
+  const revision = ++selectorSyntaxRevision;
+  selectorSyntax.value = { status: 'empty' };
+  if (!enableSearchBySelector.value || !value.trim()) return;
+  void runSelectorSyntaxDiagnosticDebounced(value, revision);
+};
+
+const updateSearchText = (value: string) => {
+  searchText.value = value;
+  scheduleSelectorSyntaxDiagnostic(value);
+};
+
+const updateSearchMode = (value: boolean) => {
+  enableSearchBySelector.value = value;
+  scheduleSelectorSyntaxDiagnostic(searchText.value);
+};
+
 const generateRules = errorTry(async (result: SelectorSearchResult) => {
   const imageId = snapshotImageId[snapshot.value.id];
   const importId = snapshotImportId[snapshot.value.id];
@@ -196,25 +243,7 @@ const generateRules = errorTry(async (result: SelectorSearchResult) => {
   const exampleUrls = imageId ? getImagUrl(imageId) : undefined;
 
   const s = result.selector;
-  const t = result.results.map((v) => v.context.toArray().at(-1)!)[0];
-
-  const fastQuery = [
-    (t.quickFind ?? t.idQf) &&
-      t.attr.id &&
-      s.fastQueryList.some(
-        (v) => v instanceof FastQuery.Id && v.acceptText(t.attr.id!),
-      ),
-    (t.quickFind ?? t.idQf) &&
-      t.attr.vid &&
-      s.fastQueryList.some(
-        (v) => v instanceof FastQuery.Vid && v.acceptText(t.attr.vid!),
-      ),
-    (t.quickFind ?? t.textQf) &&
-      t.attr.text &&
-      s.fastQueryList.some(
-        (v) => v instanceof FastQuery.Text && v.acceptText(t.attr.text!),
-      ),
-  ].some(Boolean);
+  const fastQuery = result.fastQueryEvidence?.status == 'supported';
   const rule = {
     id: snapshot.value.appId,
     name: getAppInfo(snapshot.value).name,
@@ -272,6 +301,9 @@ const deleteResult = (index: number) => {
     syncQueryHistory();
   }
 };
+const updateExpandedKeys = (keys: number[]) => {
+  expandedKeys.value = keys;
+};
 </script>
 <template>
   <DraggableCard
@@ -286,9 +318,12 @@ const deleteResult = (index: number) => {
     class="box-shadow-dim"
     :show="show"
   >
-    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
+    <div class="app-panel" b-1px b-solid rounded-4px p-8px>
       <div flex m-b-4px pr-4px>
-        <NRadioGroup v-model:value="enableSearchBySelector">
+        <NRadioGroup
+          :value="enableSearchBySelector"
+          @update:value="updateSearchMode"
+        >
           <NSpace>
             <NRadio :value="false"> 字符搜索 </NRadio>
             <NRadio :value="true"> 选择器查询 </NRadio>
@@ -302,19 +337,26 @@ const deleteResult = (index: number) => {
         </NButton>
       </div>
       <div
-        class="w-full overflow-hidden rounded-6px border border-[#e5e7eb] bg-white transition-colors duration-200 focus-within:border-[#18a058]"
+        class="app-panel w-full overflow-hidden rounded-6px border transition-colors duration-200 focus-within:border-[#18a058]"
       >
-        <NInput
-          v-model:value="searchText"
-          class="gkd_code"
-          type="textarea"
+        <SelectorSyntaxInput
+          :value="searchText"
           :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
-          :autosize="{ minRows: 1, maxRows: 10 }"
-          :bordered="false"
+          :diagnostic="selectorSyntax"
+          @update:value="updateSearchText"
           @keydown="handleSearchKeydown"
         />
-        <div class="flex items-center justify-between gap-4px px-6px pb-4px">
-          <span class="select-none text-11px leading-22px text-[#94a3b8]">
+        <div
+          class="min-h-22px flex items-center justify-between gap-4px px-6px pb-4px"
+        >
+          <SelectorSyntaxDiagnostic
+            v-if="enableSearchBySelector && selectorSyntax.status == 'invalid'"
+            :diagnostic="selectorSyntax"
+          />
+          <span
+            v-else
+            class="select-none text-11px leading-22px text-[#94a3b8]"
+          >
             Enter 搜索 · Shift+Enter 换行
           </span>
           <NButton
@@ -333,118 +375,15 @@ const deleteResult = (index: number) => {
         </div>
       </div>
       <div p-5px />
-      <NCollapse v-model:expandedNames="expandedKeys">
-        <NCollapseItem
-          v-for="(result, index) in selectorResults"
-          :key="result.key"
-          :name="result.key"
-        >
-          <template #header>
-            <span
-              v-if="result.nodes.length > 1"
-              underline
-              leading-20px
-              decoration-1
-              m-r-4px
-              gkd_code
-              title="查询数量"
-            >
-              {{ result.nodes.length }}
-            </span>
-            <span
-              break-all
-              px-4px
-              leading-20px
-              bg="#eee"
-              gkd_code
-              :title="result.gkd ? `选择器` : `搜索字符`"
-            >
-              <SelectorText
-                v-if="result.gkd"
-                :node="result.selector.ast"
-                :source="result.selector.source"
-              />
-              <template v-else>{{ result.selector }}</template>
-            </span>
-            <span pl-4px />
-          </template>
-          <template #header-extra>
-            <NButtonGroup>
-              <NButton
-                v-if="result.gkd && result.selector.canCopy"
-                size="small"
-                title="复制规则"
-                @click.stop="generateRules(result as SelectorSearchResult)"
-              >
-                <template #icon>
-                  <SvgIcon name="copy" />
-                </template>
-              </NButton>
-              <NButton
-                v-if="hasZipId"
-                size="small"
-                :title="result.gkd ? `复制查询链接` : `复制搜索链接`"
-                @click.stop="shareResult(result)"
-              >
-                <template #icon>
-                  <SvgIcon name="share" />
-                </template>
-              </NButton>
-              <NButton
-                size="small"
-                title="删除记录"
-                @click.stop="deleteResult(index)"
-              >
-                <template #icon>
-                  <SvgIcon name="delete" />
-                </template>
-              </NButton>
-            </NButtonGroup>
-          </template>
-          <NScrollbar xScrollable style="max-height: 400px">
-            <div flex gap-8px flex-wrap>
-              <template
-                v-if="!result.gkd || result.selector.connectKeys.length === 0"
-              >
-                <NButton
-                  v-for="resultNode in result.nodes"
-                  :key="resultNode.id"
-                  size="small"
-                  :style="getNodeStyle(resultNode, focusNode)"
-                  @click="updateFocusNode(resultNode)"
-                >
-                  {{ getNodeLabel(resultNode) }}
-                </NButton>
-              </template>
-              <template v-else>
-                <NButtonGroup v-for="(resultNode, i) in result.nodes" :key="i">
-                  <NButton
-                    size="small"
-                    @click="
-                      snapshotStore.showTrack(
-                        result.selector,
-                        result.results[i],
-                      )
-                    "
-                  >
-                    <NIcon>
-                      <SvgIcon name="path" />
-                    </NIcon>
-                  </NButton>
-                  <NButton
-                    size="small"
-                    :style="getNodeStyle(resultNode, focusNode)"
-                    @click="updateFocusNode(resultNode)"
-                  >
-                    {{ getNodeLabel(resultNode) }}
-                  </NButton>
-                </NButtonGroup>
-              </template>
-            </div>
-            <div un="h-10px" />
-          </NScrollbar>
-        </NCollapseItem>
-      </NCollapse>
+      <SearchResultList
+        :results="selectorResults"
+        :expandedKeys="expandedKeys"
+        :hasZipId="hasZipId"
+        @update:expandedKeys="updateExpandedKeys"
+        @generateRules="generateRules"
+        @share="shareResult"
+        @delete="deleteResult"
+      />
     </div>
   </DraggableCard>
 </template>

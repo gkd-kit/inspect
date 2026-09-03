@@ -27,6 +27,7 @@ export const enhanceFetch = async (
         method: request.method,
         headers: request.headers,
         body: request.body,
+        signal: request.signal,
       });
     }
   }

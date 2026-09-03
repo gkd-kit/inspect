@@ -124,32 +124,13 @@ interface Position {
   y: number;
 }
 
-interface TrackCardProps {
-  nodes: RawNode[];
-  queryResult: import('@gkd-kit/selector').QueryResult<RawNode>;
-  selector: import('@/utils/selector').ResolvedSelector;
-}
-
-interface SelectorSearchResult {
-  gkd: true;
-  key: number;
-  selector: import('@/utils/selector').ResolvedSelector;
-  nodes: RawNode[];
-  results: import('@gkd-kit/selector').QueryResult<RawNode>[];
-}
-interface StringSearchResult {
-  gkd: false;
-  key: number;
-  selector: string;
-  nodes: RawNode[];
-}
-
-type SearchResult = SelectorSearchResult | StringSearchResult;
+type ThemeMode = 'system' | 'light' | 'dark';
 
 interface SettingsStore {
   autoUploadImport: boolean;
   ignoreUploadWarn: boolean;
   maxShowNodeSize: number;
+  themeMode: ThemeMode;
 }
 
 interface GlobalStore {

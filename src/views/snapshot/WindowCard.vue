@@ -1,6 +1,6 @@
 <script setup lang="tsx">
-import ActionCard from '@/components/ActionCard.vue';
-import GapList from '@/components/GapList';
+import ActionCard from '@/components/snapshot/ActionCard.vue';
+import GapList from '@/components/base/GapList';
 import { message } from '@/utils/discrete';
 import {
   getAppInfo,
@@ -8,7 +8,7 @@ import {
   getGkdAppInfo,
   getNodeLabel,
   getNodeStyle,
-} from '@/utils/node';
+} from '@/domain/snapshot/node';
 import { copy, delay } from '@/utils/others';
 import type { TreeInst } from 'naive-ui';
 import type { HTMLAttributes, ShallowRef } from 'vue';
@@ -215,7 +215,7 @@ const gkdVersionName = computed(() => {
         @delete="onDelete"
       />
     </div>
-    <div h-1px mt-4px bg="#efeff5" />
+    <div class="app-border-line" h-1px mt-4px />
     <div ref="treeContainerRef" flex-1 min-h-0>
       <NTree
         ref="treeRef"

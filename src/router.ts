@@ -45,7 +45,7 @@ const router = createRouter({
     },
     {
       path: '/i',
-      component: recordModule(() => import('@/views/ImportPage.vue')),
+      component: recordModule(() => import('@/views/import/ImportPage.vue')),
       meta: { title: '导入快照' },
     },
     {
@@ -80,7 +80,7 @@ const router = createRouter({
     },
     {
       path: '/device',
-      component: recordModule(() => import('@/views/DevicePage.vue')),
+      component: recordModule(() => import('@/views/device/DevicePage.vue')),
       beforeEnter(to) {
         const u = toValidURL(String(to.query.url));
         if (u) {
@@ -94,12 +94,14 @@ const router = createRouter({
     },
     {
       path: '/selector',
-      component: recordModule(() => import('@/views/SelectorPage.vue')),
+      component: recordModule(
+        () => import('@/views/selector/SelectorPage.vue'),
+      ),
       meta: { title: '选择器' },
     },
     {
       path: '/svg',
-      component: recordModule(() => import('@/views/SvgPage.vue')),
+      component: recordModule(() => import('@/views/svg/SvgPage.vue')),
       meta: { title: 'SVG' },
     },
     {

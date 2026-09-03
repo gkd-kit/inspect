@@ -1,18 +1,18 @@
 <script lang="tsx" setup>
-import ActionCard from '@/components/ActionCard.vue';
-import BatchActionsBar from '@/components/BatchActionsBar.vue';
+import ActionCard from '@/components/snapshot/ActionCard.vue';
+import BatchActionsBar from '@/components/snapshot/BatchActionsBar.vue';
+import SettingsModal from '@/components/app/SettingsModal.vue';
 import { toValidURL } from '@/utils/check';
-import { importFromLocal, importFromNetwork } from '@/utils/import';
-import { getAppInfo } from '@/utils/node';
+import { importFromLocal, importFromNetwork } from '@/domain/snapshot/import';
+import { getAppInfo } from '@/domain/snapshot/node';
 import { getDragEventFiles } from '@/utils/others';
-import { shallowSnapshotStorage } from '@/utils/snapshot';
-import { renderDevice, useSnapshotColumns } from '@/utils/table';
+import { shallowSnapshotStorage } from '@/domain/snapshot/storage';
+import { renderDevice, useSnapshotColumns } from '@/domain/snapshot/table';
 import { useTask } from '@/utils/task';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import { useBatchActions } from '@/composables/useBatchActions';
-
-const { settingsStore, storageActions } = useStorageStore();
+import SnapshotGroupView from './SnapshotGroupView.vue';
 
 const snapshots = shallowRef<Snapshot[]>([]);
 const loading = shallowRef(true);
@@ -184,13 +184,40 @@ const {
 });
 
 const settingsDlgShow = shallowRef(false);
+const setSettingsVisible = (visible: boolean) => {
+  settingsDlgShow.value = visible;
+};
+const viewMode = shallowRef<'table' | 'group'>('table');
+const setViewMode = (mode: 'table' | 'group') => {
+  viewMode.value = mode;
+};
 
 const inputImportRef = shallowRef();
 </script>
 <template>
-  <div flex flex-col p-10px gap-10px page-size>
+  <div flex flex-col overflow-hidden p-10px gap-10px page-size>
     <div flex>
       <NSpace>
+        <NButtonGroup>
+          <NButton
+            :type="viewMode == 'table' ? 'primary' : 'default'"
+            title="表格视图"
+            aria-label="表格视图"
+            :aria-pressed="viewMode == 'table'"
+            @click="setViewMode('table')"
+          >
+            <template #icon><SvgIcon name="view-table" /></template>
+          </NButton>
+          <NButton
+            :type="viewMode == 'group' ? 'primary' : 'default'"
+            title="分组视图"
+            aria-label="分组视图"
+            :aria-pressed="viewMode == 'group'"
+            @click="setViewMode('group')"
+          >
+            <template #icon><SvgIcon name="view-group" /></template>
+          </NButton>
+        </NButtonGroup>
         <NInputGroup>
           <NInput
             v-model:value="filterOption.query"
@@ -219,7 +246,7 @@ const inputImportRef = shallowRef();
       <div flex gap-24px items-center pr-8px class="[--svg-h:24px]">
         <NTooltip>
           <template #trigger>
-            <NButton text @click="settingsDlgShow = true">
+            <NButton text @click="setSettingsVisible(true)">
               <SvgIcon name="settings" />
             </NButton>
           </template>
@@ -314,6 +341,7 @@ const inputImportRef = shallowRef();
       </div>
     </div>
     <NDataTable
+      v-if="viewMode == 'table'"
       v-model:checkedRowKeys="checkedRowKeys"
       striped
       virtualScroll
@@ -327,11 +355,20 @@ const inputImportRef = shallowRef();
       :loading="loading"
       @update:sorter="handleSorterChange"
     />
+    <SnapshotGroupView
+      v-else
+      :snapshots="filterSnapshots"
+      :checkedRowKeys="checkedRowKeys"
+      :loading="loading"
+      :updateSnapshots="updateSnapshots"
+      @updateCheckedRowKeys="checkedRowKeys = $event"
+    />
   </div>
   <NModal
     :show="showImportModal"
     preset="dialog"
     title="导入网络文件"
+    :maskClosable="false"
     :showIcon="false"
     positiveText="确认"
     negativeText="取消"
@@ -364,32 +401,5 @@ const inputImportRef = shallowRef();
     />
   </NModal>
 
-  <NModal
-    v-model:show="settingsDlgShow"
-    preset="dialog"
-    title="设置"
-    :showIcon="false"
-    positiveText="关闭"
-    style="width: 600px"
-    @positiveClick="settingsDlgShow = false"
-  >
-    <NCheckbox
-      :checked="settingsStore.ignoreUploadWarn"
-      @update:checked="
-        storageActions.updateSettings({ ignoreUploadWarn: $event })
-      "
-    >
-      关闭生成分享链接弹窗提醒
-    </NCheckbox>
-    <div h-1px my-10px bg="#eee" />
-    <div flex gap-10px>
-      <NSwitch
-        :value="settingsStore.autoUploadImport"
-        @update:value="
-          storageActions.updateSettings({ autoUploadImport: $event })
-        "
-      />
-      <div>打开快照页面自动生成分享链接(请确保不含隐私)</div>
-    </div>
-  </NModal>
+  <SettingsModal :show="settingsDlgShow" @update:show="setSettingsVisible" />
 </template>

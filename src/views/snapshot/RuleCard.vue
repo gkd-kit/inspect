@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import DraggableCard from '@/components/DraggableCard.vue';
-import { getNodeLabel, getNodeStyle } from '@/utils/node';
+import DraggableCard from '@/components/base/DraggableCard.vue';
+import { getNodeLabel, getNodeStyle } from '@/domain/snapshot/node';
 import { buildEmptyFn } from '@/utils/others';
-import { parseSelector, type ResolvedSelector } from '@/utils/selector';
-import { gkdWidth, vw } from '@/utils/size';
+import { gkdWidth, vw } from './size';
 import type { ShallowRef } from 'vue';
-import JSON5 from 'json5';
+import { evaluateRuleText, type RuleDiagnostic } from './rule_diagnostics';
 import { useSnapshotStore } from './snapshot';
 
 withDefaults(
@@ -19,174 +18,45 @@ withDefaults(
 );
 
 const snapshotStore = useSnapshotStore();
-const { rootNode, focusNode } = snapshotStore;
+const { focusNode } = snapshotStore;
+const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
 const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
 
-const text = shallowRef('');
-const lazyText = refDebounced(text, 500);
+const ruleText = shallowRef('');
+const diagnostic = shallowRef<RuleDiagnostic>({ status: 'empty' });
 
-interface ResolvedData {
-  matches: string[];
-  anyMatches: string[];
-  excludeMatches: string[];
-}
-
-const toArray = (v: any): string[] | undefined => {
-  if (v === undefined || v === null) return [];
-  if (typeof v === 'string') return [v];
-  if (Array.isArray(v) && v.every((s) => typeof s === 'string')) return v;
-};
-const checkRule = (obj: ResolvedData): string | RawNode => {
-  const matches = toArray(obj.matches);
-  if (!matches) {
-    return '非法格式: matches';
-  }
-  const anyMatches = toArray(obj.anyMatches);
-  if (!anyMatches) {
-    return '非法格式: anyMatches';
-  }
-  const excludeMatches = toArray(obj.excludeMatches);
-  if (!excludeMatches) {
-    return '非法格式: excludeMatches';
-  }
-
-  const resolvedMatches: ResolvedSelector[] = [];
-  for (let i = 0; i < matches.length; i++) {
-    const v = matches[i];
-    try {
-      resolvedMatches.push(parseSelector(v));
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      return `非法选择器: matches[${i}]\n错误: ${message}`;
-    }
-  }
-  const matchesResult = resolvedMatches.map((s) =>
-    s.querySelfOrSelectorAll(rootNode.value),
+const refreshDiagnostic = () => {
+  diagnostic.value = evaluateRuleText(
+    ruleText.value,
+    snapshot.value,
+    rootNode.value,
   );
-  if (resolvedMatches.length) {
-    const notIndex = matchesResult.findIndex((s) => s.length === 0);
-    if (notIndex >= 0) {
-      return `无法匹配: matches[${notIndex}] 查找结果为空`;
-    }
-  }
-
-  const resolvedAnyMatches: ResolvedSelector[] = [];
-  for (let i = 0; i < anyMatches.length; i++) {
-    const v = anyMatches[i];
-    try {
-      resolvedAnyMatches.push(parseSelector(v));
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      return `非法选择器: anyMatches[${i}]\n错误: ${message}`;
-    }
-  }
-  const anyMatchesResult = resolvedAnyMatches.map((s) =>
-    s.querySelfOrSelectorAll(rootNode.value),
-  );
-  if (resolvedAnyMatches.length) {
-    if (anyMatchesResult.every((s) => s.length === 0)) {
-      return `无法匹配: anyMatches 查找结果为空`;
-    }
-  }
-
-  if (!matches.length && !anyMatches.length) {
-    return '非法规则: matches 和 anyMatches 至少存在一个';
-  }
-
-  const resolvedExcludeMatches: ResolvedSelector[] = [];
-  for (let i = 0; i < excludeMatches.length; i++) {
-    const v = excludeMatches[i];
-    try {
-      resolvedExcludeMatches.push(parseSelector(v));
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      return `非法选择器: excludeMatches[${i}]\n错误: ${message}`;
-    }
-  }
-  const excludeMatchesResult = resolvedExcludeMatches.map((s) =>
-    s.querySelfOrSelectorAll(rootNode.value),
-  );
-  if (resolvedExcludeMatches.length) {
-    const index = excludeMatchesResult.findIndex((s) => s.length !== 0);
-    if (index >= 0) {
-      return `无法匹配: excludeMatches[${index}] 查找结果不为空`;
-    }
-  }
-  if (!matchesResult.length) {
-    return anyMatchesResult[0][0];
-  }
-  return matchesResult.at(-1)![0];
 };
 
-const isObj = (v: any): v is Record<string, any> => {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
+const updateRuleText = (value: string) => {
+  ruleText.value = value;
+  refreshDiagnostic();
 };
 
-const dataRef = computed<RawNode | string>(() => {
-  if (!lazyText.value) return '';
-  const obj = (() => {
-    try {
-      return JSON5.parse(lazyText.value);
-    } catch (e) {
-      return e as Error;
-    }
-  })();
-  if (obj instanceof Error) {
-    return `非法格式: ${obj.message}`;
+const getDiagnosticTagType = () => {
+  if (diagnostic.value.status == 'matched') {
+    return diagnostic.value.notes.length ? 'warning' : 'success';
   }
-  if (!isObj(obj)) {
-    return '非法格式: 请使用对象格式';
+  if (diagnostic.value.status == 'not-matched') return 'default';
+  if (diagnostic.value.status == 'invalid') return 'error';
+  return 'default';
+};
+
+const getDiagnosticLabel = () => {
+  if (diagnostic.value.status == 'matched') {
+    return diagnostic.value.notes.length ? '部分验证' : '静态匹配';
   }
-  if (typeof obj.id === 'string') {
-    if (obj.id !== snapshot.value.appId) {
-      return '非法格式: id 不匹配 appId';
-    }
-    if (!Array.isArray(obj.groups)) {
-      return '非法格式: groups 不是数组';
-    }
-    if (obj.groups.length !== 1) {
-      return '非法格式: groups 长度不为 1';
-    }
-    const group = obj.groups[0];
-    if (!group?.rules) {
-      return '非法格式: groups[0].rules 非法';
-    }
-    const rules = Array.isArray(group.rules) ? group.rules : [group.rules];
-    if (rules.length !== 1) {
-      return '非法格式: groups[0].rules 长度不为 1';
-    }
-    const rule =
-      typeof rules[0] === 'string' ? { matches: rules[0] } : rules[0];
-    if (!isObj(rule)) {
-      return '非法格式: rules[0] 非法';
-    }
-    return checkRule(rule as ResolvedData);
-  }
-  if (obj.rules) {
-    const rules = Array.isArray(obj.rules) ? obj.rules : [obj.rules];
-    if (rules.length !== 1) {
-      return '非法格式: rules 长度不为 1';
-    }
-    const rule =
-      typeof rules[0] === 'string' ? { matches: rules[0] } : rules[0];
-    if (!isObj(rule)) {
-      return '非法格式: rules[0] 非法';
-    }
-    return checkRule(rule as ResolvedData);
-  }
-  return checkRule(obj as ResolvedData);
-});
-const errorText = computed(() => {
-  if (text.value && lazyText.value && typeof dataRef.value === 'string') {
-    return dataRef.value;
-  }
-  return '';
-});
-const targetNode = computed(() => {
-  if (typeof dataRef.value === 'string') return null;
-  return dataRef.value;
-});
+  if (diagnostic.value.status == 'not-matched') return '未匹配';
+  if (diagnostic.value.status == 'invalid') return '格式错误';
+  return '等待输入';
+};
 </script>
+
 <template>
   <DraggableCard
     v-slot="{ onRef }"
@@ -200,40 +70,87 @@ const targetNode = computed(() => {
     class="box-shadow-dim"
     :show="show"
   >
-    <div bg-white b-1px b-solid b-gray-200 rounded-4px p-8px>
-      <div flex m-b-4px pr-4px>
-        <div>测试规则</div>
+    <div class="app-panel" b-1px b-solid rounded-4px p-8px>
+      <div flex items-center gap-8px m-b-4px pr-4px>
+        <div>规则静态诊断</div>
+        <NTag size="small" :type="getDiagnosticTagType()">
+          {{ getDiagnosticLabel() }}
+        </NTag>
         <div :ref="onRef" flex-1 cursor-move />
+        <NButton
+          text
+          title="重新诊断"
+          :disabled="!ruleText"
+          @click="refreshDiagnostic"
+        >
+          <template #icon>
+            <SvgIcon name="refresh" />
+          </template>
+        </NButton>
         <NButton text title="最小化" @click="onUpdateShow(!show)">
           <template #icon>
             <SvgIcon name="minus" />
           </template>
         </NButton>
       </div>
-      <NInput
-        v-model:value="text"
-        type="textarea"
-        placeholder="请输入单个规则测试"
-        size="small"
-        class="gkd_code m-b-4px"
-        :autosize="{
-          minRows: 10,
-          maxRows: 20,
-        }"
-      />
-      <div min-h-24px>
-        <div v-if="errorText" color-red whitespace-pre>
-          {{ errorText }}
-        </div>
 
-        <NButton
-          v-else-if="targetNode"
-          size="small"
-          :style="getNodeStyle(targetNode, focusNode)"
-          @click="snapshotStore.updateFocusNode(targetNode)"
+      <NInput
+        :value="ruleText"
+        type="textarea"
+        placeholder="粘贴单条规则、规则组、应用配置或订阅中的 apps"
+        size="small"
+        class="gkd_code m-b-8px"
+        :autosize="{ minRows: 10, maxRows: 20 }"
+        @update:value="updateRuleText"
+      />
+
+      <div v-if="diagnostic.status != 'empty'" min-h-24px>
+        <NAlert
+          v-if="diagnostic.status == 'invalid'"
+          type="error"
+          :showIcon="false"
         >
-          {{ getNodeLabel(targetNode) }}
-        </NButton>
+          {{ diagnostic.message }}
+        </NAlert>
+
+        <template v-else>
+          <div flex items-center gap-8px flex-wrap>
+            <span>{{ diagnostic.message }}</span>
+            <NButton
+              v-if="diagnostic.status == 'matched'"
+              size="small"
+              :style="getNodeStyle(diagnostic.targetNode, focusNode)"
+              @click="snapshotStore.updateFocusNode(diagnostic.targetNode)"
+            >
+              {{ getNodeLabel(diagnostic.targetNode) }}
+            </NButton>
+          </div>
+
+          <div m-t-6px text-12px color-gray-500>
+            <span v-if="diagnostic.details.rulePath">
+              规则位置：{{ diagnostic.details.rulePath }}；
+            </span>
+            <span>
+              命中条件
+              {{ diagnostic.details.matchedSelectors.length }} 个，未命中条件
+              {{ diagnostic.details.rejectedSelectors.length }} 个
+            </span>
+          </div>
+
+          <NAlert
+            v-if="diagnostic.notes.length"
+            type="warning"
+            :showIcon="false"
+            class="m-t-8px"
+          >
+            <div>以下条件不能由单张快照完整验证：</div>
+            <div v-for="note in diagnostic.notes" :key="note">· {{ note }}</div>
+          </NAlert>
+        </template>
+      </div>
+
+      <div v-else text-12px color-gray-500>
+        仅验证当前快照中的选择器、界面范围和排除条件，不模拟规则执行时序。
       </div>
     </div>
   </DraggableCard>

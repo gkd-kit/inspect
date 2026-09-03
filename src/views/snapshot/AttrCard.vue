@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import DraggableCard from '@/components/DraggableCard.vue';
-import { getNodeSelectorText } from '@/utils/node';
+import DraggableCard from '@/components/base/DraggableCard.vue';
+import { getNodeSelectorText } from '@/domain/snapshot/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import { useSnapshotStore } from './snapshot';
 
