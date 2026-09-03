@@ -17,17 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: package.json
+      - uses: pnpm/setup@v2
 
-      - uses: pnpm/action-setup@v6
-
-      - run: pnpm install --frozen-lockfile
       - run: pnpm run build:mirror
       - run: pnpm publish --no-git-checks
 
-      - run: pnpm dlx --allow-build=sharp --allow-build=workerd wrangler pages deploy dist --project-name=gkd-inspect
+      - run: >-
+          pnpm dlx --allow-build=sharp --allow-build=workerd wrangler@4
+          pages deploy dist --project-name=gkd-inspect
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
