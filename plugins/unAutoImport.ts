@@ -23,7 +23,6 @@ export const unAutoImport = async () => {
         globalsPropValue: 'readonly',
         filepath: '.eslintrc-auto-import.json',
       },
-      dirs: [process.cwd() + '/src/store/**'],
     }),
     components({
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],

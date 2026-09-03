@@ -30,6 +30,22 @@
 - 单色图标的 `fill`、`stroke`、`stroke-width`、`stroke-linecap`、`stroke-linejoin` 等呈现属性必须写在 `<path>`、`<rect>` 等内部元素上；需要继承组件颜色时使用 `currentColor`。
 - 多色图标的颜色、透明度和其他呈现属性也必须写在对应的内部元素上，不得通过根 `<svg>` 统一设置。
 
+## 可复用组件命名
+
+- 跨业务、无领域语义的项目级 UI 组件统一放在 `src/shared/ui`，组件文件名和组件名必须以 `Gk` 开头，例如 `GkSvg`、`GkDraggableCard`。
+- `Gk` 前缀只用于共享 UI 基础组件；页面组件和包含业务、路由、Store、网络或持久化语义的组件不得使用 `Gk` 前缀。
+- `Gk` 组件只能依赖浏览器 API、第三方 UI、其他 `Gk` 组件以及 `src/shared` 内的通用代码，不得依赖 `app`、`pages`、`features` 或 `entities`。
+- 业务组件即使在多个页面复用，也应使用领域前缀表达归属，例如 `SnapshotActionCard`、`SelectorTrackGraph`。
+- 与组件绑定的公开类型使用完整组件名前缀，例如 `GkDraggableCardValue`；非组件工具函数不强制使用 `Gk` 前缀。
+- 所有项目组件继续使用 PascalCase；禁止通过别名、全局注册或小写标签绕过组件命名检查。
+
+## 源码架构边界
+
+- 源码依赖方向为 `app -> pages -> features -> entities -> shared`，低层不得反向依赖高层。
+- `pages` 只负责路由页面组合，业务流程放在 `features`，稳定业务对象和纯逻辑放在 `entities`，无业务语义的能力放在 `shared`。
+- 跨功能切片依赖必须在 ESLint 的明确白名单中声明，禁止通过深层相对路径绕过边界。
+- Store 和项目组件必须显式导入，不通过自动导入隐藏业务依赖。
+
 ## 响应式状态修改
 
 - 业务状态和共享状态只能在命名 action 中修改；用户事件、路由钩子和生命周期钩子必须显式调用相应 action。

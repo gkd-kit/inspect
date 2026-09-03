@@ -8,11 +8,15 @@ import globals from 'globals';
 import autoImportGlobals from './.eslintrc-auto-import.json' with { type: 'json' };
 import projectRules from './eslint-rules/native-element-allowlist.ts';
 import stateRules from './eslint-rules/no-implicit-state-watchers.ts';
+import componentRules from './eslint-rules/component-conventions.ts';
+import boundaryRules from './eslint-rules/import-boundaries.ts';
 
 const combinedProjectRules = {
   rules: {
     ...projectRules.rules,
     ...stateRules.rules,
+    ...componentRules.rules,
+    ...boundaryRules.rules,
   },
 };
 
@@ -54,7 +58,7 @@ export default defineConfig(
       },
     },
     rules: {
-      'vue/multi-word-component-names': 'off',
+      'vue/multi-word-component-names': 'error',
     },
   },
 
@@ -89,6 +93,8 @@ export default defineConfig(
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       'project/native-element-allowlist': 'error',
       'project/no-implicit-state-watchers': 'error',
+      'project/component-conventions': 'error',
+      'project/import-boundaries': 'error',
       'no-empty': 'off',
       'no-useless-assignment': 'warn',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -113,11 +119,11 @@ export default defineConfig(
   // Watchers are reserved for isolated adapters around imperative UI APIs.
   {
     files: [
-      'src/components/base/DraggableCard.vue',
-      'src/components/base/FullScreenDialog.vue',
-      'src/components/base/SvgIcon.vue',
-      'src/components/base/draggable.ts',
-      'src/components/selector/TrackGraph.vue',
+      'src/shared/ui/GkDraggableCard.vue',
+      'src/shared/ui/GkFullscreenDialog.vue',
+      'src/shared/ui/GkSvg.vue',
+      'src/shared/ui/GkDraggableCard.ts',
+      'src/entities/selector/ui/SelectorTrackGraph.vue',
     ],
     rules: {
       'project/no-implicit-state-watchers': 'off',

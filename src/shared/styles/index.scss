@@ -1,0 +1,48 @@
+@use './var.scss';
+@use './html-reset.scss';
+@use './atom.scss';
+
+html {
+  width: var(--win-w);
+  height: var(--win-h);
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+body,
+#app {
+  min-height: 100%;
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.app-panel {
+  border-color: var(--app-border) !important;
+  background: var(--app-panel) !important;
+  color: var(--app-text);
+}
+
+.app-subtle {
+  background: var(--app-subtle) !important;
+}
+
+.app-border-top,
+.app-border-line {
+  border-color: var(--app-border) !important;
+}
+
+.app-border-line {
+  background: var(--app-border);
+}
+
+.app-divider {
+  height: 1px;
+  margin: 10px 0;
+  background: var(--app-border);
+}
+
+.page-size,
+[page-size] {
+  width: var(--gkd-w);
+  height: var(--gkd-h);
+}
