@@ -2,20 +2,28 @@
 import { AstNode, Selector } from '@gkd-kit/selector';
 import SelectorText from './SelectorText.vue';
 import { getAstNodeClassName } from '@/domain/selector/parser';
+import { inspectSelectorSyntax } from '@/domain/selector/diagnostics';
 import type { StyleValue } from 'vue';
 
 const props = defineProps<{
   source: string;
-  node: AstNode<any>;
+  node?: AstNode<any>;
   getNodeStyle?: (node: AstNode<any>) => StyleValue;
 }>();
 
+const renderNode = computed(() => {
+  if (props.node) return props.node;
+  const diagnostic = inspectSelectorSyntax(props.source);
+  return diagnostic.status == 'valid' ? diagnostic.selector.ast : undefined;
+});
+
 const isRoot = computed(() => {
-  return props.node.value instanceof Selector;
+  return renderNode.value?.value instanceof Selector;
 });
 
 const subText = computed(() => {
-  return props.source.substring(props.node.start, props.node.end);
+  const node = renderNode.value;
+  return node ? props.source.substring(node.start, node.end) : props.source;
 });
 
 interface ExtraNode {
@@ -54,16 +62,18 @@ const getRange = (child: AstNode<any> | ExtraNode) => {
 
 const children = computed(() => {
   const list: (AstNode<any> | ExtraNode)[] = [];
-  const firstChild = props.node.outChildren[0];
-  if (firstChild.start !== props.node.start) {
+  const node = renderNode.value;
+  if (!node?.outChildren.length) return list;
+  const firstChild = node.outChildren[0];
+  if (firstChild.start !== node.start) {
     list.push({
-      start: props.node.start,
+      start: node.start,
       end: firstChild.start,
     });
   }
-  props.node.outChildren.forEach((child, i) => {
+  node.outChildren.forEach((child, i) => {
     list.push(child);
-    const nextChild = props.node.outChildren[i + 1];
+    const nextChild = node.outChildren[i + 1];
     if (nextChild && child.end !== nextChild.start) {
       list.push({
         start: child.end,
@@ -71,11 +81,11 @@ const children = computed(() => {
       });
     }
   });
-  const lastChild = props.node.outChildren[props.node.outChildren.length - 1];
-  if (lastChild.end !== props.node.end) {
+  const lastChild = node.outChildren[node.outChildren.length - 1];
+  if (lastChild.end !== node.end) {
     list.push({
       start: lastChild.end,
-      end: props.node.end,
+      end: node.end,
     });
   }
   return list;
@@ -87,14 +97,15 @@ const getDataValue = (str: string) => {
 </script>
 <template>
   <span
+    v-if="renderNode"
     class="SelectorText"
     :whitespace-pre-wrap="isRoot ? `` : undefined"
-    :data-name="getAstNodeClassName(node)"
-    :data-range="getRange(node)"
+    :data-name="getAstNodeClassName(renderNode)"
+    :data-range="getRange(renderNode)"
     :data-value="getDataValue(subText)"
-    :style="getNodeStyle?.(node)"
+    :style="getNodeStyle?.(renderNode)"
   >
-    <template v-if="node.outChildren.length">
+    <template v-if="renderNode.outChildren.length">
       <template v-for="child in children" :key="child.start">
         <SelectorText
           v-if="isAstNode(child)"
@@ -116,6 +127,7 @@ const getDataValue = (str: string) => {
       {{ subText }}
     </template>
   </span>
+  <span v-else class="SelectorText" whitespace-pre-wrap>{{ source }}</span>
 </template>
 <style>
 [data-name~='Unknown'] {

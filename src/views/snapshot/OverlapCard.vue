@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/base/DraggableCard.vue';
+import type { DraggableCardValue } from '@/components/base/draggable';
 import { getNodeLabel, getNodeStyle } from '@/domain/snapshot/node';
 import { useSnapshotStore } from './snapshot';
 
@@ -10,15 +11,30 @@ const {
   updateFocusNode,
   closeOverlap,
 } = useSnapshotStore();
+const props = defineProps<{
+  layout?: DraggableCardValue;
+}>();
+const emit = defineEmits<{
+  updateLayout: [value: DraggableCardValue];
+}>();
 const _1vw = document.documentElement.scrollWidth / 100;
 const left = _1vw * 25.5;
+const draggableInitialValue = computed(() => ({
+  top: 215,
+  left,
+  ...props.layout,
+}));
+const updateLayout = (value: DraggableCardValue) => {
+  emit('updateLayout', value);
+};
 </script>
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initialValue="{ top: 215, left }"
+    :initialValue="draggableInitialValue"
     class="box-shadow-dim w-420px"
     :show="Boolean(overlapNodes && focusPosition)"
+    @update:value="updateLayout"
   >
     <NCard
       v-if="overlapNodes && focusPosition"

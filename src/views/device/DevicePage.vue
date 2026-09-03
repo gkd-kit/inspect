@@ -14,6 +14,7 @@ import ActionCard from '@/components/snapshot/ActionCard.vue';
 import BatchActionsBar from '@/components/snapshot/BatchActionsBar.vue';
 import { useBatchActions } from '@/composables/useBatchActions';
 import DeviceActionDialogs from './DeviceActionDialogs.vue';
+import PageBackButton from '@/components/base/PageBackButton.vue';
 
 const router = useRouter();
 const { api, origin, serverInfo, disconnect } = useDeviceApi();
@@ -226,13 +227,7 @@ const stopConnection = () => {
   />
   <div page-size flex flex-col p-10px gap-10px>
     <div flex items-center gap-24px>
-      <RouterLink to="/" class="flex ml-12px" title="首页">
-        <NButton text style="--n-icon-size: 24px">
-          <template #icon>
-            <SvgIcon name="arrow" class="rotate-90" />
-          </template>
-        </NButton>
-      </RouterLink>
+      <PageBackButton class="ml-12px" />
       <NInputGroup>
         <NInput
           :value="link"

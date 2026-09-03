@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/base/DraggableCard.vue';
+import type { DraggableCardValue } from '@/components/base/draggable';
 import { message } from '@/utils/discrete';
 import { errorTry } from '@/utils/error';
 import { getAppInfo, getNodeLabel } from '@/domain/snapshot/node';
@@ -8,9 +9,7 @@ import { parseSelector } from '@/domain/selector/parser';
 import { gkdWidth, vw } from './size';
 import { getImagUrl, getImportUrl } from '@/utils/url';
 import { GkdException } from '@gkd-kit/selector';
-import dayjs from 'dayjs';
 import type { ShallowRef } from 'vue';
-import JSON5 from 'json5';
 import { useSnapshotStore } from './snapshot';
 import {
   encodeSnapshotUrlState,
@@ -18,24 +17,41 @@ import {
 } from './snapshot_url_codec';
 import { useSnapshotUrlState } from './snapshot_url_state';
 import type { SearchResult, SelectorSearchResult } from './search_types';
-import SelectorSyntaxDiagnostic from './SelectorSyntaxDiagnostic.vue';
-import SelectorSyntaxInput from './SelectorSyntaxInput.vue';
+import SelectorSyntaxInput from '@/components/base/SelectorSyntaxInput.vue';
 import SearchResultList from './SearchResultList.vue';
+import SelectorLibraryDialog from '@/components/selector/SelectorLibraryDialog.vue';
+import RuleComposerDialog from './RuleComposerDialog.vue';
 import {
-  getFastQueryEvidence,
-  inspectSelectorSyntax,
-  type SelectorSyntaxDiagnostic as SelectorSyntaxDiagnosticValue,
-} from './selector_diagnostics';
+  composeRuleOutput,
+  createRuleComposerDefaults,
+  type RuleComposerOptions,
+  type RuleOutputDepth,
+} from './rule_composer';
+import { getFastQueryEvidence } from './selector_diagnostics';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     show: boolean;
+    layout?: DraggableCardValue;
     onUpdateShow?: (data: boolean) => void;
   }>(),
   {
     onUpdateShow: buildEmptyFn,
   },
 );
+const emit = defineEmits<{
+  updateLayout: [value: DraggableCardValue];
+}>();
+
+const draggableInitialValue = computed(() => ({
+  top: 40,
+  right: Math.max(315, 12 * vw.value + 135),
+  width: Math.max(480, gkdWidth.value * 0.3),
+  ...props.layout,
+}));
+const updateLayout = (value: DraggableCardValue) => {
+  emit('updateLayout', value);
+};
 
 const { snapshotImportId, snapshotImageId } = useStorageStore();
 
@@ -43,12 +59,10 @@ const snapshotStore = useSnapshotStore();
 const snapshotUrlState = useSnapshotUrlState();
 const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
 const rootNode = snapshotStore.rootNode as ShallowRef<RawNode>;
+const screenshotUrl = snapshotStore.screenshotUrl;
 const { focusNode, updateFocusNode } = snapshotStore;
 
 const searchText = shallowRef(``);
-const selectorSyntax = shallowRef<SelectorSyntaxDiagnosticValue>({
-  status: 'empty',
-});
 
 const selectorResults = shallowReactive<SearchResult[]>([]);
 const expandedKeys = shallowRef<number[]>([]);
@@ -201,72 +215,67 @@ const handleSearchKeydown = (event: KeyboardEvent) => {
   searchBySelector();
 };
 
-let selectorSyntaxRevision = 0;
-const runSelectorSyntaxDiagnostic = (value: string, revision: number) => {
-  if (
-    revision != selectorSyntaxRevision ||
-    searchText.value != value ||
-    !enableSearchBySelector.value ||
-    !value.trim()
-  ) {
-    return;
-  }
-  const diagnostic = inspectSelectorSyntax(value);
-  selectorSyntax.value =
-    diagnostic.status == 'invalid' ? diagnostic : { status: 'empty' };
-};
-const runSelectorSyntaxDiagnosticDebounced = useDebounceFn(
-  runSelectorSyntaxDiagnostic,
-  300,
-);
-const scheduleSelectorSyntaxDiagnostic = (value: string) => {
-  const revision = ++selectorSyntaxRevision;
-  selectorSyntax.value = { status: 'empty' };
-  if (!enableSearchBySelector.value || !value.trim()) return;
-  void runSelectorSyntaxDiagnosticDebounced(value, revision);
-};
-
 const updateSearchText = (value: string) => {
   searchText.value = value;
-  scheduleSelectorSyntaxDiagnostic(value);
 };
 
 const updateSearchMode = (value: boolean) => {
   enableSearchBySelector.value = value;
-  scheduleSelectorSyntaxDiagnostic(searchText.value);
 };
 
-const generateRules = errorTry(async (result: SelectorSearchResult) => {
+const selectorLibraryShow = shallowRef(false);
+const selectorLibrarySource = shallowRef('');
+const openSelectorLibrary = (selector = '') => {
+  selectorLibrarySource.value = selector.trim();
+  selectorLibraryShow.value = true;
+};
+const setSelectorLibraryVisible = (visible: boolean) => {
+  selectorLibraryShow.value = visible;
+};
+const useLibrarySelector = (selector: string) => {
+  updateSearchMode(true);
+  updateSearchText(selector);
+  searchBySelector();
+};
+
+const getRuleReferences = () => {
   const imageId = snapshotImageId[snapshot.value.id];
   const importId = snapshotImportId[snapshot.value.id];
-  const snapshotUrls = importId ? getImportUrl(importId) : undefined;
-  const exampleUrls = imageId ? getImagUrl(imageId) : undefined;
-
-  const s = result.selector;
-  const fastQuery = result.fastQueryEvidence?.status == 'supported';
-  const rule = {
-    id: snapshot.value.appId,
-    name: getAppInfo(snapshot.value).name,
-    groups: [
-      {
-        key: 1,
-        name: `[ChangeMe]规则名称-${dayjs().format('YYYY-MM-DD HH:mm:ss')}`,
-        desc: `[ChangeMe]本规则由GKD网页端审查工具生成`,
-        rules: [
-          {
-            fastQuery: fastQuery || undefined,
-            activityIds: snapshot.value.activityId,
-            matches: s.toString(),
-            exampleUrls,
-            snapshotUrls,
-          },
-        ],
-      },
-    ],
+  return {
+    snapshotUrl: importId ? getImportUrl(importId) : undefined,
+    exampleUrl: imageId ? getImagUrl(imageId) : undefined,
   };
-
-  copy(JSON5.stringify(rule, undefined, 2));
+};
+const getRuleComposerOptions = (
+  result: SelectorSearchResult,
+  outputDepth: RuleOutputDepth,
+): RuleComposerOptions => {
+  const references = getRuleReferences();
+  return {
+    ...createRuleComposerDefaults(),
+    outputDepth,
+    appId: snapshot.value.appId,
+    appName: getAppInfo(snapshot.value).name,
+    activityId: snapshot.value.activityId,
+    selector: result.selector.toString(),
+    fastQuery: result.fastQueryEvidence?.status == 'supported',
+    ...references,
+  };
+};
+const generateRules = errorTry(async (result: SelectorSearchResult) => {
+  await copy(composeRuleOutput(getRuleComposerOptions(result, 'app')));
 });
+const ruleComposerShow = shallowRef(false);
+const ruleComposerResult = shallowRef<SelectorSearchResult>();
+const ruleComposerStartedAt = shallowRef(Date.now());
+const openRuleComposer = (result: SelectorSearchResult) => {
+  ruleComposerResult.value = result;
+  ruleComposerStartedAt.value = Date.now();
+  ruleComposerShow.value = true;
+};
+const setRuleComposerVisible = (visible: boolean) => {
+  ruleComposerShow.value = visible;
+};
 const enableSearchBySelector = shallowRef(true);
 const hasZipId = computed(() => {
   return snapshotImportId[snapshot.value.id];
@@ -308,15 +317,12 @@ const updateExpandedKeys = (keys: number[]) => {
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initialValue="{
-      top: 40,
-      right: Math.max(315, 12 * vw + 135),
-      width: Math.max(480, gkdWidth * 0.3),
-    }"
+    :initialValue="draggableInitialValue"
     :minWidth="300"
     sizeDraggable
     class="box-shadow-dim"
     :show="show"
+    @update:value="updateLayout"
   >
     <div class="app-panel" b-1px b-solid rounded-4px p-8px>
       <div flex m-b-4px pr-4px>
@@ -329,6 +335,15 @@ const updateExpandedKeys = (keys: number[]) => {
             <NRadio :value="true"> 选择器查询 </NRadio>
           </NSpace>
         </NRadioGroup>
+        <NButton
+          class="ml-12px"
+          text
+          title="选择器库"
+          aria-label="选择器库"
+          @click="openSelectorLibrary()"
+        >
+          <template #icon><SvgIcon name="selector-library" /></template>
+        </NButton>
         <div :ref="onRef" flex-1 cursor-move />
         <NButton text title="最小化" @click="onUpdateShow(!show)">
           <template #icon>
@@ -336,29 +351,15 @@ const updateExpandedKeys = (keys: number[]) => {
           </template>
         </NButton>
       </div>
-      <div
-        class="app-panel w-full overflow-hidden rounded-6px border transition-colors duration-200 focus-within:border-[#18a058]"
+      <SelectorSyntaxInput
+        :value="searchText"
+        :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
+        :validate="enableSearchBySelector"
+        hint="Enter 搜索 · Shift+Enter 换行"
+        @update:value="updateSearchText"
+        @keydown="handleSearchKeydown"
       >
-        <SelectorSyntaxInput
-          :value="searchText"
-          :placeholder="enableSearchBySelector ? `请输入选择器` : `请输入字符`"
-          :diagnostic="selectorSyntax"
-          @update:value="updateSearchText"
-          @keydown="handleSearchKeydown"
-        />
-        <div
-          class="min-h-22px flex items-center justify-between gap-4px px-6px pb-4px"
-        >
-          <SelectorSyntaxDiagnostic
-            v-if="enableSearchBySelector && selectorSyntax.status == 'invalid'"
-            :diagnostic="selectorSyntax"
-          />
-          <span
-            v-else
-            class="select-none text-11px leading-22px text-[#94a3b8]"
-          >
-            Enter 搜索 · Shift+Enter 换行
-          </span>
+        <template #actions>
           <NButton
             circle
             type="primary"
@@ -372,18 +373,42 @@ const updateExpandedKeys = (keys: number[]) => {
               <SvgIcon name="search" />
             </template>
           </NButton>
-        </div>
-      </div>
+        </template>
+      </SelectorSyntaxInput>
       <div p-5px />
       <SearchResultList
         :results="selectorResults"
         :expandedKeys="expandedKeys"
         :hasZipId="hasZipId"
         @update:expandedKeys="updateExpandedKeys"
+        @composeRules="openRuleComposer"
         @generateRules="generateRules"
+        @saveSelector="openSelectorLibrary($event.selector.toString())"
         @share="shareResult"
         @delete="deleteResult"
       />
     </div>
   </DraggableCard>
+  <SelectorLibraryDialog
+    :show="selectorLibraryShow"
+    :initialSelector="selectorLibrarySource"
+    :appId="snapshot.appId"
+    :activityId="snapshot.activityId"
+    allowSave
+    @use="useLibrarySelector"
+    @update:show="setSelectorLibraryVisible"
+  />
+  <RuleComposerDialog
+    :show="ruleComposerShow"
+    :snapshot="snapshot"
+    :rootNode="rootNode"
+    :targetNode="ruleComposerResult?.nodes[0] || rootNode"
+    :selector="ruleComposerResult?.selector.toString() || ''"
+    :fastQuery="ruleComposerResult?.fastQueryEvidence?.status == 'supported'"
+    :startedAt="ruleComposerStartedAt"
+    :screenshotUrl="screenshotUrl"
+    :exampleUrl="getRuleReferences().exampleUrl"
+    :snapshotUrl="getRuleReferences().snapshotUrl"
+    @update:show="setRuleComposerVisible"
+  />
 </template>

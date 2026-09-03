@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import SelectorText from '@/components/selector/SelectorText.vue';
+import {
+  collectSelectorPresetIdentities,
+  normalizeSelectorIdentity,
+} from '@/domain/selector/library';
 import { getNodeLabel, getNodeStyle } from '@/domain/snapshot/node';
+import { selectorLibrary } from '@/store/selector_library';
 import type { SearchResult, SelectorSearchResult } from './search_types';
 import { useSnapshotStore } from './snapshot';
 
-defineProps<{
+const props = defineProps<{
   expandedKeys: number[];
   hasZipId?: number;
   results: SearchResult[];
@@ -12,13 +17,37 @@ defineProps<{
 
 const emit = defineEmits<{
   delete: [index: number];
+  composeRules: [result: SelectorSearchResult];
   generateRules: [result: SelectorSearchResult];
+  saveSelector: [result: SelectorSearchResult];
   share: [result: SearchResult];
   'update:expandedKeys': [keys: number[]];
 }>();
 
 const snapshotStore = useSnapshotStore();
 const { focusNode, updateFocusNode } = snapshotStore;
+const savedResultKeys = computed(() => {
+  const keys = new Set<number>();
+  const snapshot = snapshotStore.snapshot.value;
+  if (!snapshot) return keys;
+  const context = { appId: snapshot.appId, activityId: snapshot.activityId };
+  const identities = collectSelectorPresetIdentities(
+    selectorLibrary.items,
+    context,
+  );
+  for (const result of props.results) {
+    if (
+      result.gkd &&
+      identities.has(normalizeSelectorIdentity(result.selector.toString()))
+    ) {
+      keys.add(result.key);
+    }
+  }
+  return keys;
+});
+const isSelectorSaved = (result: SelectorSearchResult) => {
+  return savedResultKeys.value.has(result.key);
+};
 </script>
 
 <template>
@@ -81,12 +110,40 @@ const { focusNode, updateFocusNode } = snapshotStore;
       <template #header-extra>
         <NButtonGroup>
           <NButton
+            v-if="result.gkd"
+            size="small"
+            :disabled="isSelectorSaved(result)"
+            :title="isSelectorSaved(result) ? '已收藏' : '收藏选择器'"
+            @click.stop="emit('saveSelector', result)"
+          >
+            <template #icon>
+              <SvgIcon
+                :name="
+                  isSelectorSaved(result) ? 'favorite' : 'favorite-outline'
+                "
+                :class="
+                  isSelectorSaved(result)
+                    ? 'text-[#f0a020]'
+                    : 'text-[var(--app-muted)]'
+                "
+              />
+            </template>
+          </NButton>
+          <NButton
             v-if="result.gkd && result.selector.canCopy"
             size="small"
             title="复制规则"
             @click.stop="emit('generateRules', result)"
           >
             <template #icon><SvgIcon name="copy" /></template>
+          </NButton>
+          <NButton
+            v-if="result.gkd && result.selector.canCopy"
+            size="small"
+            title="编排规则"
+            @click.stop="emit('composeRules', result)"
+          >
+            <template #icon><SvgIcon name="test" /></template>
           </NButton>
           <NButton
             v-if="hasZipId"

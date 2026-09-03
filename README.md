@@ -10,6 +10,8 @@ GKD 网页端审查工具,
 - 连接调试 GKD 内部 HTTP Server
 - 实时启用订阅规则, 实时执行点击选择器
 - 选择器路径视图
+- 按全局、应用或界面范围收藏并复用选择器
+- 可配置生成规则, 支持静态诊断和截图点击生成 `position`
 
 ## 运行环境
 
@@ -46,9 +48,3 @@ GKD 网页端审查工具,
 - <https://i.gkd.li/i/14018243>
 - <https://i.gkd.li/i/14011298>
 - <https://i.gkd.li/i/13999908>
-
-## 其它
-
-[本项目 CDN 加速及安全防护由 Tencent EdgeOne 赞助](https://edgeone.ai/zh?from=github)
-
-<img src="https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png" alt="" width="75%" />

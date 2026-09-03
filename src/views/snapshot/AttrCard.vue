@@ -1,18 +1,33 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/base/DraggableCard.vue';
+import type { DraggableCardValue } from '@/components/base/draggable';
+import SelectorText from '@/components/selector/SelectorText.vue';
 import { getNodeSelectorText } from '@/domain/snapshot/node';
 import { buildEmptyFn, copy } from '@/utils/others';
 import { useSnapshotStore } from './snapshot';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     show: boolean;
+    layout?: DraggableCardValue;
     onUpdateShow?: (data: boolean) => void;
   }>(),
   {
     onUpdateShow: buildEmptyFn,
   },
 );
+const emit = defineEmits<{
+  updateLayout: [value: DraggableCardValue];
+}>();
+
+const draggableInitialValue = computed(() => ({
+  top: 40,
+  right: 10,
+  ...props.layout,
+}));
+const updateLayout = (value: DraggableCardValue) => {
+  emit('updateLayout', value);
+};
 
 const { focusNode } = useSnapshotStore();
 
@@ -99,9 +114,10 @@ const selectText = computed(() => {
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initialValue="{ top: 40, right: 10 }"
+    :initialValue="draggableInitialValue"
     class="box-shadow-dim"
     :show="show && Boolean(focusNode)"
+    @update:value="updateLayout"
   >
     <div absolute top-0 right-0 pt-4px pr-8px>
       <NButton text title="最小化" @click="onUpdateShow(!show)">
@@ -176,8 +192,8 @@ const selectText = computed(() => {
                     </template>
                   </NButton>
                 </template>
-                <div max-w-500px>
-                  {{ selectText }}
+                <div max-w-500px break-all gkd_code>
+                  <SelectorText :source="selectText" />
                 </div>
               </NTooltip>
             </div>

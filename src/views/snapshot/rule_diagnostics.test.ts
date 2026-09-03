@@ -1,7 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { listToTree } from '../../domain/snapshot/node.ts';
-import { evaluateRuleText } from './rule_diagnostics.ts';
+import {
+  evaluateRuleText,
+  getRuleDiagnosticPresentation,
+} from './rule_diagnostics.ts';
+
+test('maps every rule diagnostic status through one presentation helper', () => {
+  assert.deepEqual(getRuleDiagnosticPresentation({ status: 'empty' }), {
+    type: 'default',
+    label: '等待输入',
+  });
+  assert.deepEqual(
+    getRuleDiagnosticPresentation({ status: 'invalid', message: '错误' }),
+    { type: 'error', label: '格式错误' },
+  );
+});
 
 const createFixture = () => {
   const nodes: RawNode[] = [

@@ -1,4 +1,35 @@
-import type { SelectorSyntaxDiagnostic } from './selector_diagnostics.ts';
+import {
+  normalizeSelectorErrorIndex,
+  parseSelector,
+  type ResolvedSelector,
+} from './parser.ts';
+
+export type SelectorSyntaxDiagnostic =
+  | { status: 'empty' }
+  | { status: 'valid'; selector: ResolvedSelector }
+  | { status: 'invalid'; message: string; index?: number };
+
+export const inspectSelectorSyntax = (
+  source: string,
+): SelectorSyntaxDiagnostic => {
+  if (!source.trim()) return { status: 'empty' };
+  try {
+    return { status: 'valid', selector: parseSelector(source) };
+  } catch (error) {
+    const value = error as { index?: unknown; outMessage?: unknown };
+    const message =
+      typeof value.outMessage == 'string'
+        ? value.outMessage
+        : error instanceof Error
+          ? error.message
+          : String(error);
+    return {
+      status: 'invalid',
+      message,
+      index: normalizeSelectorErrorIndex(source, value.index),
+    };
+  }
+};
 
 export type SelectorErrorHighlightSegments = {
   before: string;

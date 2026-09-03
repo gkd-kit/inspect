@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { getSelectorErrorHighlightSegments } from './selector_error_highlight.ts';
+import { getSelectorErrorHighlightSegments } from '../../domain/selector/diagnostics.ts';
 
 test('highlights the parser error character', () => {
   assert.deepEqual(

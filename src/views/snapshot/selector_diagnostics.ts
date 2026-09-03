@@ -1,38 +1,7 @@
 import { FastQuery, type QueryResult } from '@gkd-kit/selector';
-import {
-  normalizeSelectorErrorIndex,
-  parseSelector,
-  type ResolvedSelector,
-} from '../../domain/selector/parser.ts';
-
-export type SelectorSyntaxDiagnostic =
-  | { status: 'empty' }
-  | { status: 'valid'; selector: ResolvedSelector }
-  | { status: 'invalid'; message: string; index?: number };
+import type { ResolvedSelector } from '../../domain/selector/parser.ts';
 
 import type { FastQueryEvidence } from './search_types';
-
-export const inspectSelectorSyntax = (
-  source: string,
-): SelectorSyntaxDiagnostic => {
-  if (!source.trim()) return { status: 'empty' };
-  try {
-    return { status: 'valid', selector: parseSelector(source) };
-  } catch (error) {
-    const value = error as { index?: unknown; outMessage?: unknown };
-    const message =
-      typeof value.outMessage == 'string'
-        ? value.outMessage
-        : error instanceof Error
-          ? error.message
-          : String(error);
-    return {
-      status: 'invalid',
-      message,
-      index: normalizeSelectorErrorIndex(source, value.index),
-    };
-  }
-};
 
 const getQueryContextNode = (
   result: QueryResult<RawNode>,

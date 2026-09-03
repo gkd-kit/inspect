@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { inspectSelectorSyntax } from './selector_diagnostics.ts';
+import { inspectSelectorSyntax } from '../../domain/selector/diagnostics.ts';
 
 test('reports a valid selector with its parsed representation', () => {
   const result = inspectSelectorSyntax('[text="确定"]');

@@ -12,6 +12,13 @@ import TrackCard from '@/components/selector/TrackCard.vue';
 import FullScreenDialog from '@/components/base/FullScreenDialog.vue';
 import SettingsModal from '@/components/app/SettingsModal.vue';
 import type { RouteLocationNormalized } from 'vue-router';
+import PageBackButton from '@/components/base/PageBackButton.vue';
+import type { DraggableCardValue } from '@/components/base/draggable';
+import {
+  loadSnapshotPanelLayouts,
+  persistSnapshotPanelLayout,
+  type SnapshotPanelName,
+} from './panel_layout';
 
 const route = useRoute();
 const snapshotStore = useSnapshotStore();
@@ -31,6 +38,13 @@ const {
 const snapshotUrlState = useSnapshotUrlState();
 const searchRevision = shallowRef(0);
 let activePath = ``;
+
+const panelLayouts = shallowReactive(loadSnapshotPanelLayouts());
+const setPanelLayout = (name: SnapshotPanelName, value: DraggableCardValue) => {
+  const layout = persistSnapshotPanelLayout(name, value);
+  if (!layout) return;
+  panelLayouts[name] = layout;
+};
 
 const loadPageFromRoute = async (
   target: Pick<RouteLocationNormalized, 'path' | 'params' | 'query'>,
@@ -105,16 +119,7 @@ const setTrackVisible = (visible: boolean) => {
         gap-16px
         class="[--svg-h:24px]"
       >
-        <NTooltip placement="right">
-          <template #trigger>
-            <NButton text>
-              <RouterLink to="/">
-                <SvgIcon name="arrow" class="rotate-90" />
-              </RouterLink>
-            </NButton>
-          </template>
-          回到首页
-        </NTooltip>
+        <PageBackButton />
         <NTooltip placement="right">
           <template #trigger>
             <NButton text @click="setSettingsVisible(true)">
@@ -204,18 +209,27 @@ const setTrackVisible = (visible: boolean) => {
     <SearchCard
       :key="searchRevision"
       :show="searchShow"
+      :layout="panelLayouts.search"
       @updateShow="setPanelVisible('searchShow', $event)"
+      @updateLayout="setPanelLayout('search', $event)"
     />
     <RuleCard
       :key="searchRevision"
       :show="ruleShow"
+      :layout="panelLayouts.rule"
       @updateShow="setPanelVisible('ruleShow', $event)"
+      @updateLayout="setPanelLayout('rule', $event)"
     />
     <AttrCard
       :show="attrShow"
+      :layout="panelLayouts.attr"
       @updateShow="setPanelVisible('attrShow', $event)"
+      @updateLayout="setPanelLayout('attr', $event)"
     />
-    <OverlapCard />
+    <OverlapCard
+      :layout="panelLayouts.overlap"
+      @updateLayout="setPanelLayout('overlap', $event)"
+    />
     <FullScreenDialog
       :show="trackShow"
       @update:show="setTrackVisible"

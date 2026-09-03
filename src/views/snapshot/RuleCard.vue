@@ -1,21 +1,40 @@
 <script setup lang="ts">
 import DraggableCard from '@/components/base/DraggableCard.vue';
+import type { DraggableCardValue } from '@/components/base/draggable';
 import { getNodeLabel, getNodeStyle } from '@/domain/snapshot/node';
 import { buildEmptyFn } from '@/utils/others';
 import { gkdWidth, vw } from './size';
 import type { ShallowRef } from 'vue';
-import { evaluateRuleText, type RuleDiagnostic } from './rule_diagnostics';
+import {
+  evaluateRuleText,
+  getRuleDiagnosticPresentation,
+  type RuleDiagnostic,
+} from './rule_diagnostics';
 import { useSnapshotStore } from './snapshot';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     show: boolean;
+    layout?: DraggableCardValue;
     onUpdateShow?: (data: boolean) => void;
   }>(),
   {
     onUpdateShow: buildEmptyFn,
   },
 );
+const emit = defineEmits<{
+  updateLayout: [value: DraggableCardValue];
+}>();
+
+const draggableInitialValue = computed(() => ({
+  top: 40,
+  right: Math.max(315, 12 * vw.value + 135),
+  width: Math.max(480, gkdWidth.value * 0.3),
+  ...props.layout,
+}));
+const updateLayout = (value: DraggableCardValue) => {
+  emit('updateLayout', value);
+};
 
 const snapshotStore = useSnapshotStore();
 const { focusNode } = snapshotStore;
@@ -24,6 +43,9 @@ const snapshot = snapshotStore.snapshot as ShallowRef<Snapshot>;
 
 const ruleText = shallowRef('');
 const diagnostic = shallowRef<RuleDiagnostic>({ status: 'empty' });
+const diagnosticPresentation = computed(() =>
+  getRuleDiagnosticPresentation(diagnostic.value),
+);
 
 const refreshDiagnostic = () => {
   diagnostic.value = evaluateRuleText(
@@ -37,44 +59,23 @@ const updateRuleText = (value: string) => {
   ruleText.value = value;
   refreshDiagnostic();
 };
-
-const getDiagnosticTagType = () => {
-  if (diagnostic.value.status == 'matched') {
-    return diagnostic.value.notes.length ? 'warning' : 'success';
-  }
-  if (diagnostic.value.status == 'not-matched') return 'default';
-  if (diagnostic.value.status == 'invalid') return 'error';
-  return 'default';
-};
-
-const getDiagnosticLabel = () => {
-  if (diagnostic.value.status == 'matched') {
-    return diagnostic.value.notes.length ? '部分验证' : '静态匹配';
-  }
-  if (diagnostic.value.status == 'not-matched') return '未匹配';
-  if (diagnostic.value.status == 'invalid') return '格式错误';
-  return '等待输入';
-};
 </script>
 
 <template>
   <DraggableCard
     v-slot="{ onRef }"
-    :initialValue="{
-      top: 40,
-      right: Math.max(315, 12 * vw + 135),
-      width: Math.max(480, gkdWidth * 0.3),
-    }"
+    :initialValue="draggableInitialValue"
     :minWidth="300"
     sizeDraggable
     class="box-shadow-dim"
     :show="show"
+    @update:value="updateLayout"
   >
     <div class="app-panel" b-1px b-solid rounded-4px p-8px>
       <div flex items-center gap-8px m-b-4px pr-4px>
         <div>规则静态诊断</div>
-        <NTag size="small" :type="getDiagnosticTagType()">
-          {{ getDiagnosticLabel() }}
+        <NTag size="small" :type="diagnosticPresentation.type">
+          {{ diagnosticPresentation.label }}
         </NTag>
         <div :ref="onRef" flex-1 cursor-move />
         <NButton

@@ -32,6 +32,26 @@ export type RuleDiagnostic =
       notes: string[];
     };
 
+export const getRuleDiagnosticPresentation = (
+  diagnostic: RuleDiagnostic,
+): {
+  type: 'default' | 'error' | 'success' | 'warning';
+  label: string;
+} => {
+  if (diagnostic.status == 'matched') {
+    return diagnostic.notes.length
+      ? { type: 'warning', label: '部分验证' }
+      : { type: 'success', label: '静态匹配' };
+  }
+  if (diagnostic.status == 'not-matched') {
+    return { type: 'default', label: '未匹配' };
+  }
+  if (diagnostic.status == 'invalid') {
+    return { type: 'error', label: '格式错误' };
+  }
+  return { type: 'default', label: '等待输入' };
+};
+
 const isObject = (value: unknown): value is JsonObject =>
   typeof value == 'object' && value != null && !Array.isArray(value);
 

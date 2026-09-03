@@ -254,6 +254,16 @@ const inputImportRef = shallowRef();
         </NTooltip>
         <NTooltip>
           <template #trigger>
+            <RouterLink flex to="/selector/library">
+              <NButton text aria-label="选择器库">
+                <SvgIcon name="selector-library" />
+              </NButton>
+            </RouterLink>
+          </template>
+          选择器库
+        </NTooltip>
+        <NTooltip>
+          <template #trigger>
             <RouterLink flex to="/selector">
               <NButton text>
                 <SvgIcon name="terminal" />

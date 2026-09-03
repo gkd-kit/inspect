@@ -93,6 +93,13 @@ const router = createRouter({
       meta: { title: '连接设备' },
     },
     {
+      path: '/selector/library',
+      component: recordModule(
+        () => import('@/views/selector/SelectorLibraryPage.vue'),
+      ),
+      meta: { title: '选择器库' },
+    },
+    {
       path: '/selector',
       component: recordModule(
         () => import('@/views/selector/SelectorPage.vue'),

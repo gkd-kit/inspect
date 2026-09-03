@@ -4,6 +4,7 @@ import { errorWrap } from '@/utils/error';
 import { useTask } from '@/utils/task';
 import JSON5 from 'json5';
 import type { DeviceApi } from './api';
+import SelectorLibraryDialog from '@/components/selector/SelectorLibraryDialog.vue';
 
 const props = defineProps<{
   api: DeviceApi;
@@ -33,6 +34,16 @@ const updateQuickFind = (value: boolean) => {
 };
 const updateAction = (value: string) => {
   clickAction.action = value;
+};
+const selectorLibraryShow = shallowRef(false);
+const openSelectorLibrary = () => {
+  selectorLibraryShow.value = true;
+};
+const setSelectorLibraryVisible = (show: boolean) => {
+  selectorLibraryShow.value = show;
+};
+const useLibrarySelector = (selector: string) => {
+  updateSelector(selector);
 };
 
 const actionOptions: { value?: string; label: string }[] = [
@@ -179,6 +190,9 @@ const subscriptionPlaceholder = `
       placeholder="请输入合法的选择器"
       @update:value="updateSelector"
     />
+    <div class="mt-8px flex justify-end">
+      <NButton secondary @click="openSelectorLibrary">选择器库</NButton>
+    </div>
     <div h-15px />
     <NSpace>
       <NCheckbox
@@ -212,4 +226,9 @@ const subscriptionPlaceholder = `
       </a>
     </div>
   </NModal>
+  <SelectorLibraryDialog
+    :show="selectorLibraryShow"
+    @use="useLibrarySelector"
+    @update:show="setSelectorLibraryVisible"
+  />
 </template>

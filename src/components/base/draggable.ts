@@ -1,4 +1,52 @@
-export const useDragMove = (xFilter: (x: number) => boolean) => {
+export interface DraggableCardValue {
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+  width?: number;
+}
+
+interface DraggableViewportSize {
+  width: number;
+  height: number;
+}
+
+interface DraggableViewportRect {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export const getDraggableViewportCorrection = (
+  rect: DraggableViewportRect,
+  viewport: DraggableViewportSize,
+  minVisible = 40,
+) => {
+  let x = 0;
+  let y = 0;
+  if (rect.right < minVisible) x = minVisible - rect.right;
+  else if (rect.left > viewport.width - minVisible) {
+    x = viewport.width - minVisible - rect.left;
+  }
+  if (rect.bottom < minVisible) y = minVisible - rect.bottom;
+  else if (rect.top > viewport.height - minVisible) {
+    y = viewport.height - minVisible - rect.top;
+  }
+  return { x, y };
+};
+
+export const getDraggableViewportWidth = (
+  width: number,
+  viewportWidth: number,
+  minWidth = 0,
+  margin = 24,
+) => Math.min(width, Math.max(minWidth, viewportWidth - margin));
+
+export const useDragMove = (
+  xFilter: (x: number) => boolean,
+  onEnd?: () => void,
+) => {
   const target = shallowRef<HTMLElement>();
   const prevOffset = {
     x: 0,
@@ -28,12 +76,11 @@ export const useDragMove = (xFilter: (x: number) => boolean) => {
     }
     offset.y = prevOffset.y + dy;
   };
-  const endMove = () => {
+  const cancelMove = () => {
     prevEv = undefined;
   };
-  const windowEndMove = () => {
+  const endMove = () => {
     if (!target.value || !prevEv) return;
-    endMove();
     const { top, bottom, left, right } = target.value.getBoundingClientRect();
     if (
       right < 0 ||
@@ -45,32 +92,28 @@ export const useDragMove = (xFilter: (x: number) => boolean) => {
       offset.x = prevOffset.x;
       offset.y = prevOffset.y;
     }
+    cancelMove();
+    onEnd?.();
   };
   onMounted(() => {
     window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', windowEndMove);
+    window.addEventListener('pointerup', endMove);
     document.addEventListener('selectstart', preventSelection);
   });
   onUnmounted(() => {
     window.removeEventListener('pointermove', move);
-    window.removeEventListener('pointerup', windowEndMove);
+    window.removeEventListener('pointerup', endMove);
     document.removeEventListener('selectstart', preventSelection);
-    endMove();
+    target.value?.removeEventListener('pointerdown', startMove);
+    cancelMove();
   });
   watch(target, (newValue, oldValue) => {
     if (newValue) {
       newValue.addEventListener('pointerdown', startMove);
-      newValue.addEventListener('pointerup', endMove);
     }
     if (oldValue) {
       oldValue.removeEventListener('pointerdown', startMove);
-      oldValue.removeEventListener('pointerup', endMove);
     }
-  });
-  onUnmounted(() => {
-    if (!target.value) return;
-    target.value.removeEventListener('pointerdown', startMove);
-    target.value.removeEventListener('pointerup', endMove);
   });
   return {
     target,

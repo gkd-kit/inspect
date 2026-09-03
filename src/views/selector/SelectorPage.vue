@@ -7,6 +7,7 @@ import {
   SyntaxException,
 } from '@gkd-kit/selector';
 import { normalizeSelectorErrorIndex } from '@/domain/selector/parser';
+import PageBackButton from '@/components/base/PageBackButton.vue';
 import * as base64url from 'universal-base64url';
 
 const route = useRoute();
@@ -85,20 +86,7 @@ const error = computed(() => {
 </script>
 <template>
   <div flex items-center gap-16px pt-12px px-12px>
-    <NTooltip placement="right">
-      <template #trigger>
-        <NButton text>
-          <template #icon>
-            <RouterLink to="/" color="inherit">
-              <NIcon size="24">
-                <SvgIcon name="arrow" class="rotate-90" />
-              </NIcon>
-            </RouterLink>
-          </template>
-        </NButton>
-      </template>
-      回到首页
-    </NTooltip>
+    <PageBackButton />
     <div flex gap-16px items-center>
       <div text-18px>测试选择器</div>
       <div>语法高亮/错误解析</div>
