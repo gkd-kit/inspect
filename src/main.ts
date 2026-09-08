@@ -1,19 +1,10 @@
-import 'normalize.css';
-import 'uno.css';
-import '@/shared/styles/index.scss';
-import { updateWasmToMatches } from '@gkd-kit/selector';
-import { toMatches } from 'regex-wasm';
-import App from './app/App.vue';
-import commitLog from './app/commit.data';
-import router from './app/router';
-import root from './shared/lib/root';
+import {
+  installGlobalErrorHandlers,
+  reportGlobalError,
+} from './shared/services/globalError.ts';
 
-updateWasmToMatches(toMatches);
+installGlobalErrorHandlers();
 
-const app = createApp(App);
-app.use(router);
-app.mount(root);
-
-if (import.meta.env.PROD) {
-  console.log(commitLog);
-}
+void import('./app/bootstrap.ts').catch((error: unknown) => {
+  reportGlobalError(error, '应用启动');
+});

@@ -6,7 +6,7 @@ import data from 'unplugin-data/vite';
 import { defineConfig } from 'vite';
 import { _404Page, mirror, svgMinify, unAutoImport } from './plugins';
 
-const chromeVersion = 117;
+const chromeVersion = 119;
 const host = '127.0.0.1';
 const port = 8444;
 
