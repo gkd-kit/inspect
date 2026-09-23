@@ -115,7 +115,9 @@ export const composeRuleParts = (
   if (options.matchRoot) rule.matchRoot = true;
   if (options.action) rule.action = options.action;
   if (options.includeActivity && options.activityId) {
-    rule.activityIds = options.activityId;
+    rule.activityIds = options.activityId.startsWith(`${options.appId}.`)
+      ? options.activityId.slice(options.appId.length)
+      : options.activityId;
   }
   if (options.position && isRulePositionAction(options.action)) {
     rule.position = options.position;

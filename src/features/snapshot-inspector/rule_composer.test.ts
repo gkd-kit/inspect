@@ -35,7 +35,7 @@ test('composes rule, group, app and TypeScript output depths', () => {
     fastQuery: true,
     matchRoot: true,
     action: 'clickCenter',
-    activityIds: 'com.example.MainActivity',
+    activityIds: '.MainActivity',
     matches: '[text="关闭"]',
   });
   assert.equal(parts.group.matchTime, 10000);
