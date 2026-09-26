@@ -2,7 +2,7 @@
 import type { LogVersionInfo } from './source_links';
 import PageBackButton from '@/features/navigation/PageBackButton.vue';
 
-defineProps<{
+const props = defineProps<{
   archiveLoading: boolean;
   inputUrl: string;
   logVersionInfo?: LogVersionInfo;
@@ -13,6 +13,16 @@ const emit = defineEmits<{
   submit: [];
   'update:inputUrl': [value: string];
 }>();
+
+const submitUrl = () => {
+  if (props.archiveLoading) return;
+  emit('submit');
+};
+const handleUrlEnter = (event: KeyboardEvent) => {
+  if (event.isComposing || event.keyCode == 229 || event.repeat) return;
+  event.preventDefault();
+  submitUrl();
+};
 
 const localFileInput = shallowRef<HTMLInputElement>();
 const openLocalFile = () => localFileInput.value?.click();
@@ -48,9 +58,9 @@ defineExpose({ openLocalFile });
         clearable
         placeholder="粘贴 GitHub、f.gkd.li 或其他 ZIP 链接"
         @update:value="emit('update:inputUrl', $event)"
-        @keyup.enter="emit('submit')"
+        @keydown.enter="handleUrlEnter"
       />
-      <NButton type="primary" :loading="archiveLoading" @click="emit('submit')">
+      <NButton type="primary" :loading="archiveLoading" @click="submitUrl">
         加载链接
       </NButton>
     </NInputGroup>
