@@ -51,6 +51,8 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
     return state;
   };
 
+  const getCachedRetraceTextState = (key: string) => retraceTextStates.get(key);
+
   const getRetraceStateText = (state: StackRetraceTextState) =>
     state.active && state.retracedText != null
       ? state.retracedText
@@ -155,6 +157,7 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
     crashRetraceState,
     getRetraceStateText,
     getRetraceTextState,
+    getCachedRetraceTextState,
     logRetraceState,
     previewRetraceState,
     resetBuildRetrace,

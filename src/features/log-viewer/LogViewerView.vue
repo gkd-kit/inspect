@@ -125,6 +125,7 @@ const {
   autoRetraceText,
   crashRetraceState,
   getRetraceStateText,
+  getCachedRetraceTextState,
   getRetraceTextState,
   logRetraceState,
   previewRetraceState,
@@ -391,14 +392,21 @@ const loadLogFileDetail = async (path: string) => {
   const currentArchive = archive.value;
   const entry = currentArchive?.entryMap.get(path);
   if (!currentArchive || !entry || !isLogDirectoryPath(entry.path)) return;
+  if (
+    logDetailPath.value == path &&
+    (logDetailLoading.value || logDetailText.value !== undefined)
+  )
+    return;
+  const cached = getCachedRetraceTextState(`log:${entry.path}`);
   const sequence = ++logDetailSequence;
   logDetailPath.value = entry.path;
   logDetailText.value = undefined;
   logRetraceState.value = undefined;
   logDetailError.value = ``;
-  logDetailLoading.value = true;
+  logDetailLoading.value = !cached;
   try {
-    const text = decodeLogText(await readEntryBytes(entry));
+    const text =
+      cached?.originalText ?? decodeLogText(await readEntryBytes(entry));
     if (
       sequence != logDetailSequence ||
       currentArchive != archive.value ||

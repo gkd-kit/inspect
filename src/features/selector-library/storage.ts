@@ -1,5 +1,10 @@
 import localforage from 'localforage';
 import {
+  parseLibraryBackup,
+  serializeLibraryBackup,
+  type SelectorLibraryState,
+} from '../../entities/selector-library/sync.ts';
+import {
   parseSelectorLibraryPayload,
   serializeSelectorLibrary,
   type SelectorPreset,
@@ -82,15 +87,37 @@ export const updateSelectorLibraryInStorage = async (
     return next;
   });
 
-interface SelectorLibraryStateSyncOptions {
-  load: () => Promise<SelectorPreset[]>;
-  update: (updater: SelectorLibraryStorageUpdater) => Promise<SelectorPreset[]>;
-  apply: (items: SelectorPreset[]) => void;
+export const loadLibraryState = async (
+  storage: SelectorLibraryIndexedStorage = indexedStorage,
+): Promise<SelectorLibraryState> => {
+  const value = await storage.getItem(SELECTOR_LIBRARY_INDEXED_STORAGE_KEY);
+  return value == null ? { items: [], sources: [] } : parseLibraryBackup(value);
+};
+
+export const updateLibraryState = async (
+  updater: (state: SelectorLibraryState) => SelectorLibraryState,
+  storage: SelectorLibraryIndexedStorage = indexedStorage,
+): Promise<SelectorLibraryState> =>
+  runStorageOperationExclusive(async () => {
+    const current = await loadLibraryState(storage);
+    const state = updater(current);
+    if (state === current) return current;
+    await storage.setItem(
+      SELECTOR_LIBRARY_INDEXED_STORAGE_KEY,
+      serializeLibraryBackup(state),
+    );
+    return state;
+  });
+
+interface SelectorLibraryStateSyncOptions<T> {
+  load: () => Promise<T>;
+  update: (updater: (state: T) => T) => Promise<T>;
+  apply: (items: T) => void;
   broadcast: () => void;
 }
 
-export const createSelectorLibraryStateSync = (
-  options: SelectorLibraryStateSyncOptions,
+export const createSelectorLibraryStateSync = <T = SelectorPreset[]>(
+  options: SelectorLibraryStateSyncOptions<T>,
 ) => {
   let refreshRevision = 0;
   let pendingCommitCount = 0;
@@ -110,13 +137,18 @@ export const createSelectorLibraryStateSync = (
     }
   };
 
-  const commit = async (updater: SelectorLibraryStorageUpdater) => {
+  const commit = async (updater: (state: T) => T) => {
     pendingCommitCount += 1;
     refreshRevision += 1;
     try {
-      const items = await options.update(updater);
+      let changed = false;
+      const items = await options.update((current) => {
+        const next = updater(current);
+        changed = next !== current;
+        return next;
+      });
       options.apply(items);
-      options.broadcast();
+      if (changed) options.broadcast();
       return items;
     } finally {
       pendingCommitCount -= 1;

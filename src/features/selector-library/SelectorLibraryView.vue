@@ -7,7 +7,6 @@ import {
   filterSelectorPresets,
   getSelectorPresetScopeLabel,
   inferSelectorPresetScope,
-  serializeSelectorLibrary,
   type SelectorPreset,
   type SelectorPresetInput,
   type SelectorPresetScope,
@@ -18,15 +17,37 @@ import {
 } from '@/features/selector-library/store';
 import { message } from '@/shared/services/feedback';
 import { copy } from '@/shared/lib/clipboard';
-import { saveAs } from 'file-saver';
+import SelectorLibraryTransfer from './ui/SelectorLibraryTransfer.vue';
 import * as base64url from 'universal-base64url';
 import PageBackButton from '@/features/navigation/PageBackButton.vue';
+import { getSelectorSource } from '@/entities/selector-library/sync';
+
+const sourceOf = (id: string) => getSelectorSource(selectorLibrary.sources, id);
 
 type ScopeFilter = 'all' | SelectorPresetScope;
 
 const query = shallowRef('');
+const libraryPage = useTemplateRef<HTMLDivElement>('libraryPage');
+const selectedCodeIds = shallowRef<ReadonlySet<string>>(new Set());
+const updateCodeSelection = () => {
+  const selection = window.getSelection();
+  const selected = new Set<string>();
+  if (selection && !selection.isCollapsed) {
+    libraryPage.value
+      ?.querySelectorAll<HTMLElement>('[data-selector-code]')
+      .forEach((element) => {
+        for (let index = 0; index < selection.rangeCount; index += 1) {
+          if (selection.getRangeAt(index).intersectsNode(element)) {
+            selected.add(element.dataset.selectorCode!);
+            break;
+          }
+        }
+      });
+  }
+  selectedCodeIds.value = selected;
+};
+useEventListener(document, 'selectionchange', updateCodeSelection);
 const scopeFilter = shallowRef<ScopeFilter>('all');
-const localFileInput = shallowRef<HTMLInputElement>();
 const createInitialForm = () => ({
   id: undefined as string | undefined,
   updatedAt: undefined as number | undefined,
@@ -39,7 +60,6 @@ const createInitialForm = () => ({
 });
 const form = shallowReactive(createInitialForm());
 const savePending = shallowRef(false);
-const importPending = shallowRef(false);
 let editorRevision = 0;
 
 const scopeFilterOptions = [
@@ -134,6 +154,10 @@ const savePreset = async () => {
     const saved = id
       ? await selectorLibraryActions.update(id, input, updatedAt)
       : await selectorLibraryActions.save(input);
+    if (editing && !saved) {
+      message.info('没有修改');
+      return;
+    }
     message.success(editing ? '选择器已更新' : '选择器已收藏');
     if (revision == editorRevision) {
       resetEditor();
@@ -166,45 +190,21 @@ const removePreset = async (id: string) => {
 const copySelector = (selector: string) => {
   void copy(selector);
 };
-const exportLibrary = () => {
-  const content = JSON.stringify(
-    serializeSelectorLibrary(selectorLibrary.items),
-    undefined,
-    2,
-  );
-  saveAs(
-    new Blob([content], { type: 'application/json;charset=utf-8' }),
-    'gkd-selector-library.json',
-  );
-};
-const openImportFile = () => {
-  localFileInput.value?.click();
-};
-const importLibrary = async () => {
-  if (importPending.value) return;
-  const input = localFileInput.value;
-  const file = input?.files?.[0];
-  if (!input || !file) return;
-  input.value = '';
-  importPending.value = true;
+const togglePinned = async (preset: SelectorPreset) => {
   try {
-    const count = await selectorLibraryActions.importItems(
-      JSON.parse(await file.text()),
-    );
-    message.success(`已导入 ${count} 条选择器`);
+    await selectorLibraryActions.setPinned(preset.id, !preset.pinned);
   } catch (error) {
-    message.error(
-      `导入失败：${error instanceof Error ? error.message : String(error)}`,
-    );
-  } finally {
-    importPending.value = false;
+    message.error(error instanceof Error ? error.message : String(error));
   }
 };
 </script>
 
 <template>
-  <div class="page-size flex flex-col gap-12px overflow-hidden p-12px">
-    <div class="flex items-center gap-12px">
+  <div
+    ref="libraryPage"
+    class="library-page flex flex-col gap-12px overflow-hidden p-12px"
+  >
+    <div class="flex flex-wrap items-center gap-12px">
       <PageBackButton />
       <GkSvg name="selector-library" class="text-24px" />
       <span class="text-20px font-600">选择器库</span>
@@ -212,20 +212,7 @@ const importLibrary = async () => {
         {{ selectorLibrary.items.length }} 条
       </NTag>
       <div flex-1 />
-      <NButton :loading="importPending" @click="openImportFile">导入</NButton>
-      <NButton
-        :disabled="selectorLibrary.items.length == 0"
-        @click="exportLibrary"
-      >
-        导出
-      </NButton>
-      <input
-        ref="localFileInput"
-        hidden
-        type="file"
-        accept=".json,application/json"
-        @change="importLibrary"
-      />
+      <SelectorLibraryTransfer />
     </div>
 
     <div class="library-body flex min-h-0 flex-1 gap-12px">
@@ -331,6 +318,9 @@ const importLibrary = async () => {
             >
               <div class="flex flex-wrap items-center gap-8px">
                 <span class="text-16px font-600">{{ preset.name }}</span>
+                <NTag v-if="sourceOf(preset.id)" size="small"
+                  >来源：{{ sourceOf(preset.id)?.name }}</NTag
+                >
                 <NTag size="small" :bordered="false">
                   {{ getSelectorPresetScopeLabel(preset) }}
                 </NTag>
@@ -349,21 +339,52 @@ const importLibrary = async () => {
                 {{ preset.description }}
               </div>
               <div
-                class="app-subtle mt-8px break-all rounded-4px p-8px gkd_code text-13px"
+                class="app-subtle relative mt-8px break-all rounded-4px p-8px pr-32px gkd_code text-13px"
               >
-                <SelectorText :source="preset.selector" />
+                <span :data-selector-code="preset.id">
+                  <SelectorText :source="preset.selector" />
+                </span>
+                <NButton
+                  v-show="!selectedCodeIds.has(preset.id)"
+                  quaternary
+                  circle
+                  size="tiny"
+                  class="absolute right-6px top-8px"
+                  :theme-overrides="{
+                    heightTiny: '18px',
+                    iconSizeTiny: '14px',
+                  }"
+                  title="复制"
+                  aria-label="复制"
+                  @click="copySelector(preset.selector)"
+                >
+                  <template #icon>
+                    <GkSvg name="copy" />
+                  </template>
+                </NButton>
               </div>
-              <div class="mt-10px flex justify-end gap-8px">
-                <NButton size="small" @click="copySelector(preset.selector)">
-                  复制
+              <div class="mt-10px flex flex-wrap justify-end gap-8px">
+                <NButton
+                  size="small"
+                  :type="preset.pinned ? 'primary' : 'default'"
+                  @click="togglePinned(preset)"
+                >
+                  {{ preset.pinned ? '取消置顶' : '置顶' }}
                 </NButton>
                 <RouterLink :to="getTestRoute(preset.selector)">
                   <NButton size="small">测试</NButton>
                 </RouterLink>
-                <NButton size="small" @click="editPreset(preset)">
+                <NButton
+                  v-if="!sourceOf(preset.id)"
+                  size="small"
+                  @click="editPreset(preset)"
+                >
                   编辑
                 </NButton>
-                <NPopconfirm @positiveClick="removePreset(preset.id)">
+                <NPopconfirm
+                  v-if="!sourceOf(preset.id)"
+                  @positiveClick="removePreset(preset.id)"
+                >
                   <template #trigger>
                     <NButton size="small" type="error" secondary>
                       删除
@@ -382,6 +403,11 @@ const importLibrary = async () => {
 </template>
 
 <style scoped>
+.library-page {
+  width: 100vw;
+  height: 100dvh;
+}
+
 @media (max-width: 800px) {
   .library-body {
     flex-direction: column;

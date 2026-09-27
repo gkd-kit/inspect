@@ -77,6 +77,7 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
     const wrap = shallowRef(false);
     const virtualList = shallowRef<VirtualListInst>();
     const scrollContainer = shallowRef<HTMLElement>();
+    const viewport = shallowRef<HTMLElement>();
     const scrollTop = shallowRef(0);
     const viewportHeight = shallowRef(600);
     const activeMatch = shallowRef<{
@@ -85,6 +86,11 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
     }>();
     const activeMatchElement = shallowRef<HTMLElement>();
     let searchRevision = 0;
+    let wrapRevision = 0;
+    const invalidateWrapRestore = () => {
+      wrapRevision += 1;
+    };
+    onScopeDispose(invalidateWrapRestore);
     const lineHeight = 20;
     const overscan = 8;
 
@@ -163,13 +169,6 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       message.success(`已复制当前文件内容`);
     };
 
-    const resetScroll = async () => {
-      scrollTop.value = 0;
-      await nextTick();
-      scrollContainer.value?.scrollTo({ top: 0 });
-      virtualList.value?.scrollTo({ index: 0 });
-    };
-
     const syncActiveMatch = async (revision: number) => {
       if (revision != searchRevision) return;
       activeMatch.value = undefined;
@@ -241,9 +240,53 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       selectRelativeResult(event.shiftKey ? -1 : 1);
     };
 
-    const setWrap = (value: boolean) => {
+    const setWrap = async (value: boolean) => {
+      if (wrap.value == value) return;
+      const bounds = viewport.value?.getBoundingClientRect();
+      const isVisible = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        return (
+          bounds && rect.bottom > bounds.top + 1 && rect.top < bounds.bottom - 1
+        );
+      };
+      const firstVisible = Array.from(
+        viewport.value?.querySelectorAll<HTMLElement>('[data-line-index]') ||
+          [],
+      ).find(isVisible);
+      const index = firstVisible
+        ? Number(firstVisible.dataset.lineIndex)
+        : Math.floor(scrollTop.value / lineHeight);
+      const keepMatchVisible =
+        activeMatchElement.value && isVisible(activeMatchElement.value);
+      const revision = ++wrapRevision;
+      const currentSearchRevision = searchRevision;
+      const currentText = options.value.value;
+      const currentDocument = options.documentKey.value;
+      const isCurrent = () =>
+        revision == wrapRevision &&
+        currentSearchRevision == searchRevision &&
+        currentText == options.value.value &&
+        currentDocument == options.documentKey.value;
       wrap.value = value;
-      void resetScroll();
+      scrollTop.value = index * lineHeight;
+      await nextTick();
+      if (!isCurrent()) return;
+      if (value) virtualList.value?.scrollTo({ index, debounce: false });
+      else scrollContainer.value?.scrollTo({ top: index * lineHeight });
+      await nextTick();
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+      if (!isCurrent()) return;
+      viewport.value
+        ?.querySelector<HTMLElement>(`[data-line-index="${index}"]`)
+        ?.scrollIntoView({ block: 'start', inline: 'nearest' });
+      if (isCurrent() && keepMatchVisible) {
+        activeMatchElement.value?.scrollIntoView({
+          block: 'nearest',
+          inline: 'nearest',
+        });
+      }
     };
 
     return {
@@ -254,6 +297,7 @@ const [provideTextViewerState, injectTextViewerState] = createInjectionState(
       wrap,
       virtualList,
       scrollContainer,
+      viewport,
       lineHeight,
       lines,
       visibleStart,

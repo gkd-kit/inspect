@@ -40,6 +40,7 @@ const activatePopover = (event: KeyboardEvent) => {
 <template>
   <div
     name="text-viewer-line"
+    :data-line-index="line.key"
     class="grid min-h-20px min-w-full leading-20px"
     :class="
       wrap

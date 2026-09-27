@@ -11,6 +11,9 @@ import {
   selectorLibraryActions,
 } from '@/features/selector-library/store';
 import { message } from '@/shared/services/feedback';
+import { getSelectorSource } from '@/entities/selector-library/sync';
+
+const sourceOf = (id: string) => getSelectorSource(selectorLibrary.sources, id);
 
 const props = defineProps<{
   show: boolean;
@@ -95,6 +98,13 @@ const removePreset = async (preset: SelectorPreset) => {
     message.error(error instanceof Error ? error.message : String(error));
   } finally {
     removingPresetId.value = undefined;
+  }
+};
+const togglePinned = async (preset: SelectorPreset) => {
+  try {
+    await selectorLibraryActions.setPinned(preset.id, !preset.pinned);
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : String(error));
   }
 };
 const saveCurrentSelector = async () => {
@@ -188,6 +198,9 @@ const saveCurrentSelector = async () => {
         >
           <div class="flex items-center gap-8px">
             <span class="font-600">{{ preset.name }}</span>
+            <NTag v-if="sourceOf(preset.id)" size="small"
+              >来源：{{ sourceOf(preset.id)?.name }}</NTag
+            >
             <NTag size="small" :bordered="false">
               {{ getSelectorPresetScopeLabel(preset) }}
             </NTag>
@@ -204,10 +217,20 @@ const saveCurrentSelector = async () => {
             <SelectorText :source="preset.selector" />
           </div>
           <div class="mt-8px flex justify-end gap-8px">
+            <NButton
+              size="small"
+              :type="preset.pinned ? 'primary' : 'default'"
+              @click="togglePinned(preset)"
+            >
+              {{ preset.pinned ? '取消置顶' : '置顶' }}
+            </NButton>
             <NButton size="small" type="primary" @click="usePreset(preset)">
               使用
             </NButton>
-            <NPopconfirm @positiveClick="removePreset(preset)">
+            <NPopconfirm
+              v-if="!sourceOf(preset.id)"
+              @positiveClick="removePreset(preset)"
+            >
               <template #trigger>
                 <NButton
                   size="small"

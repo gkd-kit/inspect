@@ -5,9 +5,15 @@ import {
   loadSelectorLibraryFromStorage,
   persistSelectorLibraryToStorage,
   updateSelectorLibraryInStorage,
+  loadLibraryState,
+  updateLibraryState,
   type SelectorLibraryIndexedStorage,
 } from './storage.ts';
-import { createSelectorPreset, serializeSelectorLibrary } from './library.ts';
+import {
+  createSelectorPreset,
+  serializeSelectorLibrary,
+  updateSelectorPreset,
+} from './library.ts';
 
 const now = 1_700_000_000_000;
 
@@ -61,6 +67,43 @@ test('persists a versioned selector library payload to IndexedDB', async () => {
   await persistSelectorLibraryToStorage([preset], indexed.storage);
 
   assert.deepEqual(indexed.getValue(), serializeSelectorLibrary([preset]));
+});
+
+test('an unchanged save refreshes local state but performs no write or broadcast', async () => {
+  const current = createPreset('same', '关闭');
+  const indexed = createIndexedStorage(serializeSelectorLibrary([current]));
+  let broadcasts = 0;
+  let applied = 0;
+  const sync = createSelectorLibraryStateSync({
+    load: () => loadLibraryState(indexed.storage),
+    update: (updater) => updateLibraryState(updater, indexed.storage),
+    apply: () => {
+      applied += 1;
+    },
+    broadcast: () => {
+      broadcasts += 1;
+    },
+  });
+  await sync.commit((state) => {
+    const previous = state.items[0];
+    const updated = updateSelectorPreset(previous, previous, now + 10);
+    return updated === previous ? state : { ...state, items: [updated] };
+  });
+  assert.equal(indexed.writes.length, 0);
+  assert.equal(broadcasts, 0);
+  assert.equal(applied, 1);
+  await sync.commit((state) => ({
+    ...state,
+    items: [
+      updateSelectorPreset(
+        state.items[0],
+        { ...state.items[0], name: '修改' },
+        now + 20,
+      ),
+    ],
+  }));
+  assert.equal(indexed.writes.length, 1);
+  assert.equal(broadcasts, 1);
 });
 
 test('re-reads the latest IndexedDB value before every mutation', async () => {

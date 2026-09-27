@@ -6,6 +6,7 @@ const {
   wrap,
   virtualList,
   scrollContainer,
+  viewport,
   lineHeight,
   lines,
   visibleStart,
@@ -16,7 +17,11 @@ const {
 </script>
 
 <template>
-  <div name="text-viewer-viewport" class="h-full min-h-0 min-w-0">
+  <div
+    ref="viewport"
+    name="text-viewer-viewport"
+    class="h-full min-h-0 min-w-0"
+  >
     <NVirtualList
       v-if="wrap"
       ref="virtualList"

@@ -89,7 +89,7 @@ const rowProps = (item: LogFileSummary) => ({
     />
 
     <div
-      v-if="activeTab == 'list'"
+      v-show="activeTab == 'list'"
       class="min-h-0 flex flex-1 flex-col gap-10px"
     >
       <TextSearchInput
@@ -117,7 +117,7 @@ const rowProps = (item: LogFileSummary) => ({
       />
     </div>
 
-    <div v-else class="min-h-0 flex flex-1 flex-col">
+    <div v-show="activeTab == 'detail'" class="min-h-0 flex flex-1 flex-col">
       <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
       <NAlert v-else-if="detailError" type="error" title="日志文件读取失败">
         {{ detailError }}

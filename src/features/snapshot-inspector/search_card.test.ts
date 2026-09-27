@@ -121,7 +121,7 @@ test(`选择器库弹窗列表可以确认后删除单条选择器`, () => {
   );
   assert.match(
     selectorLibraryDialogSource,
-    /<NPopconfirm @positiveClick="removePreset\(preset\)">/,
+    /<NPopconfirm\s+v-if="!sourceOf\(preset.id\)"\s+@positiveClick="removePreset\(preset\)"/,
   );
   assert.match(
     selectorLibraryDialogSource,

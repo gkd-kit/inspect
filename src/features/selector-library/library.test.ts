@@ -10,9 +10,43 @@ import {
   parseSelectorLibraryPayload,
   serializeSelectorLibrary,
   updateSelectorPreset,
+  setSelectorPresetPinned,
 } from './library.ts';
 
 const now = 1_700_000_000_000;
+
+test('latest pin wins over scope, usage and identical names and survives reload', () => {
+  const first = createSelectorPreset(
+    { name: '同名', selector: '[text="一"]', scope: 'app', appId: 'example' },
+    'first',
+    now,
+  );
+  const second = createSelectorPreset(
+    { name: '同名', selector: '[text="二"]', scope: 'global' },
+    'second',
+    now,
+  );
+  let items = setSelectorPresetPinned(
+    [{ ...first, lastUsedAt: now + 100 }, second],
+    'first',
+    true,
+    now,
+  );
+  items = setSelectorPresetPinned(items, 'second', true, now);
+  const ids = (value: typeof items) =>
+    filterSelectorPresets(value, '').map((item) => item.id);
+  assert.deepEqual(ids(items), ['second', 'first']);
+  assert.deepEqual(
+    ids(parseSelectorLibraryPayload(serializeSelectorLibrary(items))),
+    ['second', 'first'],
+  );
+  assert.equal(setSelectorPresetPinned(items, 'second', true), items);
+  items = setSelectorPresetPinned(items, 'first', false, now);
+  assert.equal(items[0].pinnedAt, undefined);
+  items = setSelectorPresetPinned(items, 'first', true, now - 100);
+  assert.deepEqual(ids(items), ['first', 'second']);
+  assert.equal(items[0].updatedAt, first.updatedAt);
+});
 
 test('filters selector presets by app and activity scope', () => {
   const globalPreset = createSelectorPreset(
@@ -339,6 +373,38 @@ test('updates selector metadata without losing identity and usage data', () => {
   assert.equal(updated.lastUsedAt, now + 10);
   assert.equal(updated.scope, 'app');
   assert.equal(updated.appId, 'com.example');
+});
+
+test('saving normalized identical content preserves identity, timestamp and preferences', () => {
+  const current = {
+    ...createSelectorPreset(
+      {
+        name: '关闭',
+        selector: '[text="关闭"]',
+        scope: 'global',
+        tags: ['常用'],
+      },
+      'same',
+      now,
+    ),
+    pinned: true,
+    useCount: 3,
+  };
+  const unchanged = updateSelectorPreset(
+    current,
+    { ...current, name: ' 关闭 ', tags: ['常用', '常用'] },
+    now + 100,
+  );
+  assert.equal(unchanged, current);
+  assert.equal(unchanged.updatedAt, now);
+  const changed = updateSelectorPreset(
+    current,
+    { ...current, description: '新说明' },
+    now + 100,
+  );
+  assert.notEqual(changed, current);
+  assert.equal(changed.updatedAt, now + 100);
+  assert.equal(changed.pinned, true);
 });
 
 test('collects unique tags from all selector presets', () => {

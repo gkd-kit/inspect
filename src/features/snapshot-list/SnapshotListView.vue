@@ -37,7 +37,9 @@ const filterOption = shallowReactive({
   query: ``,
   actualQuery: ``,
   updateQuery: () => {
-    filterOption.actualQuery = filterOption.query.trim();
+    const query = filterOption.query.trim();
+    if (query == filterOption.actualQuery) return;
+    filterOption.actualQuery = query;
     checkedRowKeys.value = [];
     updateColumnFilterOptions();
   },

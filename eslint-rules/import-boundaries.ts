@@ -51,6 +51,7 @@ const publicFeatureModules: Record<string, ReadonlySet<string>> = {
 };
 
 const entityDependencies: Record<string, ReadonlySet<string>> = {
+  'selector-library': new Set(['selector']),
   selector: new Set(['snapshot']),
 };
 
