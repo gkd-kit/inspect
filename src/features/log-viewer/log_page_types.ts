@@ -2,6 +2,8 @@ export type PreviewKind =
   | `none`
   | `text`
   | `json`
+  | `diagnostic`
+  | `startup-directory`
   | `apps`
   | `crash`
   | `log-directory`

@@ -11,7 +11,10 @@ import type {
 } from './directory_preview';
 import JsonPreview from './JsonPreview.vue';
 import LogDirectoryPreview from './LogDirectoryPreview.vue';
-import type { LogEntry } from './log';
+import type { LogArchive, LogEntry } from './log';
+import { getDiagnosticKind } from './diagnostic_preview';
+import LogDiagnosticPreview from './LogDiagnosticPreview.vue';
+import LogStartupPreview from './LogStartupPreview.vue';
 import { formatBytes, isRawSubscription } from './log';
 import type { PreviewKind } from './log_page_types';
 import type { SourceLinkContext } from './source_links';
@@ -23,6 +26,7 @@ import TextViewer from './text_viewer/TextViewer.vue';
 import type { StackRetraceTextState } from './useLogRetrace';
 
 defineProps<{
+  archive: LogArchive;
   appNames: Record<string, string>;
   appsData?: AppsPreviewData;
   appsView: `users` | `raw`;
@@ -175,6 +179,21 @@ const emit = defineEmits<{
           </template>
         </TextViewer>
       </div>
+      <LogStartupPreview
+        v-else-if="previewKind == 'startup-directory'"
+        :archive="archive"
+      />
+      <LogDiagnosticPreview
+        v-else-if="
+          previewKind == 'diagnostic' &&
+          selectedEntry &&
+          getDiagnosticKind(selectedEntry.path)
+        "
+        :key="selectedPath"
+        :kind="getDiagnosticKind(selectedEntry.path)!"
+        :value="jsonValue"
+        :raw="previewText"
+      />
       <JsonPreview
         v-else-if="previewKind == 'json'"
         :key="selectedPath"

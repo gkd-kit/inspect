@@ -1,10 +1,15 @@
+import {
+  getArchiveVersionEntries,
+  getArchiveBuildEntry,
+  getArchiveSourcePathsEntry,
+  getArchiveAppsEntry,
+} from './archive_metadata';
 import type { RawSubscription } from '@gkd-kit/api';
 import type { JSZipObject } from 'jszip';
 import { loadAsync } from '@/shared/lib/chunk';
 import { getAppNameMapFromValue } from './app_names';
 import {
   createSourceLinkContext,
-  isLogVersionPath,
   parseLogBuildKey,
   parseLogVersionInfo,
   type LogVersionInfo,
@@ -347,7 +352,7 @@ const archiveSourceLinkContextTasks = new WeakMap<
 >();
 
 const getLogVersionEntries = (archive: LogArchive) => {
-  return archive.entries.filter((entry) => isLogVersionPath(entry.path));
+  return getArchiveVersionEntries(archive.entries);
 };
 
 const logVersionInfoTasks = new WeakMap<
@@ -391,9 +396,7 @@ export const getLogBuildKey = (archive: LogArchive) => {
   let task = logBuildKeyTasks.get(archive);
   if (task) return task;
   task = (async () => {
-    const entry = archive.entries.find(
-      (item) => item.path.toLowerCase() == `gkd.json`,
-    );
+    const entry = getArchiveBuildEntry(archive.entries);
     if (!entry) return;
     try {
       const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
@@ -408,9 +411,7 @@ export const getArchiveSourceLinkContext = (archive: LogArchive) => {
   let task = archiveSourceLinkContextTasks.get(archive);
   if (task) return task;
   task = (async () => {
-    const sourcePathsEntry = archive.entries.find(
-      (entry) => entry.path.toLowerCase() == `source-paths.txt`,
-    );
+    const sourcePathsEntry = getArchiveSourcePathsEntry(archive.entries);
     if (!sourcePathsEntry) return;
     const versionEntries = getLogVersionEntries(archive);
     if (versionEntries.length == 0) return;
@@ -461,10 +462,7 @@ export const getLogAppNames = (archive: LogArchive) => {
   let task = appNameMapTasks.get(archive);
   if (task) return task;
   task = (async () => {
-    const entry = archive.entries.find((item) => {
-      const path = item.path.toLowerCase();
-      return path == `apps.json` || path.endsWith(`/apps.json`);
-    });
+    const entry = getArchiveAppsEntry(archive.entries);
     if (!entry) return {};
     try {
       const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));

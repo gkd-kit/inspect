@@ -38,6 +38,7 @@ import {
   type SubscriptionFileSummary,
 } from './directory_preview';
 import { isJsonTreeTooLarge } from './json_preview';
+import { getDiagnosticKind, STARTUP_TREE_KEY } from './diagnostic_preview';
 import type { LogVersionInfo, SourceLinkContext } from './source_links';
 import {
   decodeLogText,
@@ -260,7 +261,15 @@ const showEntry = async (entry: LogEntry | undefined) => {
           isAppsFile && !structureTooLarge
             ? getAppsPreviewData(value)
             : undefined;
-        if (resolvedAppsData) {
+        if (
+          !structureTooLarge &&
+          getDiagnosticKind(entry.path) &&
+          value != null &&
+          typeof value == `object` &&
+          !Array.isArray(value)
+        ) {
+          previewKind.value = `diagnostic`;
+        } else if (resolvedAppsData) {
           appsData.value = markRaw(resolvedAppsData);
           previewKind.value = `apps`;
         } else if (
@@ -683,8 +692,20 @@ useEventListener(document.body, `drop`, (event) => {
 
 const treeData = computed(() => buildLogTreeData(archive.value));
 
+const showStartupPreview = () => {
+  previewSequence++;
+  errorText.value = ``;
+  clearPreview();
+  selectedPath.value = STARTUP_TREE_KEY;
+  previewKind.value = `startup-directory`;
+};
+
 const updateSelectedKeys = (keys: Array<string | number>) => {
   const path = String(keys[0] || ``);
+  if (path == STARTUP_TREE_KEY) {
+    showStartupPreview();
+    return;
+  }
   if (path == CRASH_TREE_KEY) {
     void showCrashPreview();
     return;
@@ -737,6 +758,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
       />
 
       <LogPreviewPanel
+        :archive="archive"
         :selectedEntry="selectedEntry"
         :selectedPath="selectedPath"
         :previewKind="previewKind"

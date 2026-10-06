@@ -9,6 +9,7 @@ import {
   SUBSCRIPTION_TREE_KEY,
 } from './directory_preview';
 import type { LogArchive } from './log';
+import { isStartupPath, STARTUP_TREE_KEY } from './diagnostic_preview';
 
 export type LogTreeOption = TreeOption & {
   path?: string;
@@ -22,8 +23,10 @@ export const buildLogTreeData = (archive?: LogArchive): LogTreeOption[] => {
   const crashEntries = getCrashEntries(entries);
   const logEntries = getLogDirectoryEntries(entries);
   const subscriptionEntries = getSubscriptionDirectoryEntries(entries);
+  const startupEntries = entries.filter((entry) => isStartupPath(entry.path));
   for (const entry of entries) {
     if (
+      isStartupPath(entry.path) ||
       isCrashPath(entry.path) ||
       isLogDirectoryPath(entry.path) ||
       isSubscriptionDirectoryPath(entry.path)
@@ -49,6 +52,13 @@ export const buildLogTreeData = (archive?: LogArchive): LogTreeOption[] => {
         parentChildren.push(node);
       }
       parentChildren = (node.children || []) as LogTreeOption[];
+    });
+  }
+  if (startupEntries.length) {
+    roots.push({
+      key: STARTUP_TREE_KEY,
+      label: `startup-log (${startupEntries.length})`,
+      isFile: true,
     });
   }
   if (crashEntries.length) {
