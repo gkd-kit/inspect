@@ -1,9 +1,14 @@
 import type { AppInfo, DeviceInfo } from '@/entities/snapshot/types';
 
+export interface RpcSuccess {
+  message: 'success';
+}
+
 export interface RpcError {
   message: string;
-  code: number;
-  __error: true;
+  code: string;
+  stackTrace?: string | null;
+  path?: string | null;
 }
 
 export interface ServerInfo {

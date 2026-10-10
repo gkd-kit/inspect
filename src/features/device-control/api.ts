@@ -1,5 +1,6 @@
 import type { Snapshot } from '@/entities/snapshot/types';
-import type { RpcError, ServerInfo } from '@/features/device-control/types';
+import type { RpcSuccess, ServerInfo } from '@/features/device-control/types';
+import { readRpcResponse, RpcException } from './rpc';
 import { message } from '@/shared/services/feedback';
 import { enhanceFetch } from '@/features/network-access/enhanceFetch';
 import type { GmXhrOptions } from '@/shared/api/gm';
@@ -37,18 +38,16 @@ export const useDeviceApi = (initOrigin?: string) => {
       }
       throw e;
     });
-    if (!response.ok) {
-      message.error(`接口错误:` + name + `:` + response.status);
-      throw response;
-    }
-    if (response.headers.get(`Content-Type`)?.includes(`application/json`)) {
-      const error = (await response.clone().json()) as RpcError;
-      if (error.__error) {
-        message.error(error.message);
-        throw response;
-      }
-    }
-    return response;
+    return readRpcResponse(response).catch((error: unknown) => {
+      message.error(
+        error instanceof RpcException
+          ? error.path
+            ? `${error.path}: ${error.message}`
+            : error.message
+          : `接口错误:${name}:${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    });
   };
   const baseRpc = async (
     name: string,
@@ -96,7 +95,7 @@ export const useDeviceApi = (initOrigin?: string) => {
     captureSnapshot: async () => jsonRpc<Snapshot>(`captureSnapshot`),
     getSnapshots: async () => jsonRpc<Snapshot[]>(`getSnapshots`),
     updateSubscription: async (data: any) => {
-      return jsonRpc(`updateSubscription`, {
+      return jsonRpc<RpcSuccess>(`updateSubscription`, {
         ...data,
         id: -1,
         name: '内存订阅',
@@ -116,7 +115,7 @@ export const useDeviceApi = (initOrigin?: string) => {
       );
     },
     deleteSnapshot: async (data: Reqid) => {
-      return jsonRpc<{ message: string }>(`deleteSnapshot`, data);
+      return jsonRpc<RpcSuccess>(`deleteSnapshot`, data);
     },
   };
   return { origin, api, serverInfo, disconnect };
