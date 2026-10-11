@@ -14,14 +14,12 @@ import SelectorText from './SelectorText.vue';
 import { buildEmptyFn } from '@/shared/lib/function';
 import { colorList } from '@/shared/ui/colors';
 import { type ResolvedSelector } from '@/entities/selector/parser';
-import type { AstNode, QueryResult } from '@gkd-kit/selector';
-import { UnitSelectorExpression } from '@gkd-kit/selector';
-import type { StyleValue } from 'vue';
+import type { SelectorMatch, SelectorMatchUnit } from '@gkd-kit/selector';
 
 const props = withDefaults(
   defineProps<{
     nodes: RawNode[];
-    queryResult: QueryResult<RawNode>;
+    queryResult: SelectorMatch<RawNode>;
     selector: ResolvedSelector;
     onClose?: () => void;
   }>(),
@@ -32,21 +30,21 @@ const props = withDefaults(
 
 const allUnitResults = computed(() => {
   if (!props.queryResult) return [];
-  return Array.from(props.queryResult.unitResults.asJsReadonlyArrayView());
+  return props.queryResult.units;
 });
 
 const singleUnitResults = computed(() => {
-  return allUnitResults.value.filter((v) => !v.context.prev);
+  return allUnitResults.value.filter((v) => v.steps.length === 0);
 });
 
 const showUnitResults = computed(() => {
-  return allUnitResults.value.filter((v) => v.context.prev);
+  return allUnitResults.value.filter((v) => v.steps.length > 0);
 });
 
-const filterUnitResults = shallowRef<QueryResult.UnitResult<RawNode>[]>([
+const filterUnitResults = shallowRef<SelectorMatchUnit<RawNode>[]>([
   ...showUnitResults.value,
 ]);
-const switchUnitResult = (unitResult: QueryResult.UnitResult<RawNode>) => {
+const switchUnitResult = (unitResult: SelectorMatchUnit<RawNode>) => {
   if (filterUnitResults.value.includes(unitResult)) {
     filterUnitResults.value = filterUnitResults.value.filter(
       (v) => v !== unitResult,
@@ -56,19 +54,11 @@ const switchUnitResult = (unitResult: QueryResult.UnitResult<RawNode>) => {
   }
 };
 
-const getNodeStyle = (node: AstNode<any>): StyleValue => {
-  const value = node.value;
-  if (
-    value instanceof UnitSelectorExpression &&
-    allUnitResults.value.some((u) => u.expression === value) &&
-    !node.outChildren.some((v) => v.value instanceof UnitSelectorExpression)
-  ) {
-    return {
-      outline: '1px solid #00F',
-    };
-  }
-  return '';
-};
+const highlightedRanges = computed(() =>
+  allUnitResults.value
+    .map((unit) => unit.range)
+    .filter((range) => range != null),
+);
 </script>
 <template>
   <div
@@ -110,8 +100,9 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
         <div class="app-subtle" mb-24px break-all px-4px py-2px>
           <SelectorText
             :source="selector.source"
-            :node="selector.ast"
-            :getNodeStyle="getNodeStyle"
+            :tokens="selector.tokens"
+            :positions="selector.positions"
+            :highlightedRanges="highlightedRanges"
           />
         </div>
         <div flex flex-col gap-12px>
@@ -128,7 +119,9 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
             >
               <SelectorText
                 :source="selector.source"
-                :node="selector.findAst(unitResult.expression)"
+                :tokens="selector.tokens"
+                :positions="selector.positions"
+                :range="unitResult.range"
               />
             </div>
           </div>
@@ -161,7 +154,9 @@ const getNodeStyle = (node: AstNode<any>): StyleValue => {
             <span pl-4px />
             <SelectorText
               :source="selector.source"
-              :node="selector.findAst(unitResult.expression)"
+              :tokens="selector.tokens"
+              :positions="selector.positions"
+              :range="unitResult.range"
             />
           </div>
         </div>

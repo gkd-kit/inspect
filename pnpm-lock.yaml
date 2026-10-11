@@ -215,8 +215,8 @@ catalogs:
       specifier: ^0.9.3
       version: 0.9.3
     '@gkd-kit/selector':
-      specifier: ^0.5.23
-      version: 0.5.23
+      specifier: ^0.6.1
+      version: 0.6.1
     '@tsconfig/node20':
       specifier: ^20.1.9
       version: 20.1.9
@@ -316,9 +316,6 @@ catalogs:
     prettier:
       specifier: ^3.8.3
       version: 3.8.3
-    regex-wasm:
-      specifier: ^0.1.1
-      version: 0.1.1
     retrace-wasm:
       specifier: ^0.1.2
       version: 0.1.2
@@ -404,7 +401,7 @@ importers:
         version: 0.9.3
       '@gkd-kit/selector':
         specifier: 'catalog:'
-        version: 0.5.23
+        version: 0.6.1
       '@tsconfig/node20':
         specifier: 'catalog:'
         version: 20.1.9
@@ -504,9 +501,6 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.8.3
-      regex-wasm:
-        specifier: 'catalog:'
-        version: 0.1.1
       retrace-wasm:
         specifier: 'catalog:'
         version: 0.1.2
@@ -1299,8 +1293,9 @@ packages:
   '@gkd-kit/api@0.9.3':
     resolution: {integrity: sha512-TpN4QImCS8wJRYEvdsH1TYaTYrtZpXpojxRnepgEmXLHZh7Fh+iLCavvs03wiwjGabVC24Ounr06yjb6UV8ePA==}
 
-  '@gkd-kit/selector@0.5.23':
-    resolution: {integrity: sha512-HTegxwogKIxopvGup5wTEGzxW9ko7iS9mXEEpZi6SvbVUEumjGptJtIXd4ixNKJ2RyOWX3wfoyArbrDOUiTFYw==}
+  '@gkd-kit/selector@0.6.1':
+    resolution: {integrity: sha512-xRu7yLJ2kOLWbtluqZVJQx+uHX1FjToaqp0czTycicEm/d/EW9UMoyoGBuhBP3PmlWjjX20msBdLHC3QKAYgvw==}
+    engines: {node: '>=22'}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -4873,7 +4868,9 @@ snapshots:
 
   '@gkd-kit/api@0.9.3': {}
 
-  '@gkd-kit/selector@0.5.23': {}
+  '@gkd-kit/selector@0.6.1':
+    dependencies:
+      regex-wasm: 0.1.1
 
   '@humanfs/core@0.19.2':
     dependencies:

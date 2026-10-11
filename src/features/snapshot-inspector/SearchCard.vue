@@ -13,7 +13,7 @@ import { parseSelector } from '@/entities/selector/parser';
 import { gkdWidth, vw } from './size';
 import { getImagUrl, getImportUrl } from '@/entities/snapshot/urls';
 import { useSnapshotMetadataStore } from '@/entities/snapshot/metadataStore';
-import { GkdException } from '@gkd-kit/selector';
+
 import type { ShallowRef } from 'vue';
 import { useSnapshotStore } from './snapshot';
 import {
@@ -78,9 +78,6 @@ const getSelectorError = (error: unknown): string => {
   if (typeof error == 'string') {
     return error;
   }
-  if (error instanceof GkdException) {
-    return `非法选择器:` + error.outMessage;
-  }
   return (
     `非法选择器:` + (error instanceof Error ? error.message : String(error))
   );
@@ -109,7 +106,7 @@ const searchSelector = (text: string, notify = true) => {
     return;
   }
 
-  const results = selector.querySelfOrSelectorAllContext(rootNode.value);
+  const results = selector.querySelfOrSelectorAllWithTrace(rootNode.value);
   if (results.length == 0) {
     if (notify) {
       message.success(`没有选择到节点`);

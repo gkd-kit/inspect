@@ -4,18 +4,22 @@ import type { RawNode } from '@/entities/snapshot/types';
 import { AntQuadratic } from '@/entities/selector/g6';
 import { getNodeQf, getTrackTreeContext } from '@/entities/snapshot/node';
 import { colorList } from '@/shared/ui/colors';
-import { transform } from '@/entities/selector/parser';
+
 import type { EdgeData, TreeData } from '@antv/g6';
 import { Graph, treeToGraphData } from '@antv/g6';
-import { QueryPath, QueryResult } from '@gkd-kit/selector';
+import type {
+  SelectorMatch,
+  SelectorMatchUnit,
+  SelectorMatchStep,
+} from '@gkd-kit/selector';
 import { uniqBy } from 'lodash-es';
 
 const props = withDefaults(
   defineProps<{
     nodes: RawNode[];
-    queryResult: QueryResult<RawNode>;
-    showUnitResults: QueryResult.UnitResult<RawNode>[];
-    filterUnitResults?: QueryResult.UnitResult<RawNode>[];
+    queryResult: SelectorMatch<RawNode>;
+    showUnitResults: SelectorMatchUnit<RawNode>[];
+    filterUnitResults?: SelectorMatchUnit<RawNode>[];
   }>(),
   {},
 );
@@ -28,9 +32,13 @@ const getNode = (id: string | number): RawNode => {
 
 const subNodes = computed(() => {
   return uniqBy(
-    Array.from(props.queryResult.unitResults.asJsReadonlyArrayView()).flatMap(
-      (v) => v.context.toArray(),
-    ),
+    [
+      props.queryResult.target,
+      ...props.queryResult.units.flatMap((unit) => [
+        unit.target,
+        ...unit.steps.flatMap((step) => [step.source, step.target]),
+      ]),
+    ],
     (n) => n.id,
   );
 });
@@ -57,7 +65,7 @@ const hasChildren = (node: RawNode): boolean => {
 
 interface EdgeContext {
   groupList: {
-    result: QueryResult.UnitResult<RawNode>;
+    result: SelectorMatchUnit<RawNode>;
     edgeGroup: EdgeData[];
   }[];
   edgeList: EdgeData[];
@@ -69,15 +77,15 @@ interface EdgeContext {
 
 const edgeCtx = computed<EdgeContext>(() => {
   const countMap: Record<string, number> = {};
-  const edgePathMap: Record<string, QueryPath<RawNode>> = {};
-  const getNodeEdge = (path: QueryPath<RawNode>): EdgeData => {
+  const edgePathMap: Record<string, SelectorMatchStep<RawNode>> = {};
+  const getNodeEdge = (path: SelectorMatchStep<RawNode>): EdgeData => {
     const key = `#${path.source.id}-${path.target.id}`;
     const count = countMap[key] || 0;
     countMap[key] = count + 1;
     const id = key + (count > 0 ? `-${count}` : '');
     edgePathMap[id] = path;
 
-    const _isPrevious = path.connectWrapper.segment.operator.key === '->';
+    const _isPrevious = path.kind.name === 'Previous';
     const _similarId = [path.source.id, path.target.id, Number(_isPrevious)]
       .sort()
       .join('-');
@@ -93,9 +101,7 @@ const edgeCtx = computed<EdgeContext>(() => {
   const resultAndPathList = props.showUnitResults.map((result) => {
     return {
       result,
-      pathList: Array.from(
-        result.getNodeConnectPath(transform).asJsReadonlyArrayView(),
-      ),
+      pathList: result.steps,
     };
   });
   const groupList = resultAndPathList.map(({ result, pathList }) => {
@@ -107,7 +113,7 @@ const edgeCtx = computed<EdgeContext>(() => {
   });
   const edgeList = groupList.flatMap((v) => v.edgeGroup);
   const getLabel = (edge: EdgeData): string => {
-    return edgePathMap[edge.id!].formatConnectOffset;
+    return edgePathMap[edge.id!].formattedRelation;
   };
   const getGroupIndex = (edge: EdgeData): number => {
     return groupList.findIndex((v) =>

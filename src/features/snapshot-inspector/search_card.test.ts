@@ -152,11 +152,8 @@ test(`使用选择器不等待使用次数写入，也不会污染后续弹窗�
 });
 
 test(`所有只读选择器文本统一通过可自行解析的高亮组件展示`, () => {
-  assert.match(selectorTextSource, /inspectSelectorSyntax\(props\.source\)/);
-  assert.match(
-    selectorTextSource,
-    /<span v-else class="SelectorText" whitespace-pre-wrap>/,
-  );
+  assert.match(selectorTextSource, /Selector.parse\(props\.source\)/);
+  assert.match(selectorTextSource, /getSelectorTextSegments/);
   assert.match(attrCardSource, /<SelectorText :source="selectText" \/>/);
   assert.doesNotMatch(
     [

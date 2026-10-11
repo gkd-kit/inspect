@@ -21,7 +21,7 @@ import {
 } from '@/entities/snapshot/storage';
 import { getImportFileUrl } from '@/entities/snapshot/urls';
 import { getSnapshotImportId } from '@/entities/snapshot/api';
-import type { QueryResult } from '@gkd-kit/selector';
+import type { SelectorMatch } from '@gkd-kit/selector';
 import type { RouteLocationNormalized } from 'vue-router';
 import {
   importSnapshotId,
@@ -326,7 +326,7 @@ export const useSnapshotStore = createSharedComposable(() => {
   const trackData = shallowRef<SelectorTrackData>();
   const showTrack = (
     selector: ResolvedSelector,
-    result: QueryResult<RawNode>,
+    result: SelectorMatch<RawNode>,
   ) => {
     trackShow.value = true;
     trackData.value = {

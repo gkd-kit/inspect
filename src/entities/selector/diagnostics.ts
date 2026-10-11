@@ -3,11 +3,21 @@ import {
   parseSelector,
   type ResolvedSelector,
 } from './parser.ts';
+import {
+  SelectorSyntaxException,
+  SelectorTypeException,
+} from '@gkd-kit/selector';
+import type { SelectorTextRange } from './highlighting.ts';
 
 export type SelectorSyntaxDiagnostic =
   | { status: 'empty' }
   | { status: 'valid'; selector: ResolvedSelector }
-  | { status: 'invalid'; message: string; index?: number };
+  | {
+      status: 'invalid';
+      message: string;
+      index?: number;
+      range?: SelectorTextRange;
+    };
 
 export const inspectSelectorSyntax = (
   source: string,
@@ -16,17 +26,16 @@ export const inspectSelectorSyntax = (
   try {
     return { status: 'valid', selector: parseSelector(source) };
   } catch (error) {
-    const value = error as { index?: unknown; outMessage?: unknown };
-    const message =
-      typeof value.outMessage == 'string'
-        ? value.outMessage
-        : error instanceof Error
-          ? error.message
-          : String(error);
+    const value =
+      error instanceof SelectorSyntaxException ||
+      error instanceof SelectorTypeException
+        ? error
+        : undefined;
     return {
       status: 'invalid',
-      message,
-      index: normalizeSelectorErrorIndex(source, value.index),
+      message: error instanceof Error ? error.message : String(error),
+      index: normalizeSelectorErrorIndex(source, value?.index),
+      range: value?.range ?? undefined,
     };
   }
 };
@@ -65,7 +74,16 @@ export const getSelectorErrorHighlightSegments = (
   }
 
   const errorLength = isHighSurrogate(source.charCodeAt(start)) ? 2 : 1;
-  const end = Math.min(start + errorLength, source.length);
+  let end = Math.min(
+    Math.max(start + errorLength, diagnostic.range?.end ?? 0),
+    source.length,
+  );
+  if (
+    end < source.length &&
+    isLowSurrogate(source.charCodeAt(end)) &&
+    isHighSurrogate(source.charCodeAt(end - 1))
+  )
+    end += 1;
   return {
     before: source.slice(0, start),
     error: source.slice(start, end),

@@ -49,10 +49,19 @@ const savedResultKeys = computed(() => {
 const isSelectorSaved = (result: SelectorSearchResult) => {
   return savedResultKeys.value.has(result.key);
 };
+const toggleResult = (key: number) => {
+  emit(
+    'update:expandedKeys',
+    props.expandedKeys.includes(key)
+      ? props.expandedKeys.filter((value) => value !== key)
+      : [...props.expandedKeys, key],
+  );
+};
 </script>
 
 <template>
   <NCollapse
+    class="search-result-list"
     :expandedNames="expandedKeys"
     @update:expandedNames="emit('update:expandedKeys', $event as number[])"
   >
@@ -62,112 +71,118 @@ const isSelectorSaved = (result: SelectorSearchResult) => {
       :name="result.key"
     >
       <template #header>
-        <span
-          v-if="result.nodes.length > 1"
-          underline
-          leading-20px
-          decoration-1
-          m-r-4px
-          gkd_code
-          title="查询数量"
-        >
-          {{ result.nodes.length }}
-        </span>
-        <span
-          break-all
-          px-4px
-          leading-20px
-          class="app-subtle"
-          gkd_code
-          :title="result.gkd ? `选择器` : `搜索字符`"
-        >
-          <SelectorText
-            v-if="result.gkd"
-            :node="result.selector.ast"
-            :source="result.selector.source"
-          />
-          <template v-else>{{ result.selector }}</template>
-        </span>
-        <span pl-4px />
-        <NPopover v-if="result.gkd && result.fastQueryEvidence" trigger="hover">
-          <template #trigger>
-            <NTag
-              size="small"
-              :type="
-                result.fastQueryEvidence.status == 'supported'
-                  ? 'success'
-                  : result.fastQueryEvidence.status == 'unsupported'
-                    ? 'default'
-                    : 'warning'
-              "
+        <div flex flex-col gap-8px min-w-0 w-full cursor-default @click.stop>
+          <button
+            type="button"
+            class="result-toggle"
+            :aria-expanded="expandedKeys.includes(result.key)"
+            :aria-label="`${expandedKeys.includes(result.key) ? '收起' : '展开'} ${result.nodes.length} 个节点`"
+            @click="toggleResult(result.key)"
+          >
+            <span
+              break-all
+              px-4px
+              leading-20px
+              class="app-subtle"
+              gkd_code
+              :title="result.gkd ? `选择器` : `搜索字符`"
             >
-              {{ result.fastQueryEvidence.label }}
-            </NTag>
-          </template>
-          {{ result.fastQueryEvidence.reason }}
-        </NPopover>
-      </template>
-
-      <template #header-extra>
-        <NButtonGroup>
-          <NButton
-            v-if="result.gkd"
-            size="small"
-            :disabled="isSelectorSaved(result)"
-            :title="isSelectorSaved(result) ? '已收藏' : '收藏选择器'"
-            @click.stop="emit('saveSelector', result)"
-          >
-            <template #icon>
-              <GkSvg
-                :name="
-                  isSelectorSaved(result) ? 'favorite' : 'favorite-outline'
-                "
-                :class="
-                  isSelectorSaved(result)
-                    ? 'text-[#f0a020]'
-                    : 'text-[var(--app-muted)]'
-                "
+              <SelectorText
+                v-if="result.gkd"
+                :tokens="result.selector.tokens"
+                :source="result.selector.source"
               />
-            </template>
-          </NButton>
-          <NButton
-            v-if="result.gkd && result.selector.canCopy"
-            size="small"
-            title="复制规则"
-            @click.stop="emit('generateRules', result)"
-          >
-            <template #icon><GkSvg name="copy" /></template>
-          </NButton>
-          <NButton
-            v-if="result.gkd && result.selector.canCopy"
-            size="small"
-            title="编排规则"
-            @click.stop="emit('composeRules', result)"
-          >
-            <template #icon><GkSvg name="test" /></template>
-          </NButton>
-          <NButton
-            v-if="hasZipId"
-            size="small"
-            :title="result.gkd ? `复制查询链接` : `复制搜索链接`"
-            @click.stop="emit('share', result)"
-          >
-            <template #icon><GkSvg name="share" /></template>
-          </NButton>
-          <NButton
-            size="small"
-            title="删除记录"
-            @click.stop="emit('delete', index)"
-          >
-            <template #icon><GkSvg name="delete" /></template>
-          </NButton>
-        </NButtonGroup>
+              <template v-else>{{ result.selector }}</template>
+            </span>
+            <span class="result-count">{{ result.nodes.length }} 个节点</span>
+          </button>
+          <div flex flex-wrap items-center justify-between gap-8px @click.stop>
+            <NPopover
+              v-if="result.gkd && result.fastQueryEvidence"
+              trigger="hover"
+            >
+              <template #trigger>
+                <NTag
+                  size="small"
+                  :type="
+                    result.fastQueryEvidence.status == 'supported'
+                      ? 'success'
+                      : result.fastQueryEvidence.status == 'unsupported'
+                        ? 'default'
+                        : 'warning'
+                  "
+                >
+                  {{ result.fastQueryEvidence.label }}
+                </NTag>
+              </template>
+              {{ result.fastQueryEvidence.reason }}
+            </NPopover>
+            <NButtonGroup class="ml-auto shrink-0">
+              <NButton
+                v-if="result.gkd"
+                size="small"
+                :disabled="isSelectorSaved(result)"
+                :title="isSelectorSaved(result) ? '已收藏' : '收藏选择器'"
+                @click.stop="emit('saveSelector', result)"
+              >
+                <template #icon>
+                  <GkSvg
+                    :name="
+                      isSelectorSaved(result) ? 'favorite' : 'favorite-outline'
+                    "
+                    :class="
+                      isSelectorSaved(result)
+                        ? 'text-[#f0a020]'
+                        : 'text-[var(--app-muted)]'
+                    "
+                  />
+                </template>
+              </NButton>
+              <NButton
+                v-if="result.gkd && result.selector.canCopy"
+                size="small"
+                title="复制规则"
+                @click.stop="emit('generateRules', result)"
+              >
+                <template #icon><GkSvg name="copy" /></template>
+              </NButton>
+              <NButton
+                v-if="result.gkd && result.selector.canCopy"
+                size="small"
+                title="编排规则"
+                @click.stop="emit('composeRules', result)"
+              >
+                <template #icon><GkSvg name="test" /></template>
+              </NButton>
+              <NButton
+                v-if="hasZipId"
+                size="small"
+                :title="result.gkd ? `复制查询链接` : `复制搜索链接`"
+                @click.stop="emit('share', result)"
+              >
+                <template #icon><GkSvg name="share" /></template>
+              </NButton>
+              <NButton
+                size="small"
+                title="删除记录"
+                @click.stop="emit('delete', index)"
+              >
+                <template #icon><GkSvg name="delete" /></template>
+              </NButton>
+            </NButtonGroup>
+          </div>
+        </div>
       </template>
 
       <NScrollbar xScrollable style="max-height: 400px">
         <div flex gap-8px flex-wrap>
           <template
-            v-if="!result.gkd || result.selector.connectKeys.length === 0"
+            v-if="
+              !result.gkd ||
+              !result.results.some((match) =>
+                match.units.some((unit) => unit.steps.length > 0),
+              )
+            "
           >
             <NButton
               v-for="resultNode in result.nodes"
@@ -204,3 +219,44 @@ const isSelectorSaved = (result: SelectorSearchResult) => {
     </NCollapseItem>
   </NCollapse>
 </template>
+
+<style scoped>
+.search-result-list :deep(.n-collapse-item__header-main) {
+  align-items: flex-start;
+  min-width: 0;
+}
+.search-result-list :deep(.n-collapse-item-arrow) {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.search-result-list :deep(.n-collapse-item__content-inner) {
+  padding-top: 12px;
+}
+.result-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.result-toggle:focus-visible {
+  outline: 2px solid #18a058;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.result-count {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--app-muted);
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+</style>

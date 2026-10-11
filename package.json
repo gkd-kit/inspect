@@ -72,7 +72,6 @@
     "p-limit": "catalog:",
     "pkg-exports": "catalog:",
     "prettier": "catalog:",
-    "regex-wasm": "catalog:",
     "retrace-wasm": "catalog:",
     "sass": "catalog:",
     "simple-git": "catalog:",

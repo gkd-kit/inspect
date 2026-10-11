@@ -1,5 +1,5 @@
 import type { RawNode } from '@/entities/snapshot/types';
-import type { QueryResult } from '@gkd-kit/selector';
+import type { SelectorMatch } from '@gkd-kit/selector';
 import type { ResolvedSelector } from '@/entities/selector/parser';
 
 export interface FastQueryEvidence {
@@ -13,7 +13,7 @@ export interface SelectorSearchResult {
   key: number;
   selector: ResolvedSelector;
   nodes: RawNode[];
-  results: QueryResult<RawNode>[];
+  results: SelectorMatch<RawNode>[];
   fastQueryEvidence?: FastQueryEvidence;
 }
 
