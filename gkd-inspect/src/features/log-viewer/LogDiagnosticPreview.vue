@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NAlert, NButton, NButtonGroup, NDataTable, NEmpty } from 'naive-ui';
+import { computed, shallowRef } from 'vue';
+
 import {
   getDiagnosticRows,
   getPermissionRows,
@@ -31,9 +34,9 @@ const columns = [
 </script>
 
 <template>
-  <div class="h-full min-h-0 flex flex-col gap-12px">
-    <div class="flex flex-none items-center gap-12px">
-      <span class="font-600">{{ titles[kind] }}</span>
+  <div class="h-full min-h-0 flex flex-col gap-[12px]">
+    <div class="flex flex-none items-center gap-[12px]">
+      <span class="font-semibold">{{ titles[kind] }}</span>
       <NButtonGroup size="small">
         <NButton
           :type="!rawView ? 'primary' : 'default'"
@@ -54,18 +57,20 @@ const columns = [
       class="min-h-0 flex-1"
     />
     <div v-else class="min-h-0 flex-1 overflow-auto">
-      <NAlert v-if="kind == 'permission'" type="info" class="mb-12px"
+      <NAlert v-if="kind == 'permission'" type="info" class="mb-[12px]"
         >这是日志包中保存的检查结果，并非实时权限状态。</NAlert
       >
-      <table class="mb-16px w-full border-collapse text-13px">
+      <table class="mb-[16px] w-full border-collapse text-[13px]">
         <tbody>
           <tr
             v-for="row in rows"
             :key="row.label"
             class="border-b border-[#e5e7eb]"
           >
-            <th class="w-180px p-8px text-left font-500">{{ row.label }}</th>
-            <td class="p-8px [overflow-wrap:anywhere]">{{ row.value }}</td>
+            <th class="w-[180px] p-[8px] text-left font-medium">
+              {{ row.label }}
+            </th>
+            <td class="p-[8px] [overflow-wrap:anywhere]">{{ row.value }}</td>
           </tr>
         </tbody>
       </table>

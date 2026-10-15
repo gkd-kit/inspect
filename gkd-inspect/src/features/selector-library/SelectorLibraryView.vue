@@ -1,4 +1,20 @@
 <script setup lang="ts">
+import {
+  NButton,
+  NCard,
+  NEmpty,
+  NForm,
+  NFormItem,
+  NInput,
+  NPopconfirm,
+  NScrollbar,
+  NSelect,
+  NTag,
+} from 'naive-ui';
+import { RouterLink } from 'vue-router';
+import { computed, shallowReactive, shallowRef, useTemplateRef } from 'vue';
+import { useEventListener } from '@vueuse/core';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import SelectorSyntaxInput from '@/entities/selector/ui/SelectorSyntaxInput.vue';
 import SelectorText from '@/entities/selector/ui/SelectorText.vue';
@@ -202,24 +218,24 @@ const togglePinned = async (preset: SelectorPreset) => {
 <template>
   <div
     ref="libraryPage"
-    class="library-page flex flex-col gap-12px overflow-hidden p-12px"
+    class="library-page flex flex-col gap-[12px] overflow-hidden p-[12px]"
   >
-    <div class="flex flex-wrap items-center gap-12px">
+    <div class="flex flex-wrap items-center gap-[12px]">
       <PageBackButton />
-      <GkSvg name="selector-library" class="text-24px" />
-      <span class="text-20px font-600">选择器库</span>
+      <GkSvg name="selector-library" class="text-[24px]" />
+      <span class="text-[20px] font-semibold">选择器库</span>
       <NTag size="small" :bordered="false">
         {{ selectorLibrary.items.length }} 条
       </NTag>
-      <div flex-1 />
+      <div class="flex-1" />
       <SelectorLibraryTransfer />
     </div>
 
-    <div class="library-body flex min-h-0 flex-1 gap-12px">
+    <div class="library-body flex min-h-0 flex-1 gap-[12px]">
       <NCard
         :title="editorTitle"
         size="small"
-        class="library-editor w-360px shrink-0 overflow-auto"
+        class="library-editor w-[360px] shrink-0 overflow-auto"
       >
         <NForm labelPlacement="top">
           <NFormItem label="名称">
@@ -276,7 +292,7 @@ const togglePinned = async (preset: SelectorPreset) => {
             />
           </NFormItem>
         </NForm>
-        <div class="flex justify-end gap-8px">
+        <div class="flex justify-end gap-[8px]">
           <NButton v-if="form.id" @click="resetEditor">取消编辑</NButton>
           <NButton
             type="primary"
@@ -294,7 +310,7 @@ const togglePinned = async (preset: SelectorPreset) => {
         class="library-results min-h-0 min-w-0 flex-1 overflow-hidden"
         contentClass="flex min-h-0 flex-col"
       >
-        <div class="mb-12px flex shrink-0 items-center gap-8px">
+        <div class="mb-[12px] flex shrink-0 items-center gap-[8px]">
           <NInput
             :value="query"
             clearable
@@ -304,20 +320,23 @@ const togglePinned = async (preset: SelectorPreset) => {
           <NSelect
             :value="scopeFilter"
             :options="scopeFilterOptions"
-            class="w-140px shrink-0"
+            class="w-[140px] shrink-0"
             @update:value="updateScopeFilter"
           />
         </div>
 
         <NScrollbar class="library-list min-h-0 flex-1">
-          <div v-if="visibleItems.length" class="flex flex-col gap-10px pr-8px">
+          <div
+            v-if="visibleItems.length"
+            class="flex flex-col gap-[10px] pr-[8px]"
+          >
             <div
               v-for="preset in visibleItems"
               :key="preset.id"
-              class="app-panel rounded-6px border p-12px"
+              class="app-panel rounded-[6px] border p-[12px]"
             >
-              <div class="flex flex-wrap items-center gap-8px">
-                <span class="text-16px font-600">{{ preset.name }}</span>
+              <div class="flex flex-wrap items-center gap-[8px]">
+                <span class="text-[16px] font-semibold">{{ preset.name }}</span>
                 <NTag v-if="sourceOf(preset.id)" size="small"
                   >来源：{{ sourceOf(preset.id)?.name }}</NTag
                 >
@@ -327,19 +346,22 @@ const togglePinned = async (preset: SelectorPreset) => {
                 <NTag v-for="tag in preset.tags" :key="tag" size="small">
                   {{ tag }}
                 </NTag>
-                <span class="ml-auto text-12px" style="color: var(--app-muted)">
+                <span
+                  class="ml-auto text-[12px]"
+                  style="color: var(--app-muted)"
+                >
                   使用 {{ preset.useCount }} 次
                 </span>
               </div>
               <div
                 v-if="preset.description"
-                class="mt-6px text-13px"
+                class="mt-[6px] text-[13px]"
                 style="color: var(--app-muted)"
               >
                 {{ preset.description }}
               </div>
               <div
-                class="app-subtle relative mt-8px break-all rounded-4px p-8px pr-32px gkd_code text-13px"
+                class="app-subtle relative mt-[8px] break-all rounded-[4px] p-[8px] pr-[32px] gkd_code text-[13px]"
               >
                 <span :data-selector-code="preset.id">
                   <SelectorText :source="preset.selector" />
@@ -349,7 +371,7 @@ const togglePinned = async (preset: SelectorPreset) => {
                   quaternary
                   circle
                   size="tiny"
-                  class="absolute right-6px top-8px"
+                  class="absolute right-[6px] top-[8px]"
                   :theme-overrides="{
                     heightTiny: '18px',
                     iconSizeTiny: '14px',
@@ -363,7 +385,7 @@ const togglePinned = async (preset: SelectorPreset) => {
                   </template>
                 </NButton>
               </div>
-              <div class="mt-10px flex flex-wrap justify-end gap-8px">
+              <div class="mt-[10px] flex flex-wrap justify-end gap-[8px]">
                 <NButton
                   size="small"
                   :type="preset.pinned ? 'primary' : 'default'"

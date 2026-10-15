@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getSubscriptionNameEntry } from './subscription_names.ts';
 
 test(`订阅 JSON 转换为订阅 ID 与名称`, () => {

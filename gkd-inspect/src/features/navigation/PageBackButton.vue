@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NButton, NTooltip } from 'naive-ui';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { useRouteBack } from '@/features/navigation/useRouteBack';
 

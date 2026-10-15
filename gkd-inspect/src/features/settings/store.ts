@@ -1,3 +1,4 @@
+import { readonly, toRaw } from 'vue';
 import type { SettingsStore } from '@/features/settings/types';
 import { loadLocalStorage } from '@/shared/storage/browserStorage';
 

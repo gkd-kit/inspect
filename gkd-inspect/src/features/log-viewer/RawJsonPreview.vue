@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import { formatJsonForPreview } from './json_preview';
 import TextViewer from './text_viewer/TextViewer.vue';
 

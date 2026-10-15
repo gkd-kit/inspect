@@ -1,4 +1,16 @@
 <script setup lang="ts">
+import {
+  NButton,
+  NButtonGroup,
+  NCollapse,
+  NCollapseItem,
+  NIcon,
+  NPopover,
+  NScrollbar,
+  NTag,
+} from 'naive-ui';
+import { computed } from 'vue';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import SelectorText from '@/entities/selector/ui/SelectorText.vue';
 import {
@@ -71,7 +83,10 @@ const toggleResult = (key: number) => {
       :name="result.key"
     >
       <template #header>
-        <div flex flex-col gap-8px min-w-0 w-full cursor-default @click.stop>
+        <div
+          class="flex flex-col gap-[8px] min-w-0 w-full cursor-default"
+          @click.stop
+        >
           <button
             type="button"
             class="result-toggle"
@@ -80,11 +95,7 @@ const toggleResult = (key: number) => {
             @click="toggleResult(result.key)"
           >
             <span
-              break-all
-              px-4px
-              leading-20px
-              class="app-subtle"
-              gkd_code
+              class="app-subtle break-all px-[4px] leading-[20px] gkd_code"
               :title="result.gkd ? `选择器` : `搜索字符`"
             >
               <SelectorText
@@ -96,7 +107,10 @@ const toggleResult = (key: number) => {
             </span>
             <span class="result-count">{{ result.nodes.length }} 个节点</span>
           </button>
-          <div flex flex-wrap items-center justify-between gap-8px @click.stop>
+          <div
+            class="flex flex-wrap items-center justify-between gap-[8px]"
+            @click.stop
+          >
             <NPopover
               v-if="result.gkd && result.fastQueryEvidence"
               trigger="hover"
@@ -175,7 +189,7 @@ const toggleResult = (key: number) => {
       </template>
 
       <NScrollbar xScrollable style="max-height: 400px">
-        <div flex gap-8px flex-wrap>
+        <div class="flex gap-[8px] flex-wrap">
           <template
             v-if="
               !result.gkd ||
@@ -214,7 +228,7 @@ const toggleResult = (key: number) => {
             </NButtonGroup>
           </template>
         </div>
-        <div un="h-10px" />
+        <div class="h-[10px]" />
       </NScrollbar>
     </NCollapseItem>
   </NCollapse>

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { readLimitedResponse } from './response.ts';
 
 test(`远程响应在流式读取时执行大小限制`, async () => {

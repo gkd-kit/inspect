@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NButton } from 'naive-ui';
+
 defineProps<{
   available?: boolean;
   loading?: boolean;

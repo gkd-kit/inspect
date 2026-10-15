@@ -1,3 +1,4 @@
+import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue';
 import type { ThemeMode } from '@/features/settings/types';
 import { settingsActions, settingsStore } from './store';
 import { createSharedComposable } from '@vueuse/core';

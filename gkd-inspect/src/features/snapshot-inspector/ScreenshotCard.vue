@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { NButton, NModal, NPopconfirm } from 'naive-ui';
+import { RouterLink, useRouter } from 'vue-router';
+import { computed, shallowRef } from 'vue';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { message } from '@/shared/services/feedback';
 import { DELETE_TIMEOUT, withTimeout } from '@/shared/lib/async';
@@ -155,53 +159,37 @@ const createRedactedCopy = async (selection: RedactionSelection) => {
 <template>
   <div
     v-if="snapshot && screenshotUrl"
-    flex
-    flex-col
-    relative
-    h-full
-    p-2px
-    overflow-hidden
+    class="flex flex-col relative h-full p-[2px] overflow-hidden"
   >
     <img
       ref="imgRef"
       :src="screenshotUrl"
-      cursor-crosshair
-      object-contain
-      h-full
-      class="max-w-[calc(var(--gkd-w)*0.35)]"
+      class="max-w-[calc(var(--gkd-w)*0.35)] cursor-crosshair object-contain h-full"
       @click="clickImg"
       @mouseover="imgHover = true"
       @mouseleave="imgHover = false"
       @mousemove="imgMove"
       @load="imgLoadTime = true"
     />
-    <div pointer-events-none absolute left-2px top-2px size="[calc(100%-4px)]">
+    <div
+      class="pointer-events-none absolute left-[2px] top-[2px] size-[calc(100%-4px)]"
+    >
       <div
+        class="absolute transition-all duration-300 border-[1px] border-blue-400 border-solid"
         :style="positionStyle"
-        absolute
-        transition-all-300
-        b-1px
-        b-blue
-        b-solid
       >
-        <div absolute left-0 top-0 bottom-0 right-0 b-solid b-1px b-red />
+        <div
+          class="absolute left-0 top-0 bottom-0 right-0 border-solid border-[1px] border-red-400"
+        />
       </div>
     </div>
     <div
-      absolute
-      z-4
-      pointer-events-none
-      left-4px
-      top-4px
-      text-12px
-      leading="100%"
-      flex
-      gap-4px
+      class="absolute z-4 pointer-events-none left-[4px] top-[4px] text-[12px] leading-[100%] flex gap-[4px]"
     >
-      <div py-1px px-2px bg="#ffffff90" title="尺寸">
+      <div class="py-[1px] px-[2px] bg-[#ffffff90]" title="尺寸">
         {{ `${snapshot.screenWidth}x${snapshot.screenHeight}` }}
       </div>
-      <div py-1px px-2px bg="#ffffff90" title="创建时间">
+      <div class="py-[1px] px-[2px] bg-[#ffffff90]" title="创建时间">
         {{ dayjs(snapshot.id).format('YYYY-MM-DD HH:mm:ss') }}
       </div>
     </div>
@@ -218,15 +206,15 @@ const createRedactedCopy = async (selection: RedactionSelection) => {
       :show="createdSnapshotId != null"
       preset="card"
       title="创建完成"
-      class="w-520px max-w-[calc(100vw-48px)]"
+      class="w-[520px] max-w-[calc(100vw-48px)]"
       :closable="!deletingSourceSnapshot"
       :closeOnEsc="!deletingSourceSnapshot"
       :maskClosable="!deletingSourceSnapshot"
       @update:show="updateCreatedSnapshotResult"
     >
-      <div class="flex flex-col gap-12px">
+      <div class="flex flex-col gap-[12px]">
         <div>脱敏副本已创建，原始快照未修改。</div>
-        <div class="text-13px text-[#64748b]">新快照链接</div>
+        <div class="text-[13px] text-[#64748b]">新快照链接</div>
         <RouterLink
           v-if="createdSnapshotPath"
           :to="createdSnapshotPath"
@@ -243,7 +231,7 @@ const createRedactedCopy = async (selection: RedactionSelection) => {
         </RouterLink>
       </div>
       <template #footer>
-        <div class="flex justify-end gap-8px">
+        <div class="flex justify-end gap-[8px]">
           <NPopconfirm
             :positiveButtonProps="{
               type: 'error',
@@ -252,10 +240,10 @@ const createRedactedCopy = async (selection: RedactionSelection) => {
             @positiveClick="deleteSourceSnapshotAndOpen"
           >
             <template #icon>
-              <GkSvg name="warn" color="#d03050" />
+              <GkSvg class="text-[#d03050]" name="warn" />
             </template>
             <div>删除当前原快照并打开脱敏副本？</div>
-            <div class="mt-4px text-12px text-[#64748b]">
+            <div class="mt-[4px] text-[12px] text-[#64748b]">
               仅删除本地快照，此操作不可恢复。
             </div>
             <template #trigger>

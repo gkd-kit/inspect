@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getBuildAsset } from './build_asset_api.ts';
 
 test(`根据 buildKey 查询构建附件 ID`, async () => {

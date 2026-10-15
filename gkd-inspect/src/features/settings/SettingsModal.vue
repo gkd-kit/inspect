@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NModal, NSelect, NSwitch } from 'naive-ui';
+
 import { settingsActions, settingsStore } from './store';
 import { useTheme } from '@/features/settings/useTheme';
 
@@ -31,17 +33,17 @@ const closeSettings = () => emit('update:show', false);
     @esc="closeSettings"
     @update:show="emit('update:show', $event)"
   >
-    <div flex items-center justify-between gap-24px>
+    <div class="flex items-center justify-between gap-[24px]">
       <span>外观主题</span>
       <NSelect
         :value="themeMode"
         :options="themeOptions"
-        class="w-140px shrink-0"
+        class="w-[140px] shrink-0"
         @update:value="setThemeMode"
       />
     </div>
     <div class="app-divider" />
-    <div flex items-center justify-between gap-24px>
+    <div class="flex items-center justify-between gap-[24px]">
       <span>关闭生成分享链接弹窗提醒</span>
       <NSwitch
         :value="settingsStore.ignoreUploadWarn"
@@ -51,7 +53,7 @@ const closeSettings = () => emit('update:show', false);
       />
     </div>
     <div class="app-divider" />
-    <div flex items-center justify-between gap-24px>
+    <div class="flex items-center justify-between gap-[24px]">
       <span>打开快照页面自动生成分享链接（请确保不含隐私）</span>
       <NSwitch
         :value="settingsStore.autoUploadImport"

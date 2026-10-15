@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NConfigProvider } from 'naive-ui';
+import { useEventListener } from '@vueuse/core';
+
 import { dateZhCN, zhCN, type GlobalThemeOverrides } from 'naive-ui';
 import { RouterView } from 'vue-router';
 import { debounce } from 'lodash-es';

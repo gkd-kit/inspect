@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import JSZip from 'jszip';
 import { assertSafeZipStructure } from './zip_limits.ts';
 

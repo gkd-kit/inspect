@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import {
   Selector,
   type SelectorToken,
@@ -31,7 +33,7 @@ const segments = computed(() =>
 );
 </script>
 <template>
-  <span class="SelectorText" whitespace-pre-wrap
+  <span class="SelectorText whitespace-pre-wrap"
     ><span
       v-for="segment in segments"
       :key="segment.start"

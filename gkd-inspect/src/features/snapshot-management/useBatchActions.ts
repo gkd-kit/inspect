@@ -1,3 +1,4 @@
+import { type Ref } from 'vue';
 import type { Snapshot } from '@/entities/snapshot/types';
 import {
   showTextDLg,

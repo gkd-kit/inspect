@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getWorkersProxyUrl } from './workers.ts';
 
 test(`代理地址只接受 Worker 白名单内的 GitHub ZIP`, () => {

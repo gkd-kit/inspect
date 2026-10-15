@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import type { Directive } from 'vue';
 
 export const vRect: Directive<HTMLElement, (rect: DOMRect) => void> = {

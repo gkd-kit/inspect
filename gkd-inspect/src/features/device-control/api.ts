@@ -1,3 +1,4 @@
+import { shallowRef } from 'vue';
 import type { Snapshot } from '@/entities/snapshot/types';
 import type { RpcSuccess, ServerInfo } from '@/features/device-control/types';
 import { readRpcResponse, RpcException } from './rpc';

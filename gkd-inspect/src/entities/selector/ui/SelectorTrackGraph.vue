@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, onUnmounted, shallowRef, watch } from 'vue';
+
 import type { RawNode } from '@/entities/snapshot/types';
 
 import { AntQuadratic } from '@/entities/selector/g6';

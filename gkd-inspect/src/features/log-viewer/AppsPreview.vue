@@ -1,4 +1,7 @@
 <script lang="tsx" setup>
+import { NDataTable, NEmpty, NSelect, NTag } from 'naive-ui';
+import { computed, reactive, shallowRef } from 'vue';
+
 import type { DataTableColumns } from 'naive-ui';
 import type { AppsPreviewData, DeviceApp } from './apps_preview';
 import RawJsonPreview from './RawJsonPreview.vue';
@@ -89,14 +92,14 @@ const columns: DataTableColumns<DeviceApp> = [
     <div
       v-if="view == 'users' && selectedUser"
       name="user-apps"
-      class="h-full min-h-0 min-w-0 flex flex-col gap-10px"
+      class="h-full min-h-0 min-w-0 flex flex-col gap-[10px]"
     >
-      <div name="user-apps-header" class="min-w-0 flex items-center gap-16px">
+      <div name="user-apps-header" class="min-w-0 flex items-center gap-[16px]">
         <NSelect
           v-model:value="selectedUserId"
           :options="userOptions"
           aria-label="设备用户"
-          class="min-w-280px w-40% max-w-420px"
+          class="min-w-[280px] w-[40%] max-w-[420px]"
         />
         <TextSearchInput
           v-model="query"
@@ -104,7 +107,7 @@ const columns: DataTableColumns<DeviceApp> = [
           v-model:whole-word="searchOptions.wholeWord"
           v-model:use-regex="searchOptions.useRegex"
           placeholder="搜索应用名称、包名或版本"
-          class="ml-auto min-w-320px w-50% max-w-460px"
+          class="ml-auto min-w-[320px] w-[50%] max-w-[460px]"
         />
       </div>
 

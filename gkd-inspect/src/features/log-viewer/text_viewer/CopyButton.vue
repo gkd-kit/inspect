@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NButton } from 'naive-ui';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { useTextViewerState } from './context';
 
@@ -11,7 +13,7 @@ const { copyable, copyText } = useTextViewerState();
     quaternary
     circle
     size="small"
-    class="absolute right-16px top-8px z-3 border border-[#e2e8f0] bg-white/92 shadow-[0_1px_3px_rgb(15_23_42_/_12%)] backdrop-blur-4px"
+    class="absolute right-[16px] top-[8px] z-3 border border-[#e2e8f0] bg-white/92 shadow-[0_1px_3px_rgb(15_23_42_/_12%)] backdrop-blur-[4px]"
     title="复制当前文件内容"
     aria-label="复制当前文件内容"
     @click="copyText"

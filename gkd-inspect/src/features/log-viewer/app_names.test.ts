@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getAppNameMapFromValue } from './app_names.ts';
 
 test(`apps.json 转换为应用 ID 与名称映射`, () => {

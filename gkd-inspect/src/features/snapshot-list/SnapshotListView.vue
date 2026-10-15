@@ -1,4 +1,26 @@
 <script lang="tsx" setup>
+import {
+  NButton,
+  NButtonGroup,
+  NDataTable,
+  NInput,
+  NInputGroup,
+  NModal,
+  NPopover,
+  NSpace,
+  NTooltip,
+} from 'naive-ui';
+import { RouterLink } from 'vue-router';
+import {
+  computed,
+  onMounted,
+  reactive,
+  ref,
+  shallowReactive,
+  shallowRef,
+} from 'vue';
+import { useEventListener } from '@vueuse/core';
+
 import type { Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
@@ -206,8 +228,8 @@ const setViewMode = (mode: 'table' | 'group') => {
 const inputImportRef = shallowRef();
 </script>
 <template>
-  <div flex flex-col overflow-hidden p-10px gap-10px page-size>
-    <div flex>
+  <div class="flex flex-col overflow-hidden p-[10px] gap-[10px] page-size">
+    <div class="flex">
       <NSpace>
         <NButtonGroup>
           <NButton
@@ -234,7 +256,7 @@ const inputImportRef = shallowRef();
             v-model:value="filterOption.query"
             placeholder="请输入应用名称/应用ID/界面ID"
             clearable
-            class="min-w-320px"
+            class="min-w-[320px]"
             @keyup.enter="filterOption.updateQuery"
             @change="filterOption.updateQuery"
           />
@@ -253,8 +275,8 @@ const inputImportRef = shallowRef();
           :batchShareZipUrl="batchShareZipUrl"
         />
       </NSpace>
-      <div flex-1 />
-      <div flex gap-24px items-center pr-8px class="[--svg-h:24px]">
+      <div class="flex-1" />
+      <div class="[--svg-h:24px] flex gap-[24px] items-center pr-[8px]">
         <NTooltip>
           <template #trigger>
             <NButton text @click="setSettingsVisible(true)">
@@ -265,7 +287,7 @@ const inputImportRef = shallowRef();
         </NTooltip>
         <NTooltip>
           <template #trigger>
-            <RouterLink flex to="/selector/library">
+            <RouterLink class="flex" to="/selector/library">
               <NButton text aria-label="选择器库">
                 <GkSvg name="selector-library" />
               </NButton>
@@ -275,7 +297,7 @@ const inputImportRef = shallowRef();
         </NTooltip>
         <NTooltip>
           <template #trigger>
-            <RouterLink flex to="/selector">
+            <RouterLink class="flex" to="/selector">
               <NButton text>
                 <GkSvg name="terminal" />
               </NButton>
@@ -314,14 +336,14 @@ const inputImportRef = shallowRef();
                 支持任意位置粘贴(Ctrl+V)文本触发导入
               </div>
             </NTooltip>
-            <RouterLink flex to="/log">
+            <RouterLink class="flex" to="/log">
               <NButton class="w-full">查看日志包</NButton>
             </RouterLink>
           </NSpace>
         </NPopover>
         <NTooltip>
           <template #trigger>
-            <RouterLink flex to="/device">
+            <RouterLink class="flex" to="/device">
               <NButton text>
                 <GkSvg name="device" />
               </NButton>
@@ -332,7 +354,7 @@ const inputImportRef = shallowRef();
         <NTooltip>
           <template #trigger>
             <a
-              flex
+              class="flex"
               href="https://github.com/orgs/gkd-kit/discussions"
               target="_blank"
               rel="noopener noreferrer"
@@ -347,7 +369,7 @@ const inputImportRef = shallowRef();
         <NTooltip>
           <template #trigger>
             <a
-              flex
+              class="flex"
               href="https://github.com/gkd-kit/inspect"
               target="_blank"
               rel="noopener noreferrer"

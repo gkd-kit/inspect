@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NVirtualList } from 'naive-ui';
+
 import TextLine from './TextLine.vue';
 import { useTextViewerState } from './context';
 
@@ -29,7 +31,7 @@ const {
       :item-size="lineHeight"
       item-resizable
       keyField="key"
-      class="h-full min-h-0 min-w-0 rounded-4px border border-[#e5e7eb] bg-white font-mono text-13px leading-20px"
+      class="h-full min-h-0 min-w-0 rounded-[4px] border border-[#e5e7eb] bg-white font-mono text-[13px] leading-[20px]"
     >
       <template #default="{ item }">
         <TextLine :line="item" />
@@ -38,7 +40,7 @@ const {
     <div
       v-else
       ref="scrollContainer"
-      class="h-full min-h-0 min-w-0 overflow-auto rounded-4px border border-[#e5e7eb] bg-white font-mono text-13px leading-20px"
+      class="h-full min-h-0 min-w-0 overflow-auto rounded-[4px] border border-[#e5e7eb] bg-white font-mono text-[13px] leading-[20px]"
       @scroll="handleScroll"
     >
       <div

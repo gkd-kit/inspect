@@ -1,4 +1,7 @@
 <script lang="ts">
+import { NButton, NScrollbar } from 'naive-ui';
+import { defineAsyncComponent } from 'vue';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 const SelectorTrackGraphLoader = () => import('./SelectorTrackGraph.vue');
 const SelectorTrackGraph = defineAsyncComponent({
@@ -8,6 +11,7 @@ const SelectorTrackGraph = defineAsyncComponent({
 setTimeout(SelectorTrackGraphLoader, 3000);
 </script>
 <script setup lang="ts">
+import { computed, shallowRef } from 'vue';
 import type { RawNode } from '@/entities/snapshot/types';
 
 import SelectorText from './SelectorText.vue';
@@ -62,42 +66,39 @@ const highlightedRanges = computed(() =>
 </script>
 <template>
   <div
-    class="SelectorTrackCard"
-    flex
-    flex-col
-    h-full
-    p-12px
-    box-border
-    gap-8px
-    overflow-hidden
+    class="SelectorTrackCard flex flex-col h-full p-[12px] box-border gap-[8px] overflow-hidden"
   >
-    <div flex justify-between items-center class="[--svg-h:24px]">
-      <div flex items-center gap-4px>
+    <div class="[--svg-h:24px] flex justify-between items-center">
+      <div class="flex items-center gap-[4px]">
         <GkSvg name="path" />
-        <div text="20px/28px" font-bold>选择器路径视图</div>
+        <div class="text-[20px]/[28px] font-bold">选择器路径视图</div>
       </div>
       <NButton text @click="onClose">
         <GkSvg name="close" />
       </NButton>
     </div>
-    <div flex-1 flex gap-12px overflow-hidden>
-      <div self-stretch flex="[2]">
+    <div class="flex-1 flex gap-[12px] overflow-hidden">
+      <div class="self-stretch flex-[2]">
         <SelectorTrackGraph
           v-if="nodes.length && queryResult"
           :nodes="nodes"
           :queryResult="queryResult"
           :showUnitResults="showUnitResults"
           :filterUnitResults="filterUnitResults"
-          class="h-[calc(100%-2px)] b-1px b-solid"
+          class="h-[calc(100%-2px)] border-[1px] border-solid"
         />
-        <div relative pointer-events-none z-1>
-          <div absolute left-8px bottom-8px text="14px/14px #6C6E71">
+        <div class="relative pointer-events-none z-1">
+          <div
+            class="absolute left-[8px] bottom-[8px] text-[14px]/[14px] text-[#6C6E71]"
+          >
             *为简化视图已隐藏无关节点
           </div>
         </div>
       </div>
-      <NScrollbar class="self-stretch flex-1 text-20px leading-28px gkd_code">
-        <div class="app-subtle" mb-24px break-all px-4px py-2px>
+      <NScrollbar
+        class="self-stretch flex-1 text-[20px] leading-[28px] gkd_code"
+      >
+        <div class="app-subtle mb-[24px] break-all px-[4px] py-[2px]">
           <SelectorText
             :source="selector.source"
             :tokens="selector.tokens"
@@ -105,17 +106,12 @@ const highlightedRanges = computed(() =>
             :highlightedRanges="highlightedRanges"
           />
         </div>
-        <div flex flex-col gap-12px>
-          <div v-if="singleUnitResults.length" flex gap-8px>
+        <div class="flex flex-col gap-[12px]">
+          <div v-if="singleUnitResults.length" class="flex gap-[8px]">
             <div
               v-for="(unitResult, i) in singleUnitResults"
               :key="i"
-              break-all
-              px-4px
-              py-2px
-              b-1px
-              b-solid
-              b="#ccc"
+              class="break-all px-[4px] py-[2px] border-[1px] border-solid border-[#ccc]"
             >
               <SelectorText
                 :source="selector.source"
@@ -128,13 +124,7 @@ const highlightedRanges = computed(() =>
           <div
             v-for="(unitResult, i) in showUnitResults"
             :key="i"
-            cursor-pointer
-            break-all
-            px-4px
-            py-2px
-            b-1px
-            b-solid
-            transition-colors
+            class="cursor-pointer break-all px-[4px] py-[2px] border-[1px] border-solid transition-colors"
             :style="{
               borderColor: colorList[i % colorList.length],
               backgroundColor: filterUnitResults.includes(unitResult)
@@ -144,14 +134,12 @@ const highlightedRanges = computed(() =>
             @click="switchUnitResult(unitResult)"
           >
             <div
-              inline-block
-              align-middle
-              size-20px
+              class="inline-block align-middle size-[20px]"
               :style="{
                 backgroundColor: colorList[i % colorList.length],
               }"
             />
-            <span pl-4px />
+            <span class="pl-[4px]" />
             <SelectorText
               :source="selector.source"
               :tokens="selector.tokens"

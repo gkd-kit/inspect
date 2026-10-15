@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NAlert, NButton, NButtonGroup, NEmpty, NSpin } from 'naive-ui';
+
 import type { RawSubscription } from '@gkd-kit/api';
 import AppsPreview from './AppsPreview.vue';
 import type { AppsPreviewData } from './apps_preview';
@@ -73,7 +75,7 @@ const emit = defineEmits<{
 <template>
   <div
     name="log-preview-panel"
-    class="box-border flex min-h-0 min-w-0 flex-1 flex-col rounded-6px border border-[#e2e8f0] bg-white"
+    class="box-border flex min-h-0 min-w-0 flex-1 flex-col rounded-[6px] border border-[#e2e8f0] bg-white"
   >
     <div
       v-if="
@@ -82,24 +84,24 @@ const emit = defineEmits<{
         previewKind != 'invalid-json'
       "
       name="preview-header"
-      class="box-border min-h-52px flex items-center gap-10px border-b border-[#e5e7eb] px-12px py-8px [&>:first-child]:flex-1"
+      class="box-border min-h-[52px] flex items-center gap-[10px] border-b border-[#e5e7eb] px-[12px] py-[8px] [&>:first-child]:flex-1"
     >
-      <div min-w-0>
+      <div class="min-w-0">
         <div
           name="preview-path"
-          class="overflow-hidden text-ellipsis whitespace-nowrap font-600"
+          class="overflow-hidden text-ellipsis whitespace-nowrap font-semibold"
           :title="selectedEntry.path"
         >
           {{ selectedEntry.path }}
         </div>
-        <div name="preview-size" class="mt-3px text-12px text-[#64748b]">
+        <div name="preview-size" class="mt-[3px] text-[12px] text-[#64748b]">
           {{ formatBytes(selectedEntry.size) }}
         </div>
       </div>
       <div
         v-if="previewKind == 'apps' && appsData"
         name="apps-overview"
-        class="flex flex-none items-center gap-6px whitespace-nowrap text-13px"
+        class="flex flex-none items-center gap-[6px] whitespace-nowrap text-[13px]"
       >
         <NButtonGroup size="small">
           <NButton
@@ -117,16 +119,16 @@ const emit = defineEmits<{
             原始 JSON
           </NButton>
         </NButtonGroup>
-        <span class="mx-6px h-16px border-l border-[#e2e8f0]" />
+        <span class="mx-[6px] h-[16px] border-l border-[#e2e8f0]" />
         <span class="text-[#64748b]">应用安装记录</span>
-        <span class="font-600">{{ appsData.totalApps }}</span>
-        <span class="mx-4px text-[#cbd5e1]">·</span>
+        <span class="font-semibold">{{ appsData.totalApps }}</span>
+        <span class="mx-[4px] text-[#cbd5e1]">·</span>
         <span class="text-[#64748b]">设备用户</span>
-        <span class="font-600">{{ appsData.users.length }}</span>
+        <span class="font-semibold">{{ appsData.users.length }}</span>
       </div>
     </div>
 
-    <div name="preview-body" class="min-h-0 flex-1 p-12px">
+    <div name="preview-body" class="min-h-0 flex-1 p-[12px]">
       <NSpin v-if="previewLoading" show class="h-full w-full" />
       <NEmpty
         v-else-if="previewKind == 'none'"
@@ -135,7 +137,7 @@ const emit = defineEmits<{
       <div
         v-else-if="previewKind == 'text' || previewKind == 'invalid-json'"
         name="text-preview-wrapper"
-        class="h-full min-h-0 flex flex-col gap-8px"
+        class="h-full min-h-0 flex flex-col gap-[8px]"
       >
         <NAlert
           v-if="previewKind == 'invalid-json'"
@@ -157,16 +159,19 @@ const emit = defineEmits<{
             <div
               v-if="selectedEntry"
               name="text-preview-file-meta"
-              class="min-w-0 max-w-260px flex-[0_1_260px] text-left"
+              class="min-w-0 max-w-[260px] flex-[0_1_260px] text-left"
             >
               <div
                 name="preview-path"
-                class="overflow-hidden text-ellipsis whitespace-nowrap font-600"
+                class="overflow-hidden text-ellipsis whitespace-nowrap font-semibold"
                 :title="selectedEntry.path"
               >
                 {{ selectedEntry.path }}
               </div>
-              <div name="preview-size" class="mt-3px text-12px text-[#64748b]">
+              <div
+                name="preview-size"
+                class="mt-[3px] text-[12px] text-[#64748b]"
+              >
                 {{ formatBytes(selectedEntry.size) }}
               </div>
             </div>

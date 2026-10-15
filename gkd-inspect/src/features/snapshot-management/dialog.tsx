@@ -1,3 +1,5 @@
+import { NCheckbox, NInput } from 'naive-ui';
+import { defineComponent } from 'vue';
 import { dialog, message } from '@/shared/services/feedback';
 import { settingsActions, settingsStore } from '@/features/settings/store';
 
@@ -64,7 +66,7 @@ export const waitShareAgree = async () => {
           <div>
             <div>所有快照上传分享链接均为公开链接，任何人均可访问。</div>
             <div>请确保快照不包含隐私信息，请勿分享任何敏感信息。</div>
-            <NoticeCheckbox class="mt-10px" />
+            <NoticeCheckbox class="mt-[10px]" />
           </div>
         );
       },

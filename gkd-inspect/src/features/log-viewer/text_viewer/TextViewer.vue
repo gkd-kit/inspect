@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NCheckbox } from 'naive-ui';
+import { toRef } from 'vue';
+
 import type { SourceLinkContext } from '../source_links';
 import CopyButton from './CopyButton.vue';
 import SearchBar from './SearchBar.vue';
@@ -34,10 +37,13 @@ const { allowWrap: allowWrapRef, wrap, setWrap } = state;
 </script>
 
 <template>
-  <div name="text-viewer" class="min-h-0 min-w-0 flex flex-1 flex-col gap-8px">
+  <div
+    name="text-viewer"
+    class="min-h-0 min-w-0 flex flex-1 flex-col gap-[8px]"
+  >
     <div
       name="text-viewer-toolbar"
-      class="min-h-28px min-w-0 flex items-center gap-10px"
+      class="min-h-[28px] min-w-0 flex items-center gap-[10px]"
     >
       <slot name="toolbar-start" />
       <div name="text-viewer-toolbar-spacer" class="min-w-0 flex-1" />

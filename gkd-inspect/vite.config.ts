@@ -1,10 +1,10 @@
 import legacy from '@vitejs/plugin-legacy';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import unocss from 'unocss/vite';
+import tailwindcss from '@tailwindcss/vite';
 import data from 'unplugin-data/vite';
 import { defineConfig } from 'vite';
-import { _404Page, mirror, svgMinify, unAutoImport } from './plugins';
+import { _404Page, mirror, svgMinify } from './plugins';
 
 const chromeVersion = 119;
 const host = '127.0.0.1';
@@ -22,8 +22,7 @@ export default defineConfig(() => {
       svgMinify(),
       vue(),
       vueJsx(),
-      unocss({ inspector: false }),
-      unAutoImport(),
+      tailwindcss(),
       data(),
       legacy({
         renderLegacyChunks: false,

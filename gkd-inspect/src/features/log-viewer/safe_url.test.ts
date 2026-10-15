@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getSafeHttpUrl } from './safe_url.ts';
 
 test(`订阅外链只允许 HTTP 和 HTTPS`, () => {

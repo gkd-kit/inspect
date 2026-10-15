@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { Linter, type Rule } from 'eslint';
 import tseslint from 'typescript-eslint';
 import componentConventions from './component-conventions.ts';

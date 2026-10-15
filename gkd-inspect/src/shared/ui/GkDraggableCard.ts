@@ -1,3 +1,10 @@
+import {
+  onMounted,
+  onUnmounted,
+  shallowReactive,
+  shallowRef,
+  watch,
+} from 'vue';
 export interface GkDraggableCardValue {
   left?: number;
   right?: number;

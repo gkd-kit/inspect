@@ -1,4 +1,18 @@
 <script setup lang="ts">
+import {
+  NButton,
+  NEllipsis,
+  NEmpty,
+  NInput,
+  NModal,
+  NPopconfirm,
+  NScrollbar,
+  NSelect,
+  NTag,
+} from 'naive-ui';
+import { RouterLink } from 'vue-router';
+import { computed, shallowReactive, shallowRef } from 'vue';
+
 import SelectorText from '@/entities/selector/ui/SelectorText.vue';
 import {
   filterSelectorPresets,
@@ -142,7 +156,7 @@ const saveCurrentSelector = async () => {
     :show="show"
     preset="card"
     title="选择器库"
-    class="w-720px max-w-[calc(100vw-48px)]"
+    class="w-[720px] max-w-[calc(100vw-48px)]"
     :maskClosable="false"
     @update:show="setDialogVisible"
     @afterLeave="resetDialogState"
@@ -156,7 +170,7 @@ const saveCurrentSelector = async () => {
 
     <template v-if="canQuickSave">
       <div class="app-divider" />
-      <div class="flex items-center gap-8px">
+      <div class="flex items-center gap-[8px]">
         <NInput
           :value="draft.name"
           :disabled="savePending"
@@ -167,7 +181,7 @@ const saveCurrentSelector = async () => {
           :value="draft.scope"
           :disabled="savePending"
           :options="scopeOptions"
-          class="w-140px shrink-0"
+          class="w-[140px] shrink-0"
           @update:value="updateScope"
         />
         <NButton
@@ -180,7 +194,7 @@ const saveCurrentSelector = async () => {
         </NButton>
       </div>
       <NEllipsis
-        class="mt-6px block gkd_code text-12px"
+        class="mt-[6px] block gkd_code text-[12px]"
         style="color: var(--app-muted)"
       >
         <SelectorText :source="initialSelector || ''" />
@@ -189,15 +203,15 @@ const saveCurrentSelector = async () => {
 
     <div class="app-divider" />
 
-    <NScrollbar class="max-h-420px">
-      <div v-if="visibleItems.length" class="flex flex-col gap-8px pr-8px">
+    <NScrollbar class="max-h-[420px]">
+      <div v-if="visibleItems.length" class="flex flex-col gap-[8px] pr-[8px]">
         <div
           v-for="preset in visibleItems"
           :key="preset.id"
-          class="app-panel rounded-6px border p-10px"
+          class="app-panel rounded-[6px] border p-[10px]"
         >
-          <div class="flex items-center gap-8px">
-            <span class="font-600">{{ preset.name }}</span>
+          <div class="flex items-center gap-[8px]">
+            <span class="font-semibold">{{ preset.name }}</span>
             <NTag v-if="sourceOf(preset.id)" size="small"
               >来源：{{ sourceOf(preset.id)?.name }}</NTag
             >
@@ -207,16 +221,16 @@ const saveCurrentSelector = async () => {
             <NTag v-for="tag in preset.tags" :key="tag" size="small">
               {{ tag }}
             </NTag>
-            <span class="ml-auto text-12px" style="color: var(--app-muted)">
+            <span class="ml-auto text-[12px]" style="color: var(--app-muted)">
               使用 {{ preset.useCount }} 次
             </span>
           </div>
           <div
-            class="app-subtle mt-5px break-all rounded-4px p-8px gkd_code text-13px"
+            class="app-subtle mt-[5px] break-all rounded-[4px] p-[8px] gkd_code text-[13px]"
           >
             <SelectorText :source="preset.selector" />
           </div>
-          <div class="mt-8px flex justify-end gap-8px">
+          <div class="mt-[8px] flex justify-end gap-[8px]">
             <NButton
               size="small"
               :type="preset.pinned ? 'primary' : 'default'"

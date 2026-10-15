@@ -1,3 +1,10 @@
+import { computed, nextTick, shallowReadonly, shallowRef } from 'vue';
+import {
+  createSharedComposable,
+  useElementBounding,
+  useElementSize,
+} from '@vueuse/core';
+import { useRoute, useRouter } from 'vue-router';
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 import type { Position } from '@/shared/types/common';
 import {

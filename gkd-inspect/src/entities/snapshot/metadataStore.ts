@@ -1,3 +1,4 @@
+import { readonly } from 'vue';
 import { isIntString } from '@/shared/lib/number';
 import { getImageId, getImportId } from '@/entities/snapshot/urls';
 import {

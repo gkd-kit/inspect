@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NInput } from 'naive-ui';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { useTextViewerState } from './context';
 
@@ -20,15 +22,15 @@ const {
 <template>
   <div
     name="text-viewer-search"
-    class="w-520px max-w-full min-w-0 flex flex-[0_1_520px] items-center gap-6px"
+    class="w-[520px] max-w-full min-w-0 flex flex-[0_1_520px] items-center gap-[6px]"
   >
     <div
       name="text-viewer-navigation"
-      class="w-116px min-w-116px flex items-center justify-between gap-2px"
+      class="w-[116px] min-w-[116px] flex items-center justify-between gap-[2px]"
       :class="normalizedQuery ? 'visible' : 'invisible'"
     >
       <span
-        class="w-62px overflow-hidden text-right text-ellipsis whitespace-nowrap text-12px text-[#64748b]"
+        class="w-[62px] overflow-hidden text-right text-ellipsis whitespace-nowrap text-[12px] text-[#64748b]"
         :title="`第 ${displayedResultIndex.toLocaleString()} 处，共 ${matchCount.toLocaleString()} 处`"
       >
         {{ displayedResultIndex.toLocaleString() }} /
@@ -36,25 +38,25 @@ const {
       </span>
       <button
         type="button"
-        class="inline-grid h-22px w-24px cursor-pointer place-items-center rounded-3px border-0 bg-transparent p-0 leading-22px text-[#475569] enabled:hover:bg-[#e2e8f0] disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+        class="inline-grid h-[22px] w-[24px] cursor-pointer place-items-center rounded-[3px] border-0 bg-transparent p-0 leading-[22px] text-[#475569] enabled:hover:bg-[#e2e8f0] disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
         :disabled="!matchCount"
         aria-label="上一个匹配项"
         title="上一个匹配项 (Shift+Enter)"
         @mousedown.prevent
         @click="selectRelativeResult(-1)"
       >
-        <GkSvg name="arrow" class="h-16px w-16px rotate-180" />
+        <GkSvg name="arrow" class="h-[16px] w-[16px] rotate-180" />
       </button>
       <button
         type="button"
-        class="inline-grid h-22px w-24px cursor-pointer place-items-center rounded-3px border-0 bg-transparent p-0 leading-22px text-[#475569] enabled:hover:bg-[#e2e8f0] disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+        class="inline-grid h-[22px] w-[24px] cursor-pointer place-items-center rounded-[3px] border-0 bg-transparent p-0 leading-[22px] text-[#475569] enabled:hover:bg-[#e2e8f0] disabled:cursor-default disabled:opacity-40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
         :disabled="!matchCount"
         aria-label="下一个匹配项"
         title="下一个匹配项 (Enter)"
         @mousedown.prevent
         @click="selectRelativeResult(1)"
       >
-        <GkSvg name="arrow" class="h-16px w-16px" />
+        <GkSvg name="arrow" class="h-[16px] w-[16px]" />
       </button>
     </div>
     <NInput
@@ -70,11 +72,11 @@ const {
       <template #suffix>
         <div
           name="text-viewer-search-options"
-          class="flex items-center gap-2px"
+          class="flex items-center gap-[2px]"
         >
           <button
             type="button"
-            class="inline-grid h-22px w-26px cursor-pointer place-items-center rounded-3px border-0 p-0 font-mono text-12px leading-22px focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+            class="inline-grid h-[22px] w-[26px] cursor-pointer place-items-center rounded-[3px] border-0 p-0 font-mono text-[12px] leading-[22px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
             :class="
               searchOptions.matchCase
                 ? 'bg-[#dbeafe] text-[#1d4ed8]'
@@ -90,7 +92,7 @@ const {
           </button>
           <button
             type="button"
-            class="inline-grid h-22px w-26px cursor-pointer place-items-center rounded-3px border-0 p-0 font-mono text-12px leading-22px underline [text-underline-offset:2px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+            class="inline-grid h-[22px] w-[26px] cursor-pointer place-items-center rounded-[3px] border-0 p-0 font-mono text-[12px] leading-[22px] underline [text-underline-offset:2px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
             :class="
               searchOptions.wholeWord
                 ? 'bg-[#dbeafe] text-[#1d4ed8]'
@@ -106,7 +108,7 @@ const {
           </button>
           <button
             type="button"
-            class="inline-grid h-22px w-26px cursor-pointer place-items-center rounded-3px border-0 p-0 font-mono text-12px leading-22px focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+            class="inline-grid h-[22px] w-[26px] cursor-pointer place-items-center rounded-[3px] border-0 p-0 font-mono text-[12px] leading-[22px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
             :class="
               searchOptions.useRegex
                 ? 'bg-[#dbeafe] text-[#1d4ed8]'

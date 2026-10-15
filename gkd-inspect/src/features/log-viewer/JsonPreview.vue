@@ -1,4 +1,7 @@
 <script lang="tsx" setup>
+import { NAlert, NEmpty, NTabPane, NTabs } from 'naive-ui';
+import { computed, defineComponent, reactive, ref, shallowRef } from 'vue';
+
 import { NButton } from 'naive-ui';
 import type { PropType } from 'vue';
 import JsonBasicTable from './JsonBasicTable.vue';
@@ -57,19 +60,19 @@ const JsonNode = defineComponent({
         <div {...{ name: `json-node` }} class="block">
           <div
             {...{ name: `json-node-line` }}
-            class="min-h-28px flex items-center gap-6px"
+            class="min-h-[28px] flex items-center gap-[6px]"
           >
             {expandable ? (
               <NButton
                 quaternary
                 size="tiny"
-                class="w-24px min-w-24px font-inherit"
+                class="w-[24px] min-w-[24px] [font-family:inherit]"
                 onClick={() => (expanded.value = !expanded.value)}
               >
                 {expanded.value ? `−` : `+`}
               </NButton>
             ) : (
-              <span class="inline-block w-24px" />
+              <span class="inline-block w-[24px]" />
             )}
             <span class="text-[#7c3aed]">{nodeProps.name}</span>
             <span class="text-[#6b7280]">:</span>
@@ -91,7 +94,7 @@ const JsonNode = defineComponent({
           {expandable && expanded.value ? (
             <div
               {...{ name: `json-children` }}
-              class="ml-15px border-l border-[#e5e7eb] pl-10px"
+              class="ml-[15px] border-l border-[#e5e7eb] pl-[10px]"
             >
               {tableRows ? (
                 <JsonBasicTable
@@ -160,7 +163,7 @@ const searchResults = computed<SearchResult[]>(() => {
     class="h-full [&_.n-tab-pane]:h-full [&_.n-tab-pane]:min-h-0 [&_.n-tabs-pane-wrapper]:h-full [&_.n-tabs-pane-wrapper]:min-h-0"
   >
     <NTabPane name="structured" tab="结构化">
-      <div flex flex-col gap-10px h-full>
+      <div class="flex flex-col gap-[10px] h-full">
         <TextSearchInput
           v-model="query"
           v-model:match-case="searchOptions.matchCase"
@@ -170,7 +173,7 @@ const searchResults = computed<SearchResult[]>(() => {
         />
         <div
           name="json-structure-scroll"
-          class="min-h-0 flex-1 overflow-auto px-4px pb-24px pt-8px font-mono text-13px"
+          class="min-h-0 flex-1 overflow-auto px-[4px] pb-[24px] pt-[8px] font-mono text-[13px]"
         >
           <NAlert v-if="structureTooLarge" type="warning" title="JSON 结构过大">
             为避免占用过多内存，请切换到“原始 JSON”查看和搜索。
@@ -180,16 +183,16 @@ const searchResults = computed<SearchResult[]>(() => {
             <div
               v-else
               name="json-search-results"
-              class="flex flex-col gap-6px"
+              class="flex flex-col gap-[6px]"
             >
               <div
                 v-for="item in searchResults"
                 :key="`${item.path}:${item.value}`"
                 name="json-search-item"
-                class="rounded-4px border border-[#e5e7eb] px-10px py-8px"
+                class="rounded-[4px] border border-[#e5e7eb] px-[10px] py-[8px]"
               >
                 <div class="text-[#7c3aed]">{{ item.path }}</div>
-                <div class="mt-4px text-[#374151] [overflow-wrap:anywhere]">
+                <div class="mt-[4px] text-[#374151] [overflow-wrap:anywhere]">
                   {{ item.value }}
                 </div>
               </div>

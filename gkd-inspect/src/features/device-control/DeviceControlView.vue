@@ -1,4 +1,8 @@
 <script setup lang="tsx">
+import { NButton, NDataTable, NInput, NInputGroup, NTooltip } from 'naive-ui';
+import { computed, onMounted, ref, shallowReactive, shallowRef } from 'vue';
+import { useRouter } from 'vue-router';
+
 import type { Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
@@ -231,9 +235,9 @@ const stopConnection = () => {
     @update:subscriptionShow="setSubscriptionDialogVisible"
     @update:selectorShow="setSelectorDialogVisible"
   />
-  <div page-size flex flex-col p-10px gap-10px>
-    <div flex items-center gap-24px>
-      <PageBackButton class="ml-12px" />
+  <div class="page-size flex flex-col p-[10px] gap-[10px]">
+    <div class="flex items-center gap-[24px]">
+      <PageBackButton class="ml-[12px]" />
       <NInputGroup>
         <NInput
           :value="link"
@@ -270,11 +274,7 @@ const stopConnection = () => {
 
         <div
           v-if="serverInfo"
-          gkd_code
-          pl-16px
-          whitespace-nowrap
-          flex
-          items-center
+          class="gkd_code pl-[16px] whitespace-nowrap flex items-center"
         >
           {{ serverTitle }}
         </div>

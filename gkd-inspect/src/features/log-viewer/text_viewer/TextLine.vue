@@ -1,4 +1,7 @@
 <script setup lang="tsx">
+import { NPopover } from 'naive-ui';
+import { computed } from 'vue';
+
 import type { VirtualTextLine } from '../virtual_text';
 import { type TextLineFragment, useTextViewerState } from './context';
 
@@ -19,7 +22,7 @@ const HighlightedText = (props: { fragments: readonly TextLineFragment[] }) => (
           data-name="text-viewer-match"
           data-active={fragment.active ? `` : undefined}
           class={[
-            `rounded-2px text-inherit`,
+            `rounded-[2px] text-inherit`,
             fragment.active ? `bg-[#fb923c] text-[#7c2d12]` : `bg-[#fde68a]`,
           ]}
         >
@@ -41,7 +44,7 @@ const activatePopover = (event: KeyboardEvent) => {
   <div
     name="text-viewer-line"
     :data-line-index="line.key"
-    class="grid min-h-20px min-w-full leading-20px"
+    class="grid min-h-[20px] min-w-full leading-[20px]"
     :class="
       wrap
         ? 'w-full grid-cols-[64px_minmax(0,1fr)]'
@@ -49,12 +52,12 @@ const activatePopover = (event: KeyboardEvent) => {
     "
   >
     <span
-      class="sticky left-0 z-1 box-border select-none border-r border-[#e5e7eb] bg-[#f8fafc] px-10px text-right text-[#94a3b8]"
+      class="sticky left-0 z-1 box-border select-none border-r border-[#e5e7eb] bg-[#f8fafc] px-[10px] text-right text-[#94a3b8]"
     >
       {{ line.number }}
     </span>
     <span
-      class="box-border min-w-0 px-10px [font:inherit] [tab-size:2]"
+      class="box-border min-w-0 px-[10px] [font:inherit] [tab-size:2]"
       :class="
         wrap ? 'whitespace-pre-wrap [overflow-wrap:anywhere]' : 'whitespace-pre'
       "
@@ -85,7 +88,7 @@ const activatePopover = (event: KeyboardEvent) => {
               <HighlightedText :fragments="token.fragments" />
             </span>
           </template>
-          <div class="max-w-640px flex flex-col gap-4px">
+          <div class="max-w-[640px] flex flex-col gap-[4px]">
             <a
               v-for="target in token.sourceTargets"
               :key="target.path"

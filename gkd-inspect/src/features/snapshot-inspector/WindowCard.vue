@@ -1,4 +1,15 @@
 <script setup lang="tsx">
+import { NTooltip, NTree } from 'naive-ui';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  shallowRef,
+  useTemplateRef,
+} from 'vue';
+import { useRouter } from 'vue-router';
+
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
@@ -125,11 +136,11 @@ const gkdVersionName = computed(() => {
 </script>
 
 <template>
-  <div flex flex-col overflow-hidden>
-    <div flex items-center px-8px>
-      <GkGapList class="flex flex-wrap items-center gap-8px gkd_code">
+  <div class="flex flex-col overflow-hidden">
+    <div class="flex items-center px-[8px]">
+      <GkGapList class="flex flex-wrap items-center gap-[8px] gkd_code">
         <template #gap>
-          <div w-1px bg-gray h-12px />
+          <div class="w-[1px] bg-gray-400 h-[12px]" />
         </template>
         <NTooltip>
           <template #trigger>
@@ -153,7 +164,7 @@ const gkdVersionName = computed(() => {
           GKD 版本
         </NTooltip>
 
-        <div flex items-center gap-2px max-w-120px>
+        <div class="flex items-center gap-[2px] max-w-[120px]">
           <NTooltip v-if="isSystem">
             <template #trigger>
               <GkSvg name="system" />
@@ -211,16 +222,16 @@ const gkdVersionName = computed(() => {
           界面ID
         </NTooltip>
       </GkGapList>
-      <div flex-1 />
+      <div class="flex-1" />
       <SnapshotActionCard
-        class="ml-8px"
+        class="ml-[8px]"
         :snapshot="snapshot"
         :showPreview="false"
         @delete="onDelete"
       />
     </div>
-    <div class="app-border-line" h-1px mt-4px />
-    <div ref="treeContainerRef" flex-1 min-h-0>
+    <div class="app-border-line h-[1px] mt-[4px]" />
+    <div ref="treeContainerRef" class="flex-1 min-h-0">
       <NTree
         ref="treeRef"
         v-model:expandedKeys="expandedKeys"

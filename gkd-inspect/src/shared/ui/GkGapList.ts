@@ -1,3 +1,4 @@
+import { type VNode, defineComponent, h } from 'vue';
 import type { SlotsType } from 'vue';
 
 const emptyArray = [] as [];

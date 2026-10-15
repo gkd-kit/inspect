@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { NInput } from 'naive-ui';
+import { computed, shallowRef } from 'vue';
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import { useDebounceFn } from '@vueuse/core';
+
 import SelectorText from '@/entities/selector/ui/SelectorText.vue';
 import {
   inspectSelectorSyntax,
@@ -58,19 +63,19 @@ const error = computed(() => {
 });
 </script>
 <template>
-  <div flex items-center gap-16px pt-12px px-12px>
+  <div class="flex items-center gap-[16px] pt-[12px] px-[12px]">
     <PageBackButton />
-    <div flex gap-16px items-center>
-      <div text-18px>测试选择器</div>
+    <div class="flex gap-[16px] items-center">
+      <div class="text-[18px]">测试选择器</div>
       <div>语法高亮/错误解析</div>
     </div>
   </div>
-  <div flex flex-col items-center p-8px text="40px/52px">
+  <div class="flex flex-col items-center p-[8px] text-[40px]/[52px]">
     <NInput
       :value="inputText"
       type="textarea"
       placeholder="请输入选择器"
-      class="gkd_code py-4px"
+      class="gkd_code py-[4px]"
       style="--n-font-size: 20px; --n-line-height-textarea: 28px"
       :autosize="{
         minRows: 3,
@@ -78,32 +83,28 @@ const error = computed(() => {
       }"
       @update:value="updateInputText"
     />
-    <div h-20px />
+    <div class="h-[20px]" />
     <div
-      max-w-full
-      mb-8px
-      p-4px
-      gkd_code
-      transition-colors
-      :class="error ? `bg-red-200` : `bg-light-600`"
+      class="max-w-full mb-[8px] p-[4px] gkd_code transition-colors"
+      :class="error ? `bg-red-200` : `bg-[oklch(96.32%_0.0034_247.86)]`"
     >
-      <div overflow-x-auto scrollbar-hidden>
+      <div class="overflow-x-auto scrollbar-hidden">
         <SelectorText :source="text" />
       </div>
-      <div v-if="error?.segments" text-16px leading-24px whitespace-pre-wrap>
+      <div
+        v-if="error?.segments"
+        class="text-[16px] leading-[24px] whitespace-pre-wrap"
+      >
         <span>{{ error.segments.before }}</span
-        ><span bg-red-300
+        ><span class="bg-red-300"
           >{{ error.segments.error
           }}<span
             v-if="error.segments.eof"
-            inline-block
-            w-2px
-            h-1em
-            bg-red-500 /></span
+            class="inline-block w-[2px] h-[1em] bg-red-500" /></span
         ><span>{{ error.segments.after }}</span>
       </div>
     </div>
-    <div v-if="error" p-4px bg-red-300 gkd_code>
+    <div v-if="error" class="p-[4px] bg-red-300 gkd_code">
       {{ error.message }}
     </div>
   </div>

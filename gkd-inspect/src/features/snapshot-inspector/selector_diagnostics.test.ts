@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'vitest';
 import type { RawNode } from '../../entities/snapshot/types.ts';
 import { parseSelector } from '../../entities/selector/parser.ts';
 import { getFastQueryEvidence } from './selector_diagnostics.ts';

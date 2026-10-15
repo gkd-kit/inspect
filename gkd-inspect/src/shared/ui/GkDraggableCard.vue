@@ -1,5 +1,15 @@
 <script setup lang="ts">
 import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  shallowReactive,
+  shallowRef,
+  watch,
+} from 'vue';
+
+import {
   getDraggableViewportCorrection,
   getDraggableViewportWidth,
   useDragMove,
@@ -126,7 +136,7 @@ const preventSelection = (ev: Event) => {
     ev.preventDefault();
   }
 };
-const transition = `transition-top,bottom,left,right-500`;
+const transition = ['transition-[top,bottom,left,right]', 'duration-500'];
 const endMove = () => {
   if (!target.value || !prevEv) return;
   const { top, bottom, left, right } = target.value.getBoundingClientRect();
@@ -142,9 +152,9 @@ const endMove = () => {
 
     const boxDiv = box.value;
     if (boxDiv) {
-      boxDiv.classList.add(transition);
+      boxDiv.classList.add(...transition);
       setTimeout(() => {
-        boxDiv.classList.remove(transition);
+        boxDiv.classList.remove(...transition);
       }, 550);
     }
   }
@@ -201,8 +211,7 @@ watch(
       <div
         v-if="show"
         ref="box"
-        fixed
-        class="GkDraggableCard"
+        class="GkDraggableCard fixed"
         :style="[currentStyle, { zIndex }]"
         :class="props.class"
         @mousedown="setTop"
@@ -212,21 +221,11 @@ watch(
         <template v-if="sizeDraggable">
           <div
             :ref="leftDragBar.target"
-            absolute
-            right-full
-            top-0
-            bottom-0
-            w-5px
-            cursor-ew-resize
+            class="absolute right-full top-0 bottom-0 w-[5px] cursor-ew-resize"
           />
           <div
             :ref="rightDragBar.target"
-            absolute
-            left-full
-            top-0
-            bottom-0
-            w-5px
-            cursor-ew-resize
+            class="absolute left-full top-0 bottom-0 w-[5px] cursor-ew-resize"
           />
         </template>
       </div>

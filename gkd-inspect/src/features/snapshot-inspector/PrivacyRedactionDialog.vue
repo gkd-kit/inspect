@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NButton, NButtonGroup, NModal, NSpin, NTooltip } from 'naive-ui';
+import { computed, onBeforeUnmount, shallowRef } from 'vue';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { message } from '@/shared/services/feedback';
 import type { RedactionRect, RedactionSelection } from './privacy_redaction';
@@ -199,7 +202,7 @@ const applyRedaction = () => {
     @afterLeave="deactivateDialog"
     @update:show="emit('update:show', $event)"
   >
-    <div class="mb-8px text-13px text-[#64748b]">
+    <div class="mb-[8px] text-[13px] text-[#64748b]">
       在截图上拖动框选敏感区域。副本会用纯黑色覆盖图片，并将相交节点的
       text、desc 替换为 ***。
     </div>
@@ -220,8 +223,8 @@ const applyRedaction = () => {
       </div>
     </NSpin>
     <template #footer>
-      <div class="flex items-center gap-8px">
-        <span class="mr-auto text-12px text-[#64748b]">
+      <div class="flex items-center gap-[8px]">
+        <span class="mr-auto text-[12px] text-[#64748b]">
           已选择 {{ rectangles.length }} 个区域；原始快照不会被修改
         </span>
         <NButtonGroup>

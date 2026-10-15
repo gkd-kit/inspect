@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NInput } from 'naive-ui';
+import { computed } from 'vue';
+
 import { isTextSearchQueryValid } from './text_search';
 
 const props = withDefaults(
@@ -26,7 +29,7 @@ const invalidRegex = computed(() => {
 </script>
 
 <template>
-  <div name="text-search" class="w-full min-w-0 flex items-center gap-6px">
+  <div name="text-search" class="w-full min-w-0 flex items-center gap-[6px]">
     <NInput
       v-model:value="query"
       clearable
@@ -36,10 +39,10 @@ const invalidRegex = computed(() => {
       class="min-w-0 flex-1"
     >
       <template #suffix>
-        <div name="text-search-options" class="flex items-center gap-2px">
+        <div name="text-search-options" class="flex items-center gap-[2px]">
           <button
             type="button"
-            class="inline-grid h-22px w-26px cursor-pointer place-items-center rounded-3px border-0 p-0 font-mono text-12px leading-22px focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+            class="inline-grid h-[22px] w-[26px] cursor-pointer place-items-center rounded-[3px] border-0 p-0 font-mono text-[12px] leading-[22px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
             :class="
               matchCase
                 ? 'bg-[#dbeafe] text-[#1d4ed8]'
@@ -55,7 +58,7 @@ const invalidRegex = computed(() => {
           </button>
           <button
             type="button"
-            class="inline-grid h-22px w-26px cursor-pointer place-items-center rounded-3px border-0 p-0 font-mono text-12px leading-22px underline [text-underline-offset:2px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+            class="inline-grid h-[22px] w-[26px] cursor-pointer place-items-center rounded-[3px] border-0 p-0 font-mono text-[12px] leading-[22px] underline [text-underline-offset:2px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
             :class="
               wholeWord
                 ? 'bg-[#dbeafe] text-[#1d4ed8]'
@@ -71,7 +74,7 @@ const invalidRegex = computed(() => {
           </button>
           <button
             type="button"
-            class="inline-grid h-22px w-26px cursor-pointer place-items-center rounded-3px border-0 p-0 font-mono text-12px leading-22px focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
+            class="inline-grid h-[22px] w-[26px] cursor-pointer place-items-center rounded-[3px] border-0 p-0 font-mono text-[12px] leading-[22px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2563eb] focus-visible:outline-offset-1"
             :class="
               useRegex
                 ? 'bg-[#dbeafe] text-[#1d4ed8]'

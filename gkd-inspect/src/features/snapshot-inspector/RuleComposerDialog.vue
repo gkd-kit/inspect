@@ -1,4 +1,17 @@
 <script setup lang="ts">
+import {
+  NAlert,
+  NButton,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NModal,
+  NSelect,
+  NSwitch,
+  NTag,
+} from 'naive-ui';
+import { computed, shallowReactive, shallowRef } from 'vue';
+
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 import { getAppInfo, getNodeLabel } from '@/entities/snapshot/node';
 import { message } from '@/shared/services/feedback';
@@ -241,13 +254,13 @@ const resetDialogState = () => {
     :show="show"
     preset="card"
     title="规则编排器"
-    class="w-1080px max-w-[calc(100vw-48px)]"
+    class="w-[1080px] max-w-[calc(100vw-48px)]"
     style="max-height: calc(100vh - 48px)"
     :maskClosable="false"
     @update:show="updateVisible"
     @afterLeave="resetDialogState"
   >
-    <div class="grid grid-cols-3 gap-x-12px gap-y-4px">
+    <div class="grid grid-cols-3 gap-x-[12px] gap-y-[4px]">
       <NFormItem label="输出层级">
         <NSelect
           :value="form.outputDepth"
@@ -291,7 +304,7 @@ const resetDialogState = () => {
       </NFormItem>
     </div>
 
-    <div class="flex flex-wrap items-center gap-x-20px gap-y-8px">
+    <div class="flex flex-wrap items-center gap-x-[20px] gap-y-[8px]">
       <NSwitch
         :value="form.includeActivity"
         @update:value="updateIncludeActivity"
@@ -320,11 +333,11 @@ const resetDialogState = () => {
     <div class="app-divider" />
 
     <div
-      class="grid grid-cols-[minmax(320px,0.9fr)_minmax(380px,1.1fr)] gap-12px"
+      class="grid grid-cols-[minmax(320px,0.9fr)_minmax(380px,1.1fr)] gap-[12px]"
     >
       <div class="min-w-0">
-        <div class="mb-6px flex items-center gap-8px">
-          <span class="font-600">点击位置</span>
+        <div class="mb-[6px] flex items-center gap-[8px]">
+          <span class="font-semibold">点击位置</span>
           <NTag size="small">目标：{{ getNodeLabel(targetNode) }}</NTag>
           <NButton
             v-if="position"
@@ -338,31 +351,31 @@ const resetDialogState = () => {
         <NSelect
           :value="form.positionMode"
           :options="positionModeOptions"
-          class="mb-8px"
+          class="mb-[8px]"
           @update:value="updatePositionMode"
         />
         <div
           v-if="screenshotUrl"
-          class="relative inline-flex max-h-340px max-w-full overflow-hidden rounded-4px bg-[#111827]"
+          class="relative inline-flex max-h-[340px] max-w-full overflow-hidden rounded-[4px] bg-[#111827]"
         >
           <img
             :src="screenshotUrl"
-            class="block max-h-340px max-w-full cursor-crosshair object-contain"
+            class="block max-h-[340px] max-w-full cursor-crosshair object-contain"
             @click="selectPosition"
           />
           <span
-            class="pointer-events-none absolute size-14px rounded-full border-2 border-white bg-[#d03050] shadow"
+            class="pointer-events-none absolute size-[14px] rounded-full border-2 border-white bg-[#d03050] shadow-sm"
             :style="markerStyle"
           />
         </div>
-        <div class="mt-6px break-all gkd_code text-12px text-[#64748b]">
+        <div class="mt-[6px] break-all gkd_code text-[12px] text-[#64748b]">
           {{ positionText }}
         </div>
       </div>
 
       <div class="min-w-0">
-        <div class="mb-6px flex items-center gap-8px">
-          <span class="font-600">生成结果</span>
+        <div class="mb-[6px] flex items-center gap-[8px]">
+          <span class="font-semibold">生成结果</span>
           <NTag size="small" :type="diagnosticPresentation.type">
             {{ diagnosticPresentation.label }}
           </NTag>
@@ -372,11 +385,11 @@ const resetDialogState = () => {
           type="textarea"
           readonly
           :resizable="false"
-          class="h-340px gkd_code"
+          class="h-[340px] gkd_code"
         />
         <NAlert
           v-if="diagnostic.status != 'empty'"
-          class="mt-8px"
+          class="mt-[8px]"
           :type="diagnosticPresentation.type"
           :showIcon="false"
         >
@@ -387,7 +400,7 @@ const resetDialogState = () => {
               ? diagnostic.notes
               : []"
             :key="note"
-            class="text-12px"
+            class="text-[12px]"
           >
             · {{ note }}
           </div>
@@ -396,7 +409,7 @@ const resetDialogState = () => {
     </div>
 
     <template #footer>
-      <div class="flex justify-end gap-8px">
+      <div class="flex justify-end gap-[8px]">
         <NButton @click="updateVisible(false)">关闭</NButton>
         <NButton
           type="primary"

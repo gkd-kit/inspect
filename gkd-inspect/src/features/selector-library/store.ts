@@ -1,3 +1,4 @@
+import { readonly, shallowReactive } from 'vue';
 import {
   createSelectorPreset,
   getSelectorPresetIdentity,

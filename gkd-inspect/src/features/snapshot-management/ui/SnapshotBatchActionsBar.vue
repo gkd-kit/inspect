@@ -1,4 +1,6 @@
 <script setup lang="tsx">
+import { NButton, NPopover, NSpace } from 'naive-ui';
+
 import type { TaskLike } from '@/shared/lib/task';
 
 defineProps<{
@@ -11,7 +13,7 @@ defineProps<{
 }>();
 </script>
 <template>
-  <div v-if="checkedCount" flex items-center gap-12px>
+  <div v-if="checkedCount" class="flex items-center gap-[12px]">
     <NPopover v-if="batchDownloadZip || batchDownloadImage">
       <template #trigger>
         <NButton> 批量下载 </NButton>
@@ -61,6 +63,6 @@ defineProps<{
     >
       批量删除
     </NButton>
-    <span whitespace-nowrap>{{ `已选中 ${checkedCount} 项快照` }}</span>
+    <span class="whitespace-nowrap">{{ `已选中 ${checkedCount} 项快照` }}</span>
   </div>
 </template>

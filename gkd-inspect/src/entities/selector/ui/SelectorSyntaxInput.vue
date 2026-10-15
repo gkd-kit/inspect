@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import { NInput } from 'naive-ui';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  shallowRef,
+} from 'vue';
+
 import {
   getSelectorErrorHighlightSegments,
   inspectSelectorSyntax,
@@ -113,7 +122,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="selector-syntax-field app-panel w-full overflow-hidden rounded-6px border transition-colors duration-200 focus-within:border-[#18a058]"
+    class="selector-syntax-field app-panel w-full overflow-hidden rounded-[6px] border transition-colors duration-200 focus-within:border-[#18a058]"
     :class="{
       'selector-syntax-field--invalid': diagnostic.status == 'invalid',
     }"
@@ -151,25 +160,25 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div
-      class="min-h-24px flex items-center justify-between gap-6px px-8px pb-5px"
+      class="min-h-[24px] flex items-center justify-between gap-[6px] px-[8px] pb-[5px]"
     >
       <span
         v-if="diagnostic.status == 'invalid'"
         role="alert"
-        class="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-11px leading-22px text-[#d03050]"
+        class="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[22px] text-[#d03050]"
         :title="feedbackText"
       >
         {{ feedbackText }}
       </span>
       <span
         v-else-if="diagnostic.status == 'valid'"
-        class="select-none text-11px leading-22px text-[#18a058]"
+        class="select-none text-[11px] leading-[22px] text-[#18a058]"
       >
         {{ feedbackText }}
       </span>
       <span
         v-else
-        class="select-none text-11px leading-22px"
+        class="select-none text-[11px] leading-[22px]"
         style="color: var(--app-muted)"
       >
         {{ feedbackText }}
@@ -179,7 +188,7 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .selector-syntax-field--invalid,
 .selector-syntax-field--invalid:focus-within {
   border-color: #d03050 !important;

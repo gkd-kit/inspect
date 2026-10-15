@@ -1,4 +1,17 @@
 <script setup lang="ts">
+import {
+  NButton,
+  NCheckbox,
+  NCollapse,
+  NCollapseItem,
+  NPopover,
+  NScrollbar,
+  NSpin,
+  NTag,
+} from 'naive-ui';
+import { computed, onScopeDispose, shallowReactive, shallowRef } from 'vue';
+import { useEventListener } from '@vueuse/core';
+
 import type { Snapshot } from '@/entities/snapshot/types';
 
 import SnapshotActionCard from '@/features/snapshot-management/ui/SnapshotActionCard.vue';
@@ -151,7 +164,10 @@ const getDeviceText = (snapshot: Snapshot) => {
     class="min-h-0 flex-1 overflow-hidden"
     contentClass="h-full min-h-0 overflow-hidden"
   >
-    <div v-if="!loading && !groups.length" py-40px text-center opacity-70>
+    <div
+      v-if="!loading && !groups.length"
+      class="py-[40px] text-center opacity-70"
+    >
       未找到匹配快照
     </div>
     <NScrollbar v-else class="h-full min-h-0">
@@ -162,7 +178,7 @@ const getDeviceText = (snapshot: Snapshot) => {
           :name="group.appId"
         >
           <template #header>
-            <div flex items-center gap-8px>
+            <div class="flex items-center gap-[8px]">
               <NCheckbox
                 :checked="getCheckedState(getAppIds(group.activities)).checked"
                 :indeterminate="
@@ -174,7 +190,7 @@ const getDeviceText = (snapshot: Snapshot) => {
                 "
               />
               <NTag type="info" size="small">应用</NTag>
-              <span class="gkd_code font-600">
+              <span class="gkd_code font-semibold">
                 {{ `${group.appName} (${group.appId})` }}
               </span>
               <NTag size="small">{{ group.snapshotCount }} 个快照</NTag>
@@ -191,7 +207,7 @@ const getDeviceText = (snapshot: Snapshot) => {
               :name="getActivityKey(group.appId, activity.activityId)"
             >
               <template #header>
-                <div flex items-center gap-8px>
+                <div class="flex items-center gap-[8px]">
                   <NCheckbox
                     :checked="
                       getCheckedState(getActivityIds(activity.snapshots))
@@ -214,14 +230,14 @@ const getDeviceText = (snapshot: Snapshot) => {
                 </div>
               </template>
 
-              <div flex flex-col gap-6px>
+              <div class="flex flex-col gap-[6px]">
                 <div
                   v-for="snapshot in activity.snapshots.slice(
                     0,
                     getVisibleCount(group.appId, activity.activityId),
                   )"
                   :key="snapshot.id"
-                  class="snapshot-group-row flex items-start gap-10px rounded-8px border border-solid px-10px py-7px"
+                  class="snapshot-group-row flex items-start gap-[10px] rounded-[8px] border border-solid px-[10px] py-[7px]"
                   :class="{
                     'snapshot-group-row-viewed':
                       snapshotViewedTime[snapshot.id],
@@ -232,14 +248,12 @@ const getDeviceText = (snapshot: Snapshot) => {
                     @update:checked="setChecked([snapshot.id], $event)"
                   />
                   <div
-                    min-w-0
-                    flex-1
-                    cursor-default
+                    class="min-w-0 flex-1 cursor-default"
                     @mouseenter="showSnapshotPreview(snapshot, $event)"
                     @mousemove="moveSnapshotPreview"
                     @mouseleave="hideSnapshotPreview(snapshot.id)"
                   >
-                    <div flex flex-wrap items-center gap-6px>
+                    <div class="flex flex-wrap items-center gap-[6px]">
                       <NTag size="small" type="warning">
                         {{ dayjs(snapshot.id).format('MM-DD HH:mm:ss') }}
                       </NTag>
@@ -250,9 +264,11 @@ const getDeviceText = (snapshot: Snapshot) => {
                       >
                         已查看
                       </NTag>
-                      <span class="font-600">{{ snapshot.activityId }}</span>
+                      <span class="font-semibold">{{
+                        snapshot.activityId
+                      }}</span>
                     </div>
-                    <div mt-3px text-12px opacity-65>
+                    <div class="mt-[3px] text-[12px] opacity-65">
                       {{ getDeviceText(snapshot) }} ·
                       {{ snapshot.appInfo?.versionName || 'unknown' }} · 导入
                       {{
@@ -273,8 +289,7 @@ const getDeviceText = (snapshot: Snapshot) => {
                     activity.snapshots.length >
                     getVisibleCount(group.appId, activity.activityId)
                   "
-                  py-6px
-                  text-center
+                  class="py-[6px] text-center"
                 >
                   <NButton
                     size="small"
@@ -306,7 +321,7 @@ const getDeviceText = (snapshot: Snapshot) => {
     >
       <div
         v-if="previewSnapshot"
-        overflow-hidden
+        class="overflow-hidden"
         :style="{
           maxWidth: `${previewMaxWidth}px`,
           maxHeight: `${previewMaxHeight}px`,
@@ -315,11 +330,11 @@ const getDeviceText = (snapshot: Snapshot) => {
         <img
           v-if="previewCache.urls[previewSnapshot.id]"
           :src="previewCache.urls[previewSnapshot.id]"
-          class="block h-auto w-auto max-w-full rounded-6px"
+          class="block h-auto w-auto max-w-full rounded-[6px]"
           :style="{ maxHeight: `${previewMaxHeight}px` }"
           alt="快照预览"
         />
-        <div v-else py-20px text-center opacity-70>
+        <div v-else class="py-[20px] text-center opacity-70">
           {{
             previewCache.errors[previewSnapshot.id] ||
             (previewCache.loading[previewSnapshot.id]

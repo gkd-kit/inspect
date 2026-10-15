@@ -1,3 +1,5 @@
+import { NEllipsis } from 'naive-ui';
+import { shallowReactive } from 'vue';
 import type { Snapshot } from '@/entities/snapshot/types';
 import dayjs from 'dayjs';
 import type { TableBaseColumn } from 'naive-ui/es/data-table/src/interface';

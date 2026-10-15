@@ -161,9 +161,8 @@ export const findNodesByXy = (
 
 const getNodeArea = (node: RawNode) => {
   const w = node.attr.width ?? node.attr.right - node.attr.left;
-  // https://github.com/unplugin/unplugin-auto-import/issues/618
-  const h2 = node.attr.height ?? node.attr.bottom - node.attr.top;
-  return w * h2;
+  const height = node.attr.height ?? node.attr.bottom - node.attr.top;
+  return w * height;
 };
 
 export function* traverseNode(node: RawNode, skipKeys: number[] = []) {

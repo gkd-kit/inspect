@@ -1,4 +1,15 @@
 <script setup lang="ts">
+import {
+  NButton,
+  NCheckbox,
+  NEmpty,
+  NInput,
+  NModal,
+  NPopconfirm,
+  NScrollbar,
+} from 'naive-ui';
+import { computed, onBeforeUnmount, shallowRef } from 'vue';
+
 import { saveAs } from 'file-saver';
 import { selectorLibrary, selectorLibraryActions } from '../store';
 import { fetchSelectorLibrary } from '../network';
@@ -279,7 +290,7 @@ onBeforeUnmount(disposeRequest);
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-8px">
+  <div class="flex flex-wrap gap-[8px]">
     <NButton @click="openImport">导入 / 来源管理</NButton>
     <NButton
       :disabled="!selectorLibrary.items.length"
@@ -292,22 +303,22 @@ onBeforeUnmount(disposeRequest);
     :show="show"
     preset="card"
     title="导入与来源管理"
-    class="w-880px max-w-[calc(100vw-32px)]"
+    class="w-[880px] max-w-[calc(100vw-32px)]"
     :maskClosable="false"
     @update:show="setVisible"
   >
     <NScrollbar class="max-h-[75vh]">
-      <div class="flex flex-col gap-12px pr-8px">
+      <div class="flex flex-col gap-[12px] pr-[8px]">
         <div v-if="errorText" role="alert" class="text-red-500">
           {{ errorText }}
         </div>
-        <div class="flex flex-wrap gap-8px">
+        <div class="flex flex-wrap gap-[8px]">
           <NButton :disabled="pending || applying" @click="openFile"
             >从本地文件导入</NButton
           >
           <input
             ref="fileInput"
-            hidden
+            class="hidden"
             type="file"
             accept=".json,application/json"
             @change="readFile"
@@ -325,7 +336,7 @@ onBeforeUnmount(disposeRequest);
           placeholder="来源名称（可选）"
           @update:value="setName"
         />
-        <div class="flex flex-wrap items-center gap-8px">
+        <div class="flex flex-wrap items-center gap-[8px]">
           <template v-if="editingSourceId">
             <NButton :loading="applying" @click="saveSourceChanges"
               >保存来源修改</NButton
@@ -348,63 +359,63 @@ onBeforeUnmount(disposeRequest);
             >
           </template>
         </div>
-        <div v-if="backup" class="app-panel rounded-6px border p-12px">
+        <div v-if="backup" class="app-panel rounded-[6px] border p-[12px]">
           <div>
             完整备份：{{ backup.items.length }} 条选择器，{{
               backup.sources.length
             }}
             个来源。
           </div>
-          <div class="mt-8px">
+          <div class="mt-[8px]">
             恢复将替换当前全部选择器、置顶、使用记录和来源。建议先导出当前完整备份。
           </div>
           <NPopconfirm @positiveClick="confirmImport">
             <template #trigger
-              ><NButton class="mt-8px" type="warning" :loading="applying"
+              ><NButton class="mt-[8px]" type="warning" :loading="applying"
                 >恢复完整备份</NButton
               ></template
             >
             确认用备份替换当前选择器库？
           </NPopconfirm>
         </div>
-        <div v-if="plan" class="app-panel rounded-6px border p-12px">
-          <div class="font-600">
+        <div v-if="plan" class="app-panel rounded-[6px] border p-[12px]">
+          <div class="font-semibold">
             {{ plan.source?.name || '一次性导入' }} · 导入预览
           </div>
-          <div class="my-8px">{{ summary }}</div>
-          <NScrollbar class="max-h-320px">
+          <div class="my-[8px]">{{ summary }}</div>
+          <NScrollbar class="max-h-[320px]">
             <div
               v-for="row in plan.rows"
               :key="row.key"
-              class="mb-8px rounded border p-8px"
+              class="mb-[8px] rounded-sm border p-[8px]"
             >
               <div>
                 {{ row.remote?.name || row.local?.name || row.key }} ·
                 {{ labels[row.status] }}
               </div>
               <template v-if="row.status == 'updated'">
-                <div class="mt-6px break-all text-12px">
+                <div class="mt-[6px] break-all text-[12px]">
                   本地：{{ row.local?.name }} · {{ row.local?.description }} ·
                   {{ row.local?.tags.join('、')
                   }}<SelectorText :source="row.local?.selector || ''" />
                 </div>
-                <div class="break-all text-12px">
+                <div class="break-all text-[12px]">
                   本地范围：{{ row.local?.appId || '全局' }}
                   {{ row.local?.activityId }}
                 </div>
-                <div class="mt-6px break-all text-12px">
+                <div class="mt-[6px] break-all text-[12px]">
                   远端：{{ row.remote?.name }} · {{ row.remote?.description }} ·
                   {{ row.remote?.tags.join('、')
                   }}<SelectorText :source="row.remote?.selector || ''" />
                 </div>
-                <div class="break-all text-12px">
+                <div class="break-all text-[12px]">
                   远端范围：{{ row.remote?.appId || '全局' }}
                   {{ row.remote?.activityId }}
                 </div>
               </template>
               <div
                 v-else-if="row.status == 'added' && row.remote"
-                class="mt-6px break-all text-12px"
+                class="mt-[6px] break-all text-[12px]"
               >
                 <div>
                   {{ row.remote.description }} {{ row.remote.tags.join('、') }}
@@ -418,7 +429,7 @@ onBeforeUnmount(disposeRequest);
             </div>
           </NScrollbar>
           <NButton
-            class="mt-12px"
+            class="mt-[12px]"
             type="primary"
             :loading="applying"
             :disabled="pending"
@@ -426,16 +437,16 @@ onBeforeUnmount(disposeRequest);
             >确认导入</NButton
           >
         </div>
-        <div class="font-600">已保存的来源</div>
+        <div class="font-semibold">已保存的来源</div>
         <NEmpty v-if="!selectorLibrary.sources.length" description="暂无来源" />
         <div
           v-for="source in selectorLibrary.sources"
           :key="source.id"
-          class="app-panel rounded-6px border p-12px"
+          class="app-panel rounded-[6px] border p-[12px]"
         >
-          <div class="font-600">{{ source.name }}</div>
-          <div class="break-all text-12px">{{ source.url }}</div>
-          <div class="text-12px">
+          <div class="font-semibold">{{ source.name }}</div>
+          <div class="break-all text-[12px]">{{ source.url }}</div>
+          <div class="text-[12px]">
             上次更新：{{
               source.checkedAt
                 ? new Date(source.checkedAt).toLocaleString()
@@ -445,7 +456,7 @@ onBeforeUnmount(disposeRequest);
           <div v-if="errors[source.id]" class="text-red-500">
             {{ errors[source.id] }}
           </div>
-          <div class="mt-8px flex flex-wrap gap-8px">
+          <div class="mt-[8px] flex flex-wrap gap-[8px]">
             <NButton
               size="small"
               :disabled="pending || applying"

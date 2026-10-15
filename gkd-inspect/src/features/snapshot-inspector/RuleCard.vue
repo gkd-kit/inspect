@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NAlert, NButton, NInput, NTag } from 'naive-ui';
+import { computed, shallowRef } from 'vue';
+
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
@@ -74,13 +77,13 @@ const updateRuleText = (value: string) => {
     :show="show"
     @update:value="updateLayout"
   >
-    <div class="app-panel" b-1px b-solid rounded-4px p-8px>
-      <div flex items-center gap-8px m-b-4px pr-4px>
+    <div class="app-panel border-[1px] border-solid rounded-[4px] p-[8px]">
+      <div class="flex items-center gap-[8px] mb-[4px] pr-[4px]">
         <div>规则静态诊断</div>
         <NTag size="small" :type="diagnosticPresentation.type">
           {{ diagnosticPresentation.label }}
         </NTag>
-        <div :ref="onRef" flex-1 cursor-move />
+        <div :ref="onRef" class="flex-1 cursor-move" />
         <NButton
           text
           title="重新诊断"
@@ -103,12 +106,12 @@ const updateRuleText = (value: string) => {
         type="textarea"
         placeholder="粘贴单条规则、规则组、应用配置或订阅中的 apps"
         size="small"
-        class="gkd_code m-b-8px"
+        class="gkd_code mb-[8px]"
         :autosize="{ minRows: 10, maxRows: 20 }"
         @update:value="updateRuleText"
       />
 
-      <div v-if="diagnostic.status != 'empty'" min-h-24px>
+      <div v-if="diagnostic.status != 'empty'" class="min-h-[24px]">
         <NAlert
           v-if="diagnostic.status == 'invalid'"
           type="error"
@@ -118,7 +121,7 @@ const updateRuleText = (value: string) => {
         </NAlert>
 
         <template v-else>
-          <div flex items-center gap-8px flex-wrap>
+          <div class="flex items-center gap-[8px] flex-wrap">
             <span>{{ diagnostic.message }}</span>
             <NButton
               v-if="diagnostic.status == 'matched'"
@@ -130,7 +133,7 @@ const updateRuleText = (value: string) => {
             </NButton>
           </div>
 
-          <div m-t-6px text-12px color-gray-500>
+          <div class="mt-[6px] text-[12px] text-gray-500">
             <span v-if="diagnostic.details.rulePath">
               规则位置：{{ diagnostic.details.rulePath }}；
             </span>
@@ -145,7 +148,7 @@ const updateRuleText = (value: string) => {
             v-if="diagnostic.notes.length"
             type="warning"
             :showIcon="false"
-            class="m-t-8px"
+            class="mt-[8px]"
           >
             <div>以下条件不能由单张快照完整验证：</div>
             <div v-for="note in diagnostic.notes" :key="note">· {{ note }}</div>
@@ -153,7 +156,7 @@ const updateRuleText = (value: string) => {
         </template>
       </div>
 
-      <div v-else text-12px color-gray-500>
+      <div v-else class="text-[12px] text-gray-500">
         仅验证当前快照中的选择器、界面范围和排除条件，不模拟规则执行时序。
       </div>
     </div>

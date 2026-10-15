@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 const snapshotPageSource = readFileSync(
   new URL('./SnapshotInspectorView.vue', import.meta.url),

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { NModal } from 'naive-ui';
+
 import { useNetworkAccessStore } from '@/features/network-access/store';
 
 const networkAccessStore = useNetworkAccessStore();

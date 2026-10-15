@@ -1,4 +1,22 @@
 <script lang="tsx" setup>
+import {
+  NAlert,
+  NButton,
+  NDataTable,
+  NEmpty,
+  NSpin,
+  NTabPane,
+  NTabs,
+  NTag,
+} from 'naive-ui';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  shallowRef,
+} from 'vue';
+
 import { vRect } from '@/shared/lib/directives';
 import type { DataTableColumns } from 'naive-ui';
 import { withDirectives } from 'vue';
@@ -291,10 +309,10 @@ const tableRows = computed(() => {
       v-else-if="!loading && tables.length == 0"
       description="数据库中没有可展示的数据表"
     />
-    <div v-else name="sqlite-layout" class="h-full min-h-0 flex gap-12px">
+    <div v-else name="sqlite-layout" class="h-full min-h-0 flex gap-[12px]">
       <div
         name="sqlite-table-list"
-        class="w-250px min-w-250px flex flex-col gap-8px border-r border-[#e5e7eb] pr-10px"
+        class="w-[250px] min-w-[250px] flex flex-col gap-[8px] border-r border-[#e5e7eb] pr-[10px]"
       >
         <TextSearchInput
           v-model="tableQuery"
@@ -307,14 +325,13 @@ const tableRows = computed(() => {
           <NButton
             v-for="table in filteredTables"
             :key="table.name"
-            block
             text
             :type="table.name == selectedTableName ? 'primary' : 'default'"
-            class="h-34px justify-between px-6px"
+            class="h-[34px] justify-between px-[6px] block"
             @click="selectTable(table.name)"
           >
             <span
-              class="flex-1 overflow-hidden text-left text-ellipsis leading-20px"
+              class="flex-1 overflow-hidden text-left text-ellipsis leading-[20px]"
             >
               {{ table.name }}
             </span>
@@ -345,7 +362,7 @@ const tableRows = computed(() => {
           >
             <div
               name="sqlite-data-pane"
-              class="h-full min-h-0 flex flex-col items-end gap-10px"
+              class="h-full min-h-0 flex flex-col items-end gap-[10px]"
             >
               <NAlert
                 v-if="dataErrorText"
@@ -378,7 +395,7 @@ const tableRows = computed(() => {
           <NTabPane name="schema" tab="表结构">
             <div
               name="sqlite-schema"
-              class="box-border m-0 h-full overflow-auto whitespace-pre-wrap rounded-4px border border-[#e5e7eb] bg-[#fafafa] p-12px font-mono"
+              class="box-border m-0 h-full overflow-auto whitespace-pre-wrap rounded-[4px] border border-[#e5e7eb] bg-[#fafafa] p-[12px] font-mono"
               v-text="selectedTable.sql"
             ></div>
           </NTabPane>

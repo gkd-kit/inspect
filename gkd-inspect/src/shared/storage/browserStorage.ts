@@ -1,3 +1,4 @@
+import { shallowReactive, toRaw } from 'vue';
 import localforage from 'localforage';
 
 const directReturn = <T>(value: T): T => value;

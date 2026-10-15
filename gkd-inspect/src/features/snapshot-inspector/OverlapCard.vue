@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NButton, NCard, NSpace } from 'naive-ui';
+import { computed } from 'vue';
+
 import GkDraggableCard from '@/shared/ui/GkDraggableCard.vue';
 import type { GkDraggableCardValue } from '@/shared/ui/GkDraggableCard.ts';
 import { getNodeLabel, getNodeStyle } from '@/entities/snapshot/node';
@@ -32,7 +35,7 @@ const updateLayout = (value: GkDraggableCardValue) => {
   <GkDraggableCard
     v-slot="{ onRef }"
     :initialValue="draggableInitialValue"
-    class="box-shadow-dim w-420px"
+    class="box-shadow-dim w-[420px]"
     :show="Boolean(overlapNodes && focusPosition)"
     @update:value="updateLayout"
   >
@@ -43,9 +46,9 @@ const updateLayout = (value: GkDraggableCardValue) => {
       @close="closeOverlap"
     >
       <template #header>
-        <div :ref="onRef" cursor-move>
+        <div :ref="onRef" class="cursor-move">
           位置
-          <span class="app-subtle" px-2px>{{
+          <span class="app-subtle px-[2px]">{{
             `${focusPosition.x.toFixed(0)},${focusPosition.y.toFixed(0)}`
           }}</span>
           存在 {{ overlapNodes.length }} 个层叠节点

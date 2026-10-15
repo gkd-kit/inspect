@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import { test } from 'vitest';
 
 const searchCardSource = readFileSync(
   new URL('./SearchCard.vue', import.meta.url),
@@ -209,7 +209,7 @@ test(`规则编排器生成结果使用固定高度的内部滚动文本区`, ()
   assert.ok(outputInput, `未找到规则编排器生成结果文本区`);
   assert.match(outputInput, /type="textarea"/);
   assert.match(outputInput, /:resizable="false"/);
-  assert.match(outputInput, /class="h-340px gkd_code"/);
+  assert.match(outputInput, /class="h-\[340px\] gkd_code"/);
   assert.doesNotMatch(outputInput, /autosize/);
 });
 

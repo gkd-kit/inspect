@@ -1,3 +1,5 @@
+import { createGlobalState } from '@vueuse/core';
+import { readonly, shallowReactive } from 'vue';
 interface NetworkAccessState {
   networkErrorDialogVisible: boolean;
   githubErrorDialogVisible: boolean;

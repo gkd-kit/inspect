@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+import { NButton, NTooltip } from 'naive-ui';
+import { onBeforeMount, shallowReactive, shallowRef } from 'vue';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { loadingBar, message } from '@/shared/services/feedback';
 import AttrCard from './AttrCard.vue';
@@ -113,15 +117,9 @@ const setTrackVisible = (visible: boolean) => {
 </script>
 <template>
   <template v-if="snapshot && rootNode">
-    <div page-size flex gap-5px>
+    <div class="page-size flex gap-[5px]">
       <div
-        w-40px
-        py-12px
-        flex
-        flex-col
-        items-center
-        gap-16px
-        class="[--svg-h:24px]"
+        class="[--svg-h:24px] w-[40px] py-[12px] flex flex-col items-center gap-[16px]"
       >
         <PageBackButton />
         <NTooltip placement="right">
@@ -173,8 +171,7 @@ const setTrackVisible = (visible: boolean) => {
         <NTooltip placement="right">
           <template #trigger>
             <a
-              flex
-              justify-center
+              class="flex justify-center"
               href="https://github.com/orgs/gkd-kit/discussions"
               target="_blank"
               rel="noopener noreferrer"
@@ -189,8 +186,7 @@ const setTrackVisible = (visible: boolean) => {
         <NTooltip placement="right">
           <template #trigger>
             <a
-              flex
-              justify-center
+              class="flex justify-center"
               href="https://gkd.li/guide/snapshot#share-note"
               target="_blank"
               rel="noopener noreferrer"
@@ -247,16 +243,17 @@ const setTrackVisible = (visible: boolean) => {
       />
     </GkFullscreenDialog>
   </template>
-  <div v-else-if="!loading && !redirected" page-size flex flex-col items-center>
-    <div mt-160px>
+  <div
+    v-else-if="!loading && !redirected"
+    class="page-size flex flex-col items-center"
+  >
+    <div class="mt-[160px]">
       <span>快照数据缺失，</span>
       <a
+        class="text-blue-400 transition-colors hover:text-[rgb(from_currentColor_r_g_b_/_50%)]"
         href="https://gkd.li/guide/snapshot#share-note"
         target="_blank"
         referrerpolicy="no-referrer"
-        color-blue
-        transition-colors
-        hover="color-[rgb(from_currentColor_r_g_b_/_50%)]"
       >
         查看分享须知
       </a>

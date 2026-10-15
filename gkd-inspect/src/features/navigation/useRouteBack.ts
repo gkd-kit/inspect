@@ -1,3 +1,4 @@
+import { useRouter } from 'vue-router';
 type RouteBackAction = 'back' | 'home';
 
 export const getRouteBackAction = (back: unknown): RouteBackAction =>

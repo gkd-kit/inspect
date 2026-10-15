@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test, vi } from 'vitest';
 import { createSelectorPreset, serializeSelectorLibrary } from './library.ts';
 import {
   applyImportPlan,
@@ -319,26 +319,26 @@ test('invalid imports and duplicate source addresses are rejected', () => {
     'https://example.com/library',
   );
 });
-test('network import handles JSON, HTTP, invalid JSON, CORS and cancellation', async (t) => {
-  const mock = t.mock.method(
-    globalThis,
-    'fetch',
-    async () => new Response(JSON.stringify({ items: [] })),
-  );
+test('network import handles JSON, HTTP, invalid JSON, CORS and cancellation', async () => {
+  const mock = vi
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(
+      async () => new Response(JSON.stringify({ items: [] })),
+    );
   assert.deepEqual(await fetchSelectorLibrary('https://example.com/library'), {
     items: [],
   });
-  mock.mock.mockImplementation(async () => new Response('', { status: 404 }));
+  mock.mockImplementation(async () => new Response('', { status: 404 }));
   await assert.rejects(
     fetchSelectorLibrary('https://example.com/library'),
     /HTTP 404/,
   );
-  mock.mock.mockImplementation(async () => new Response('<html>'));
+  mock.mockImplementation(async () => new Response('<html>'));
   await assert.rejects(
     fetchSelectorLibrary('https://example.com/library'),
     /JSON/,
   );
-  mock.mock.mockImplementation(async () => {
+  mock.mockImplementation(async () => {
     throw new TypeError('Failed to fetch');
   });
   await assert.rejects(
@@ -347,7 +347,7 @@ test('network import handles JSON, HTTP, invalid JSON, CORS and cancellation', a
   );
   const controller = new AbortController();
   controller.abort();
-  mock.mock.mockImplementation(async (_input, init) => {
+  mock.mockImplementation(async (_input, init) => {
     init?.signal?.throwIfAborted();
     return new Response('{}');
   });

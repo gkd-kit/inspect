@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getAppsPreviewData } from './apps_preview.ts';
 
 test(`apps.json 按设备用户归类应用`, () => {

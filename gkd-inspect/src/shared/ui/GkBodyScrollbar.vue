@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import { computed, shallowRef } from 'vue';
+import {
+  useElementHover,
+  useElementSize,
+  useEventListener,
+  useWindowScroll,
+  useWindowSize,
+} from '@vueuse/core';
+
 import type { CSSProperties } from 'vue';
 
 const { y, x } = useWindowScroll();
@@ -105,57 +114,41 @@ useEventListener('selectstart', (e) => {
 const bodyHoverd = useElementHover(document.body);
 </script>
 <template>
-  <div v-if="yShow || xShow" class="GkBodyScrollbar" fixed z-2000>
+  <div v-if="yShow || xShow" class="GkBodyScrollbar fixed z-2000">
     <div
       v-if="yShow"
+      class="fixed right-[2px] top-0 bottom-0 w-[8px]"
       scrollbar-y
-      fixed
-      right-2px
-      top-0
-      bottom-0
-      w-8px
       :data-win-h="winH"
       :data-body-h="bodyW"
       @pointerdown="pointerdownY"
       @click="clickBoxY"
     >
       <div
-        w-full
-        rounded-4px
-        transition-colors
-        bg="#9093994c"
-        hover:bg="#9093997f"
+        class="w-full rounded-[4px] transition-colors bg-[#9093994c] hover:bg-[#9093997f]"
         :style="yStyle"
         :class="{
-          'bg-#9093997f': yDragging,
-          'bg-#0000!': !bodyHoverd,
+          'bg-[#9093997f]': yDragging,
+          'bg-[#0000]!': !bodyHoverd,
         }"
         @click.stop
       />
     </div>
     <div
       v-if="xShow"
+      class="fixed bottom-[2px] left-0 right-0 h-[8px]"
       scrollbar-x
-      fixed
-      bottom-2px
-      left-0
-      right-0
-      h-8px
       :data-win-w="winW"
       :data-body-w="bodyW"
       @pointerdown="pointerdownX"
       @click="clickBoxX"
     >
       <div
-        h-full
-        rounded-4px
-        transition-colors
-        bg="#9093994c"
-        hover:bg="#9093997f"
+        class="h-full rounded-[4px] transition-colors bg-[#9093994c] hover:bg-[#9093997f]"
         :style="xStyle"
         :class="{
-          'bg-#9093997f': xDragging,
-          'bg-#0000!': !bodyHoverd,
+          'bg-[#9093997f]': xDragging,
+          'bg-[#0000]!': !bodyHoverd,
         }"
         @click.stop
       />

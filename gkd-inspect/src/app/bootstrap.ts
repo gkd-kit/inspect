@@ -1,6 +1,6 @@
-import 'normalize.css';
-import 'uno.css';
-import '@/shared/styles/index.scss';
+import { createApp } from 'vue';
+import '@/shared/styles/global.css';
+import '@/shared/styles/atomic.css';
 import App from './App.vue';
 import commitLog from './commit.data';
 import router from './router';

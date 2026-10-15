@@ -1,4 +1,16 @@
 <script setup lang="ts">
+import {
+  NButton,
+  NEllipsis,
+  NIcon,
+  NTable,
+  NTbody,
+  NTd,
+  NTooltip,
+  NTr,
+} from 'naive-ui';
+import { computed } from 'vue';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import GkDraggableCard from '@/shared/ui/GkDraggableCard.vue';
 import type { GkDraggableCardValue } from '@/shared/ui/GkDraggableCard.ts';
@@ -121,7 +133,7 @@ const selectText = computed(() => {
     :show="show && Boolean(focusNode)"
     @update:value="updateLayout"
   >
-    <div absolute top-0 right-0 pt-4px pr-8px>
+    <div class="absolute top-0 right-0 pt-[4px] pr-[8px]">
       <NButton text title="最小化" @click="onUpdateShow(!show)">
         <template #icon>
           <GkSvg name="minus" />
@@ -140,7 +152,7 @@ const selectText = computed(() => {
       }"
     >
       <thead>
-        <tr :ref="onRef" cursor-move>
+        <tr :ref="onRef" class="cursor-move">
           <th>Name</th>
           <th>Value</th>
         </tr>
@@ -148,7 +160,7 @@ const selectText = computed(() => {
       <NTbody>
         <NTr v-for="attrx in attrs" :key="attrx.name">
           <NTd @click="copy(`${attrx.name}=${attrx.desc}`)">
-            <div v-if="attrx.tip" flex justify-between items-center>
+            <div v-if="attrx.tip" class="flex justify-between items-center">
               <div>
                 {{ attrx.name }}
               </div>
@@ -183,7 +195,7 @@ const selectText = computed(() => {
         </NTr>
         <NTr>
           <NTd colspan="2">
-            <div flex items-center h-24px px-2px>
+            <div class="flex items-center h-[24px] px-[2px]">
               <NTooltip>
                 <template #trigger>
                   <NButton text @click="copy(selectText)">
@@ -194,7 +206,7 @@ const selectText = computed(() => {
                     </template>
                   </NButton>
                 </template>
-                <div max-w-500px break-all gkd_code>
+                <div class="max-w-[500px] break-all gkd_code">
                   <SelectorText :source="selectText" />
                 </div>
               </NTooltip>

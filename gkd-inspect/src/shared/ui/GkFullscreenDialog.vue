@@ -1,4 +1,7 @@
 <script lang="ts">
+import { computed, onScopeDispose, shallowRef } from 'vue';
+import { watchImmediate } from '@vueuse/core';
+
 const stackIds = shallowRef<number[]>([]);
 const useDialogStack = (getVisible: () => boolean) => {
   const t = Date.now();
@@ -24,6 +27,8 @@ const useDialogStack = (getVisible: () => boolean) => {
 </script>
 
 <script setup lang="ts">
+import { watch } from 'vue';
+import { useEventListener } from '@vueuse/core';
 const show = defineModel<boolean>('show', { default: false, required: true });
 const emit = defineEmits<{
   closed: [];
@@ -66,11 +71,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
 <template>
   <Teleport v-if="actualShow" to="body">
     <div
-      class="GkFullscreenDialog"
-      absolute
-      top-0
-      left-0
-      page-size
+      class="GkFullscreenDialog absolute top-0 left-0 page-size"
       :style="{
         '--duration': duration + 'ms',
         'z-index': zIndex,
@@ -85,7 +86,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
     </div>
   </Teleport>
 </template>
-<style lang="scss" scoped>
+<style scoped>
 .enter-active {
   animation: enter-keyframes var(--duration) forwards;
 }

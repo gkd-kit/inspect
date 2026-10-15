@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { getSelectorErrorHighlightSegments } from './diagnostics.ts';
 
 test('highlights the parser error character', () => {

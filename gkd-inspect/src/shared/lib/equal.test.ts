@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'vitest';
 import { isJsonEqual } from './equal.ts';
 
 test('JSON equality ignores object key order and missing undefined properties', () => {

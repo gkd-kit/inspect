@@ -1,3 +1,4 @@
+import { markRaw, reactive, shallowRef } from 'vue';
 import { message } from '@/shared/services/feedback';
 import type { ShallowRef } from 'vue';
 import type { CrashDetail } from './crash_preview';

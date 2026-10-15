@@ -1,10 +1,13 @@
 <script lang="ts">
+import { computedAsync } from '@vueuse/core';
+
 const svgElMap = computedAsync(
   async () => (await import('@/shared/ui/icons')).default,
   {},
 );
 </script>
 <script setup lang="ts">
+import { computed, shallowRef, watchEffect } from 'vue';
 const props = defineProps<{
   name: string;
 }>();

@@ -1,4 +1,8 @@
 <script setup lang="tsx">
+import { NButton, NPopconfirm, NPopover, NSpace, NTooltip } from 'naive-ui';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 import type { Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
@@ -126,9 +130,9 @@ const copy = async (content: string) => {
 </script>
 
 <template>
-  <div flex gap-16px items-center>
+  <div class="flex gap-[16px] items-center">
     <template v-if="showPreview">
-      <a v-if="!onPreview" flex target="_blank" :href="previewUrl">
+      <a v-if="!onPreview" class="flex" target="_blank" :href="previewUrl">
         <NButton text title="查看">
           <template #icon><GkSvg name="code" /></template>
         </NButton>
@@ -147,7 +151,9 @@ const copy = async (content: string) => {
     <NPopover v-if="showExport">
       <template #trigger>
         <NButton text>
-          <template #icon><GkSvg name="export" color="#2080F0" /></template>
+          <template #icon
+            ><GkSvg class="text-[#2080F0]" name="export"
+          /></template>
         </NButton>
       </template>
       <NSpace vertical>
@@ -163,7 +169,9 @@ const copy = async (content: string) => {
     <NPopover v-if="showShare">
       <template #trigger>
         <NButton text>
-          <template #icon><GkSvg name="share" color="#8A2BE2" /></template>
+          <template #icon
+            ><GkSvg class="text-[#8A2BE2]" name="share"
+          /></template>
         </NButton>
       </template>
       <NSpace vertical>
@@ -197,7 +205,7 @@ const copy = async (content: string) => {
       }"
       @positiveClick="deleteSnapshot.invoke"
     >
-      <template #icon><GkSvg name="warn" color="red" /></template>
+      <template #icon><GkSvg class="text-red-400" name="warn" /></template>
       <span style="color: #d03050; white-space: pre-line">{{
         deleteConfirmText
       }}</span>
@@ -210,7 +218,9 @@ const copy = async (content: string) => {
         >
           <template #trigger>
             <NButton text>
-              <template #icon><GkSvg name="delete" color="#D03050" /></template>
+              <template #icon
+                ><GkSvg class="text-[#D03050]" name="delete"
+              /></template>
             </NButton>
           </template>
           删除快照

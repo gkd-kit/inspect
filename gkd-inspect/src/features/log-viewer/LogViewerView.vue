@@ -1,4 +1,16 @@
 <script lang="tsx" setup>
+import { NAlert } from 'naive-ui';
+import {
+  computed,
+  markRaw,
+  onBeforeUnmount,
+  onMounted,
+  shallowRef,
+  useTemplateRef,
+} from 'vue';
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import { useEventListener } from '@vueuse/core';
+
 import { message } from '@/shared/services/feedback';
 import {
   getLogPathSource,
@@ -726,8 +738,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
 <template>
   <div
     name="log-page"
-    page-size
-    class="box-border flex min-h-700px min-w-1200px flex-col gap-10px bg-[#f8fafc] p-10px"
+    class="box-border flex min-h-[700px] min-w-[1200px] flex-col gap-[10px] bg-[#f8fafc] p-[10px] page-size"
   >
     <LogToolbar
       ref="logToolbarRef"
@@ -746,7 +757,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
     <div
       v-if="archive"
       name="log-workspace"
-      class="flex min-h-0 flex-1 gap-10px"
+      class="flex min-h-0 flex-1 gap-[10px]"
     >
       <LogArchiveSidebar
         :archive="archive"

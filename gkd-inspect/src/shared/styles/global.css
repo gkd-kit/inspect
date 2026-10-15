@@ -21,3 +21,19 @@
   --app-viewed-bg: #10291d;
   --app-viewed-border: #1f6b43;
 }
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+body,
+#app {
+  min-height: 100%;
+  background: var(--app-bg);
+  color: var(--app-text);
+}

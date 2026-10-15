@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NButton, NInput, NInputGroup } from 'naive-ui';
+import { shallowRef } from 'vue';
+
 import type { LogVersionInfo } from './source_links';
 import PageBackButton from '@/features/navigation/PageBackButton.vue';
 
@@ -38,9 +41,9 @@ defineExpose({ openLocalFile });
 </script>
 
 <template>
-  <div name="log-toolbar" class="h-42px flex items-center gap-10px">
+  <div name="log-toolbar" class="h-[42px] flex items-center gap-[10px]">
     <PageBackButton />
-    <div name="log-title" class="flex-none text-18px font-600">
+    <div name="log-title" class="flex-none text-[18px] font-semibold">
       日志包查看器
     </div>
     <a
@@ -48,11 +51,11 @@ defineExpose({ openLocalFile });
       :href="logVersionInfo.commitUrl"
       target="_blank"
       rel="noopener noreferrer"
-      class="flex-none text-14px text-[#2563eb] hover:underline"
+      class="flex-none text-[14px] text-[#2563eb] hover:underline"
     >
       {{ logVersionInfo.versionName }} ({{ logVersionInfo.versionCode }})
     </a>
-    <NInputGroup class="ml-auto min-w-420px max-w-720px">
+    <NInputGroup class="ml-auto min-w-[420px] max-w-[720px]">
       <NInput
         :value="inputUrl"
         clearable
@@ -69,7 +72,7 @@ defineExpose({ openLocalFile });
     </NButton>
     <input
       ref="localFileInput"
-      hidden
+      class="hidden"
       type="file"
       accept=".zip,application/zip"
       @change="handleLocalFile"

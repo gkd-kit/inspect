@@ -1,4 +1,7 @@
 <script setup lang="tsx">
+import { onMounted, shallowRef } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import { loadingBar, message } from '@/shared/services/feedback';
 import { gmOk } from '@/shared/api/gm';
 import { importFromNetwork } from '@/features/snapshot-management/import';
@@ -75,8 +78,8 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div page-size flex gap-5px pt-40px flex-col flex-items-center>
-    <div v-if="!gmOk()" mb-20px>
+  <div class="page-size flex gap-[5px] pt-[40px] flex-col items-center">
+    <div v-if="!gmOk()" class="mb-[20px]">
       建议安装并启用
       <a
         href="https://github.com/gkd-kit/network-extension"

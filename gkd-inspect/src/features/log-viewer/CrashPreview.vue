@@ -1,4 +1,18 @@
 <script lang="tsx" setup>
+import {
+  NAlert,
+  NDataTable,
+  NDescriptions,
+  NDescriptionsItem,
+  NEmpty,
+  NPagination,
+  NSpin,
+  NTabPane,
+  NTabs,
+  NTag,
+} from 'naive-ui';
+import { computed, reactive, shallowRef } from 'vue';
+
 import type { DataTableColumns } from 'naive-ui';
 import type { CrashDetail, CrashSummary } from './crash_preview';
 import { formatCrashTimestamp } from './crash_preview';
@@ -107,7 +121,7 @@ const columns: DataTableColumns<CrashSummary> = [
     ellipsis: { tooltip: true },
     render(item) {
       return (
-        <div class="min-w-0 flex items-center gap-6px">
+        <div class="min-w-0 flex items-center gap-[6px]">
           <span class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             {item.name || item.fileName}
           </span>
@@ -176,7 +190,7 @@ const rowProps = (item: CrashSummary) => ({
     <div
       v-if="activeTab == 'list'"
       name="crash-list"
-      class="min-h-0 flex flex-1 flex-col gap-10px"
+      class="min-h-0 flex flex-1 flex-col gap-[10px]"
     >
       <TextSearchInput
         v-model="query"
@@ -220,7 +234,7 @@ const rowProps = (item: CrashSummary) => ({
     <div
       v-else
       name="crash-detail"
-      class="min-h-0 flex flex-1 flex-col gap-10px"
+      class="min-h-0 flex flex-1 flex-col gap-[10px]"
     >
       <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
       <NEmpty v-else-if="!detail" description="请选择一条崩溃记录" />

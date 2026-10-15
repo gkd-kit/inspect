@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { readRpcResponse, RpcException } from './rpc.ts';
 
 test('新协议成功 JSON 不会为错误检查而消耗或克隆响应体', async () => {

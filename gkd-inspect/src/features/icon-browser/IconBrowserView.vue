@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { NInput } from 'naive-ui';
+import { computed, ref } from 'vue';
+import { computedAsync, useClipboard } from '@vueuse/core';
+
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { message } from '@/shared/services/feedback';
 
@@ -23,8 +27,8 @@ const copy = async (text: string) => {
 };
 </script>
 <template>
-  <div page-size>
-    <div px-16px pt-16px flex items-center gap-16px>
+  <div class="page-size">
+    <div class="px-[16px] pt-[16px] flex items-center gap-[16px]">
       <NInput
         v-model="search"
         :style="{ width: '320px' }"
@@ -33,31 +37,19 @@ const copy = async (text: string) => {
       <div>共存在 {{ svgIds.length }} 个图标</div>
     </div>
     <div
-      p-16px
-      grid
-      gap-24px
-      justify-between
+      class="p-[16px] grid gap-[24px] justify-between"
       style="grid-template-columns: repeat(auto-fill, 150px)"
     >
       <div
         v-for="svgId in filterSvgIds"
         :key="svgId"
-        py-4px
-        flex
-        flex-col
-        gap-4px
-        items-center
-        b-b-solid
-        b-1px
-        class="bg-[#f9f9f9]"
+        class="bg-[#f9f9f9] py-[4px] flex flex-col gap-[4px] items-center [border-bottom-style:solid] border-[1px]"
         :title="getTitle(svgId)"
         @click="copy(getTitle(svgId))"
       >
-        <GkSvg :name="svgId" class="text-32px color-[#575bca] flex-shrink-0" />
+        <GkSvg :name="svgId" class="text-[32px] text-[#575bca] shrink-0" />
         <div
-          px-4px
-          text-12px
-          break-all
+          class="px-[4px] text-[12px] break-all"
           :title="svgId"
           @click.stop="copy(svgId)"
         >

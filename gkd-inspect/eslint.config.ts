@@ -5,7 +5,6 @@ import pluginVue from 'eslint-plugin-vue';
 import pluginPrettier from 'eslint-plugin-prettier/recommended';
 import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
-import autoImportGlobals from './.eslintrc-auto-import.json' with { type: 'json' };
 import projectRules from './eslint-rules/native-element-allowlist.ts';
 import stateRules from './eslint-rules/no-implicit-state-watchers.ts';
 import componentRules from './eslint-rules/component-conventions.ts';
@@ -22,14 +21,7 @@ const combinedProjectRules = {
 
 export default defineConfig(
   {
-    ignores: [
-      'dist/**',
-      'node_modules/**',
-      'public',
-      'auto-imports.d.ts',
-      'components.d.ts',
-      'auto-import-components.d.ts',
-    ],
+    ignores: ['dist/**', 'node_modules/**', 'public'],
   },
   js.configs.recommended,
   tseslint.configs.recommended,
@@ -82,7 +74,6 @@ export default defineConfig(
       sourceType: 'module',
       globals: {
         ...globals.browser,
-        ...autoImportGlobals.globals,
       },
     },
     rules: {

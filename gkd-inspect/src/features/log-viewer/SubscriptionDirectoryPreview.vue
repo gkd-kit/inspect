@@ -1,4 +1,7 @@
 <script lang="tsx" setup>
+import { NAlert, NDataTable, NEmpty, NPagination, NSpin, NTag } from 'naive-ui';
+import { computed, reactive, shallowRef } from 'vue';
+
 import type { RawSubscription } from '@gkd-kit/api';
 import type { DataTableColumns } from 'naive-ui';
 import type {
@@ -100,7 +103,7 @@ const columns: DataTableColumns<SubscriptionFileSummary> = [
     ellipsis: { tooltip: true },
     render(item) {
       return (
-        <div class="min-w-0 flex items-center gap-6px">
+        <div class="min-w-0 flex items-center gap-[6px]">
           <span class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
             {item.name || item.fileName}
           </span>
@@ -168,7 +171,7 @@ const rowProps = (item: SubscriptionFileSummary) => ({
 
     <div
       v-if="activeTab == 'list'"
-      class="min-h-0 flex flex-1 flex-col gap-10px"
+      class="min-h-0 flex flex-1 flex-col gap-[10px]"
     >
       <TextSearchInput
         v-model="query"
@@ -207,7 +210,7 @@ const rowProps = (item: SubscriptionFileSummary) => ({
       />
     </div>
 
-    <div v-else class="min-h-0 flex flex-1 flex-col gap-10px">
+    <div v-else class="min-h-0 flex flex-1 flex-col gap-[10px]">
       <NSpin v-if="detailLoading" show class="min-h-0 flex-1" />
       <NEmpty v-else-if="!detail" description="请选择一个订阅文件" />
       <div v-else class="min-h-0 flex-1">
@@ -223,7 +226,7 @@ const rowProps = (item: SubscriptionFileSummary) => ({
           :value="detail.value"
           :raw="detail.raw"
         />
-        <div v-else class="h-full min-h-0 flex flex-col gap-8px">
+        <div v-else class="h-full min-h-0 flex flex-col gap-[8px]">
           <NAlert type="warning" title="订阅 JSON 解析失败" class="flex-none">
             {{ detail.error }}
           </NAlert>

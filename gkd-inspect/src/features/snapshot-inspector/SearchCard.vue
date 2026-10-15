@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NButton, NRadio, NRadioGroup, NSpace } from 'naive-ui';
+import { computed, shallowReactive, shallowRef } from 'vue';
+
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
@@ -326,8 +329,8 @@ const updateExpandedKeys = (keys: number[]) => {
     :show="show"
     @update:value="updateLayout"
   >
-    <div class="app-panel" b-1px b-solid rounded-4px p-8px>
-      <div flex m-b-4px pr-4px>
+    <div class="app-panel border-[1px] border-solid rounded-[4px] p-[8px]">
+      <div class="flex mb-[4px] pr-[4px]">
         <NRadioGroup
           :value="enableSearchBySelector"
           @update:value="updateSearchMode"
@@ -338,7 +341,7 @@ const updateExpandedKeys = (keys: number[]) => {
           </NSpace>
         </NRadioGroup>
         <NButton
-          class="ml-12px"
+          class="ml-[12px]"
           text
           title="选择器库"
           aria-label="选择器库"
@@ -346,7 +349,7 @@ const updateExpandedKeys = (keys: number[]) => {
         >
           <template #icon><GkSvg name="selector-library" /></template>
         </NButton>
-        <div :ref="onRef" flex-1 cursor-move />
+        <div :ref="onRef" class="flex-1 cursor-move" />
         <NButton text title="最小化" @click="onUpdateShow(!show)">
           <template #icon>
             <GkSvg name="minus" />
@@ -377,7 +380,7 @@ const updateExpandedKeys = (keys: number[]) => {
           </NButton>
         </template>
       </SelectorSyntaxInput>
-      <div p-5px />
+      <div class="p-[5px]" />
       <SearchResultList
         :results="selectorResults"
         :expandedKeys="expandedKeys"

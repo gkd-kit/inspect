@@ -1,4 +1,7 @@
 <script setup lang="tsx">
+import { NDataTable } from 'naive-ui';
+import { computed } from 'vue';
+
 import type { DataTableColumns } from 'naive-ui';
 import { formatBasicJsonValue, type JsonTableRow } from './json_preview';
 
@@ -38,7 +41,7 @@ const getRowKey = (row: JsonTableRow) => row.key;
 </script>
 
 <template>
-  <div name="json-basic-table" class="mb-10px mt-6px">
+  <div name="json-basic-table" class="mb-[10px] mt-[6px]">
     <NDataTable
       striped
       size="small"

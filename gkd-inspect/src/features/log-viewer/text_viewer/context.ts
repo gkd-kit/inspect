@@ -1,3 +1,4 @@
+import { computed, nextTick, onScopeDispose, reactive, shallowRef } from 'vue';
 import type { VirtualListInst } from 'naive-ui';
 import type { ComponentPublicInstance, Ref } from 'vue';
 import { createInjectionState, useResizeObserver } from '@vueuse/core';

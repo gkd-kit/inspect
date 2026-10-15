@@ -22,49 +22,21 @@ const {
         left: imgBounding.right.value + 4 + 'px',
         top: imgBounding.top.value + 'px',
       }"
-      pointer-events-none
-      fixed
-      overflow-hidden
-      z-2
-      class="MiniHoverImg app-panel"
-      h-200px
-      w-200px
-      border-1px
-      border-indigo-600
-      border-dashed
+      class="MiniHoverImg app-panel pointer-events-none fixed overflow-hidden z-2 h-[200px] w-[200px] border-[1px] border-indigo-600 border-dashed"
     >
       <img
         :src="screenshotUrl"
         :style="hoverPositionStyle"
-        object-contain
-        absolute
-        left-0
-        top-0
-        class="max-w-none!"
+        class="max-w-none! object-contain absolute left-0 top-0"
       />
       <div
-        absolute
-        left-2px
-        top-2px
-        p-1px
-        z-1
-        text-13px
-        class="leading-[1] bg-[rgba(256,256,256,0.7)]"
+        class="leading-[1] bg-[rgba(256,256,256,0.7)] absolute left-[2px] top-[2px] p-[1px] z-1 text-[13px]"
       >
         {{ `${hoverPosition.ox.toFixed(0)}, ${hoverPosition.oy.toFixed(0)}` }}
       </div>
       <div
         v-if="boxHoverPosition"
-        absolute
-        left-2px
-        bottom-2px
-        p-1px
-        z-1
-        text-12px
-        class="leading-[1] bg-[rgba(256,256,256,0.7)]"
-        flex
-        flex-col
-        flex-items-center
+        class="leading-[1] bg-[rgba(256,256,256,0.7)] absolute left-[2px] bottom-[2px] p-[1px] z-1 text-[12px] flex flex-col items-center"
       >
         <div>{{ boxHoverPosition.top.toFixed(0) }}</div>
         <div>
@@ -78,16 +50,7 @@ const {
       </div>
       <div
         v-if="boxHoverPerPosition"
-        absolute
-        right-2px
-        bottom-2px
-        p-1px
-        z-1
-        text-12px
-        class="leading-[1] bg-[rgba(256,256,256,0.7)]"
-        flex
-        flex-col
-        flex-items-center
+        class="leading-[1] bg-[rgba(256,256,256,0.7)] absolute right-[2px] bottom-[2px] p-[1px] z-1 text-[12px] flex flex-col items-center"
       >
         <div>{{ boxHoverPerPosition.top }}</div>
         <div>
@@ -96,13 +59,7 @@ const {
         <div>{{ boxHoverPerPosition.bottom }}</div>
       </div>
       <div
-        class="top-[calc(50%-1px)] bg-[length:10px_1px]"
-        absolute
-        left-0
-        right-0
-        h-1px
-        bg-repeat-x
-        mix-blend-difference
+        class="top-[calc(50%-1px)] bg-[length:10px_1px] absolute left-0 right-0 h-[1px] bg-repeat-x mix-blend-difference"
         style="
           background-image: linear-gradient(
             to left,
@@ -115,13 +72,7 @@ const {
         "
       />
       <div
-        class="left-[calc(50%-1px)] bg-[length:1px_10px]"
-        absolute
-        top-0
-        bottom-0
-        w-1px
-        bg-repeat-y
-        mix-blend-difference
+        class="left-[calc(50%-1px)] bg-[length:1px_10px] absolute top-0 bottom-0 w-[1px] bg-repeat-y mix-blend-difference"
         style="
           background-image: linear-gradient(
             to top,

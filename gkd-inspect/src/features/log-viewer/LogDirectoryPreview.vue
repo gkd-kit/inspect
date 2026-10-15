@@ -1,4 +1,7 @@
 <script lang="tsx" setup>
+import { NAlert, NDataTable, NEmpty, NSpin } from 'naive-ui';
+import { computed, reactive, shallowRef } from 'vue';
+
 import type { DataTableColumns } from 'naive-ui';
 import DirectoryPreviewHeader from './DirectoryPreviewHeader.vue';
 import { formatLogFileDate, type LogFileSummary } from './directory_preview';
@@ -90,7 +93,7 @@ const rowProps = (item: LogFileSummary) => ({
 
     <div
       v-show="activeTab == 'list'"
-      class="min-h-0 flex flex-1 flex-col gap-10px"
+      class="min-h-0 flex flex-1 flex-col gap-[10px]"
     >
       <TextSearchInput
         v-model="query"

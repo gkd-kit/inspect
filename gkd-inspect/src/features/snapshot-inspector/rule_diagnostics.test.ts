@@ -1,6 +1,6 @@
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'vitest';
 import { listToTree } from '../../entities/snapshot/node.ts';
 import {
   evaluateRuleText,

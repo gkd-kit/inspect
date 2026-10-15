@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'vitest';
 import { getVirtualTextLines } from './virtual_text.ts';
 
 test(`getVirtualTextLines keeps empty and mixed-newline lines`, () => {

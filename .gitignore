@@ -11,6 +11,7 @@ dist
 dist-ssr
 coverage
 *.local
+/.local/
 
 .vscode
 .idea
@@ -22,7 +23,4 @@ coverage
 .env
 
 .eslintcache
-.eslintrc-auto-import.json
-auto-import.d.ts
-auto-import-components.d.ts
 vite.config.{js,ts}.timestamp-*.mjs

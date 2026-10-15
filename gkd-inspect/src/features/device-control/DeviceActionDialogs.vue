@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NButton, NCheckbox, NInput, NModal, NSelect, NSpace } from 'naive-ui';
+import { shallowReactive, shallowRef } from 'vue';
+
 import { message } from '@/shared/services/feedback';
 import { errorWrap } from '@/shared/services/error';
 import { useTask } from '@/shared/lib/task';
@@ -190,10 +193,10 @@ const subscriptionPlaceholder = `
       placeholder="请输入合法的选择器"
       @update:value="updateSelector"
     />
-    <div class="mt-8px flex justify-end">
+    <div class="mt-[8px] flex justify-end">
       <NButton secondary @click="openSelectorLibrary">选择器库</NButton>
     </div>
-    <div h-15px />
+    <div class="h-[15px]" />
     <NSpace>
       <NCheckbox
         :checked="clickAction.quickFind"
@@ -209,12 +212,12 @@ const subscriptionPlaceholder = `
         查找说明
       </a>
     </NSpace>
-    <div h-10px />
-    <div flex gap-10px flex-items-center>
+    <div class="h-[10px]" />
+    <div class="flex gap-[10px] items-center">
       <NSelect
         :value="clickAction.action"
         :options="actionOptions"
-        class="w-150px"
+        class="w-[150px]"
         @update:value="updateAction"
       />
       <a

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { NAlert, NDataTable, NInput, NSpin } from 'naive-ui';
+import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue';
+
 import pLimit from 'p-limit';
 import {
   asRecord,
@@ -136,7 +139,7 @@ onBeforeUnmount(dispose);
 </script>
 
 <template>
-  <div class="h-full min-h-0 flex flex-col gap-10px">
+  <div class="h-full min-h-0 flex flex-col gap-[10px]">
     <DirectoryPreviewHeader
       title="启动记录"
       :count="items.length"

@@ -1,4 +1,19 @@
 <script lang="tsx" setup>
+import {
+  NCard,
+  NCollapse,
+  NCollapseItem,
+  NDataTable,
+  NDescriptions,
+  NDescriptionsItem,
+  NEmpty,
+  NPagination,
+  NStatistic,
+  NTabPane,
+  NTabs,
+} from 'naive-ui';
+import { computed, reactive, shallowRef } from 'vue';
+
 import type {
   IArray,
   RawApp,
@@ -89,7 +104,7 @@ const renderRules = (group: RawAppGroup | RawGlobalGroup) => {
           name={index}
           title={getRuleTitle(rule, index)}
         >
-          <div class="m-0 whitespace-pre-wrap rounded-4px border border-[#e5e7eb] bg-[#fafafa] p-10px font-mono text-12px [overflow-wrap:anywhere]">
+          <div class="m-0 whitespace-pre-wrap rounded-[4px] border border-[#e5e7eb] bg-[#fafafa] p-[10px] font-mono text-[12px] [overflow-wrap:anywhere]">
             {JSON.stringify(rule, null, 2)}
           </div>
         </NCollapseItem>
@@ -100,7 +115,7 @@ const renderRules = (group: RawAppGroup | RawGlobalGroup) => {
 
 const renderAppGroups = (app: RawApp) => {
   return (
-    <div {...{ name: `subscription-groups` }} class="flex flex-col gap-10px">
+    <div {...{ name: `subscription-groups` }} class="flex flex-col gap-[10px]">
       {app.groups.map((group) => (
         <NCard
           key={group.key}
@@ -108,7 +123,7 @@ const renderAppGroups = (app: RawApp) => {
           title={`${group.name} · #${group.key}`}
         >
           {group.desc ? (
-            <div class="mb-10px text-[#6b7280]">{group.desc}</div>
+            <div class="mb-[10px] text-[#6b7280]">{group.desc}</div>
           ) : null}
           {renderRules(group)}
         </NCard>
@@ -136,7 +151,7 @@ const categoryColumns: DataTableColumns<
 <template>
   <div
     name="subscription-preview"
-    class="h-full min-h-0 flex flex-col gap-12px"
+    class="h-full min-h-0 flex flex-col gap-[12px]"
   >
     <NDescriptions bordered size="small" :column="3" labelPlacement="left">
       <NDescriptionsItem label="名称">{{ value.name }}</NDescriptionsItem>
@@ -157,42 +172,42 @@ const categoryColumns: DataTableColumns<
       </NDescriptionsItem>
     </NDescriptions>
 
-    <div name="subscription-stats" class="flex flex-wrap gap-12px">
+    <div name="subscription-stats" class="flex flex-wrap gap-[12px]">
       <NStatistic
         v-if="statistics.apps"
         label="应用"
         :value="statistics.apps"
-        class="min-w-120px rounded-6px border border-[#e5e7eb] bg-[#fafafa] px-14px py-10px"
+        class="min-w-[120px] rounded-[6px] border border-[#e5e7eb] bg-[#fafafa] px-[14px] py-[10px]"
       />
       <NStatistic
         v-if="statistics.appGroups"
         label="应用规则组"
         :value="statistics.appGroups"
-        class="min-w-120px rounded-6px border border-[#e5e7eb] bg-[#fafafa] px-14px py-10px"
+        class="min-w-[120px] rounded-[6px] border border-[#e5e7eb] bg-[#fafafa] px-[14px] py-[10px]"
       />
       <NStatistic
         v-if="statistics.appRules"
         label="应用规则"
         :value="statistics.appRules"
-        class="min-w-120px rounded-6px border border-[#e5e7eb] bg-[#fafafa] px-14px py-10px"
+        class="min-w-[120px] rounded-[6px] border border-[#e5e7eb] bg-[#fafafa] px-[14px] py-[10px]"
       />
       <NStatistic
         v-if="statistics.globalGroups"
         label="全局规则组"
         :value="statistics.globalGroups"
-        class="min-w-120px rounded-6px border border-[#e5e7eb] bg-[#fafafa] px-14px py-10px"
+        class="min-w-[120px] rounded-[6px] border border-[#e5e7eb] bg-[#fafafa] px-[14px] py-[10px]"
       />
       <NStatistic
         v-if="statistics.globalRules"
         label="全局规则"
         :value="statistics.globalRules"
-        class="min-w-120px rounded-6px border border-[#e5e7eb] bg-[#fafafa] px-14px py-10px"
+        class="min-w-[120px] rounded-[6px] border border-[#e5e7eb] bg-[#fafafa] px-[14px] py-[10px]"
       />
       <NStatistic
         v-if="statistics.categories"
         label="分类"
         :value="statistics.categories"
-        class="min-w-120px rounded-6px border border-[#e5e7eb] bg-[#fafafa] px-14px py-10px"
+        class="min-w-[120px] rounded-[6px] border border-[#e5e7eb] bg-[#fafafa] px-[14px] py-[10px]"
       />
     </div>
 
@@ -204,7 +219,7 @@ const categoryColumns: DataTableColumns<
       <NTabPane v-if="apps.length" name="apps" tab="应用规则">
         <div
           name="subscription-tab-body"
-          class="h-full min-h-0 flex flex-col gap-10px"
+          class="h-full min-h-0 flex flex-col gap-[10px]"
         >
           <TextSearchInput
             v-model="appQuery"
@@ -225,7 +240,7 @@ const categoryColumns: DataTableColumns<
               :name="app.id"
               :title="`${app.name || app.id} · ${app.groups.length} 个规则组`"
             >
-              <div name="app-id" class="mb-10px text-[#6b7280]">
+              <div name="app-id" class="mb-[10px] text-[#6b7280]">
                 {{ app.id }}
               </div>
               <component :is="() => renderAppGroups(app)" />
@@ -243,7 +258,7 @@ const categoryColumns: DataTableColumns<
       <NTabPane v-if="globalGroups.length" name="global" tab="全局规则">
         <div
           name="subscription-global-groups"
-          class="min-h-0 flex flex-col gap-10px overflow-auto"
+          class="min-h-0 flex flex-col gap-[10px] overflow-auto"
         >
           <NCard
             v-for="group in globalGroups"
@@ -251,7 +266,7 @@ const categoryColumns: DataTableColumns<
             size="small"
             :title="`${group.name} · #${group.key}`"
           >
-            <div v-if="group.desc" class="mb-10px text-[#6b7280]">
+            <div v-if="group.desc" class="mb-[10px] text-[#6b7280]">
               {{ group.desc }}
             </div>
             <component :is="() => renderRules(group)" />
