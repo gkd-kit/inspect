@@ -1,0 +1,36 @@
+{
+  "name": "@gkd-kit/inspect",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "prebuild:mirror": "node ./scripts/updateVersion.ts",
+    "build:mirror": "cross-env MIRROR=ON vite build",
+    "delete-issue-comments": "node ./scripts/deleteIssueComments.ts",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "test": "node --test --experimental-strip-types \"eslint-rules/*.test.ts\" \"src/**/*.test.ts\"",
+    "test:log": "node --test --experimental-strip-types \"src/features/log-viewer/**/*.test.ts\"",
+    "test:home": "node --test --experimental-strip-types \"src/features/snapshot-list/*.test.ts\"",
+    "test:snapshot": "node --test --experimental-strip-types \"src/features/snapshot-inspector/*.test.ts\" \"src/entities/selector/*.test.ts\" \"src/features/selector-library/*.test.ts\"",
+    "test:workers": "node --test --experimental-strip-types src/shared/api/workers.test.ts src/entities/snapshot/api.test.ts src/features/log-viewer/build_asset_api.test.ts",
+    "type-check": "vue-tsc --noEmit",
+    "lint:check": "eslint .",
+    "lint": "eslint --cache --fix .",
+    "format": "prettier --cache --write --ignore-unknown .",
+    "check": "pnpm lint:check && pnpm type-check && pnpm test && pnpm build-only",
+    "postpublish": "curl -X PUT https://registry-direct.npmmirror.com/@gkd-kit/inspect/sync"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gkd-kit/inspect"
+  },
+  "files": [
+    "./dist"
+  ]
+}

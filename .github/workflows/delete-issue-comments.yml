@@ -19,6 +19,6 @@ jobs:
 
       - uses: pnpm/setup@v2
 
-      - run: node ./scripts/deleteIssueComments.ts
+      - run: pnpm run delete-issue-comments
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

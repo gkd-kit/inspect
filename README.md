@@ -13,6 +13,21 @@ GKD 网页端审查工具,
 - 按全局、应用或界面范围收藏并复用选择器
 - 可配置生成规则, 支持静态诊断和截图点击生成 `position`
 
+## 本地开发
+
+仓库包含前端 [gkd-inspect](./gkd-inspect) 和服务端 [gkd-server](./gkd-server/README.md)，依赖与锁文件统一放在根目录。
+
+在根目录执行：
+
+```sh
+pnpm install
+pnpm dev          # 启动前端
+pnpm dev:server   # 启动服务端
+pnpm check        # 检查两个子项目并执行构建与部署预演
+```
+
+前端构建产物位于 `gkd-inspect/dist`。服务端命令可使用 `pnpm --dir gkd-server run <命令>` 执行。
+
 ## 运行环境
 
 - Chrome 117 及以上版本

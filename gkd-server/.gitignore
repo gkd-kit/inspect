@@ -1,0 +1,9 @@
+node_modules/
+.wrangler/
+worker-configuration.d.ts
+coverage/
+dist/
+*.tsbuildinfo
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

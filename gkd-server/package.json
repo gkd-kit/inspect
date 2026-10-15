@@ -1,0 +1,17 @@
+{
+  "name": "@gkd-kit/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "type-check": "pnpm types && tsc && tsc -p test/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "d1:migrate:local": "wrangler d1 migrations apply gkd --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply gkd --remote",
+    "check": "pnpm type-check && pnpm test && wrangler deploy --dry-run"
+  }
+}

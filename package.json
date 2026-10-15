@@ -1,39 +1,30 @@
 {
-  "name": "@gkd-kit/inspect",
-  "version": "0.0.0",
+  "name": "gkd-kit",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "prebuild:mirror": "node ./scripts/updateVersion.ts",
-    "build:mirror": "cross-env MIRROR=ON vite build",
-    "delete-issue-comments": "node ./scripts/deleteIssueComments.ts",
-    "preview": "vite preview",
-    "build-only": "vite build",
-    "test": "node --test --experimental-strip-types \"eslint-rules/*.test.ts\" \"src/**/*.test.ts\"",
-    "test:log": "node --test --experimental-strip-types \"src/features/log-viewer/**/*.test.ts\"",
-    "test:home": "node --test --experimental-strip-types \"src/features/snapshot-list/*.test.ts\"",
-    "test:snapshot": "node --test --experimental-strip-types \"src/features/snapshot-inspector/*.test.ts\" \"src/entities/selector/*.test.ts\" \"src/features/selector-library/*.test.ts\"",
-    "test:workers": "node --test --experimental-strip-types src/shared/api/workers.test.ts src/entities/snapshot/api.test.ts src/features/log-viewer/build_asset_api.test.ts",
-    "type-check": "vue-tsc --noEmit",
-    "lint:check": "eslint .",
-    "lint": "eslint --cache --fix .",
+    "dev": "pnpm --dir gkd-inspect run dev",
+    "build": "pnpm --dir gkd-inspect run build",
+    "build:mirror": "pnpm --dir gkd-inspect run build:mirror",
+    "delete-issue-comments": "pnpm --dir gkd-inspect run delete-issue-comments",
+    "preview": "pnpm --dir gkd-inspect run preview",
+    "build-only": "pnpm --dir gkd-inspect run build-only",
+    "test": "pnpm --dir gkd-inspect run test",
+    "test:log": "pnpm --dir gkd-inspect run test:log",
+    "test:home": "pnpm --dir gkd-inspect run test:home",
+    "test:snapshot": "pnpm --dir gkd-inspect run test:snapshot",
+    "test:workers": "pnpm --dir gkd-inspect run test:workers",
+    "type-check": "pnpm --dir gkd-inspect run type-check",
+    "lint:check": "pnpm --dir gkd-inspect run lint:check",
+    "lint": "pnpm --dir gkd-inspect run lint",
+    "dev:server": "pnpm --dir gkd-server run dev",
+    "check": "pnpm --dir gkd-inspect run check && pnpm --dir gkd-server run check",
+    "check:server": "pnpm --dir gkd-server run check",
+    "test:server": "pnpm --dir gkd-server run test",
+    "deploy:server": "pnpm --dir gkd-server run deploy",
     "format": "prettier --cache --write --ignore-unknown .",
-    "check": "pnpm lint:check && pnpm type-check && pnpm test && pnpm build-only",
-    "postinstall": "simple-git-hooks",
-    "postpublish": "curl -X PUT https://registry-direct.npmmirror.com/@gkd-kit/inspect/sync"
+    "postinstall": "simple-git-hooks"
   },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/gkd-kit/inspect"
-  },
-  "files": [
-    "./dist"
-  ],
   "dependencies": {
     "@antv/g6": "catalog:",
     "@eslint/js": "catalog:",
@@ -94,28 +85,33 @@
     "vue": "catalog:",
     "vue-eslint-parser": "catalog:",
     "vue-router": "catalog:",
-    "vue-tsc": "catalog:"
+    "vue-tsc": "catalog:",
+    "fflate": "catalog:",
+    "hono": "catalog:",
+    "@cloudflare/vitest-pool-workers": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged"
   },
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,vue}": [
-      "eslint --fix"
-    ],
     "**/*.{scss,json,md}": [
       "prettier --write"
+    ],
+    "gkd-inspect/**/*.{ts,tsx,vue}": [
+      "pnpm --dir gkd-inspect exec eslint --fix"
     ]
   },
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "26.6.0",
+      "version": "26.7.0",
       "onFail": "error"
     },
     "packageManager": {
       "name": "pnpm",
-      "version": "11.20.0",
+      "version": "11.22.0",
       "onFail": "error"
     }
   }

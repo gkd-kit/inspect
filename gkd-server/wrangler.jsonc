@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "gkd-kit-workers",
+  "main": "./src/index.ts",
+  "compatibility_date": "2026-08-19",
+  "workers_dev": true,
+  "send_metrics": false,
+  "keep_vars": true,
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gkd",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "784053921",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    }
+  ]
+}
