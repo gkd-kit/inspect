@@ -6,15 +6,16 @@
     "dev": "pnpm --dir gkd-inspect run dev",
     "build": "pnpm --dir gkd-inspect run build",
     "build:mirror": "pnpm --dir gkd-inspect run build:mirror",
-    "delete-issue-comments": "pnpm --dir gkd-inspect run delete-issue-comments",
+    "delete-issue-comments": "node ./scripts/deleteIssueComments.ts",
     "preview": "pnpm --dir gkd-inspect run preview",
     "test": "pnpm --dir gkd-inspect run test",
     "test:watch": "pnpm --dir gkd-inspect run test:watch",
-    "type-check": "pnpm --dir gkd-inspect run type-check",
+    "type-check": "pnpm type-check:root && pnpm --dir gkd-inspect run type-check && pnpm --dir gkd-server run type-check",
+    "type-check:root": "tsc -p tsconfig.json",
     "lint:check": "pnpm --dir gkd-inspect run lint:check",
     "lint": "pnpm --dir gkd-inspect run lint",
     "dev:server": "pnpm --dir gkd-server run dev",
-    "check": "pnpm --dir gkd-inspect run check && pnpm --dir gkd-server run check",
+    "check": "pnpm type-check:root && pnpm --dir gkd-inspect run check && pnpm --dir gkd-server run check",
     "check:server": "pnpm --dir gkd-server run check",
     "test:server": "pnpm --dir gkd-server run test",
     "deploy:server": "pnpm --dir gkd-server run deploy",
@@ -94,7 +95,7 @@
     "runtime": {
       "name": "node",
       "version": "26.7.0",
-      "onFail": "error"
+      "onFail": "warn"
     },
     "packageManager": {
       "name": "pnpm",

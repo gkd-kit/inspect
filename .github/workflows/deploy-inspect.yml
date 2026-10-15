@@ -33,7 +33,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      - uses: nwtgck/actions-netlify@v3
+      - uses: nwtgck/actions-netlify@v4
         with:
           publish-dir: ./gkd-inspect/dist
           production-branch: main
