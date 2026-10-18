@@ -176,7 +176,7 @@ const searchResults = computed<SearchResult[]>(() => {
           class="min-h-0 flex-1 overflow-auto px-[4px] pb-[24px] pt-[8px] font-mono text-[13px]"
         >
           <NAlert v-if="structureTooLarge" type="warning" title="JSON 结构过大">
-            为避免占用过多内存，请切换到“原始 JSON”查看和搜索。
+            请切换到“原始 JSON”查看和搜索。
           </NAlert>
           <template v-else-if="query.trim()">
             <NEmpty v-if="searchResults.length == 0" description="没有匹配项" />

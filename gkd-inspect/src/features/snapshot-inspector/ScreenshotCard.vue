@@ -3,6 +3,7 @@ import { NButton, NModal, NPopconfirm } from 'naive-ui';
 import { RouterLink, useRouter } from 'vue-router';
 import { computed, shallowRef } from 'vue';
 
+import { useSingleTask } from '@/shared/lib/latest_task';
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { message } from '@/shared/services/feedback';
 import { DELETE_TIMEOUT, withTimeout } from '@/shared/lib/async';
@@ -36,8 +37,6 @@ const router = useRouter();
 const { clickImg, imgHover, imgMove, imgLoadTime, positionStyle, imgRef } =
   useSharedSnapshotHoverImg();
 
-const redactionSaving = shallowRef(false);
-const deletingSourceSnapshot = shallowRef(false);
 const createdSnapshotResult = shallowRef<{
   snapshotId: number;
   sourceSnapshotId: number;
@@ -91,11 +90,10 @@ const handleCreatedSnapshotLinkClick = (event: MouseEvent) => {
   closeCreatedSnapshotResult();
 };
 
-const deleteSourceSnapshotAndOpen = async () => {
+const deleteSourceTask = useSingleTask(async ({ commit }) => {
   const result = createdSnapshotResult.value;
   const path = createdSnapshotPath.value;
-  if (!result || !path || deletingSourceSnapshot.value) return;
-  deletingSourceSnapshot.value = true;
+  if (!result || !path) return;
   let deleted = false;
   try {
     await withTimeout(
@@ -105,7 +103,9 @@ const deleteSourceSnapshotAndOpen = async () => {
     );
     deleted = true;
     await router.push(path);
-    closeCreatedSnapshotResult();
+    commit(() => {
+      closeCreatedSnapshotResult();
+    });
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     message.error(
@@ -113,47 +113,51 @@ const deleteSourceSnapshotAndOpen = async () => {
         ? `原快照已删除，但打开脱敏副本失败：${detail}`
         : `删除原快照失败：${detail}`,
     );
-  } finally {
-    deletingSourceSnapshot.value = false;
+    throw error;
   }
-};
+});
+const deletingSourceSnapshot = deleteSourceTask.loading;
+const deleteSourceSnapshotAndOpen = deleteSourceTask.run;
 
-const createRedactedCopy = async (selection: RedactionSelection) => {
-  const currentSnapshot = snapshot.value;
-  if (!currentSnapshot || redactionSaving.value) return;
-  redactionSaving.value = true;
-  try {
-    const sourceScreenshot = await screenshotStorage.getItem(
-      currentSnapshot.id,
-    );
-    if (!sourceScreenshot) throw new Error('原始截图不存在');
-    const newId = await getAvailableSnapshotId(
-      Math.max(Date.now(), currentSnapshot.id + 1),
-      (id) => snapshotStorage.hasItem(id),
-    );
-    const nodeRectangles = scaleRedactionRectangles(
-      selection.rectangles,
-      currentSnapshot.screenWidth / selection.imageWidth,
-      currentSnapshot.screenHeight / selection.imageHeight,
-    );
-    const redactedScreenshot = await renderRedactedScreenshot(
-      sourceScreenshot,
-      selection.rectangles,
-    );
-    const redactedSnapshot = createRedactedSnapshotCopy(
-      currentSnapshot,
-      newId,
-      nodeRectangles,
-    );
-    await setSnapshot(redactedSnapshot, redactedScreenshot);
-    setRedactionVisible(false);
-    showCreatedSnapshotResult(currentSnapshot.id, newId);
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : String(error));
-  } finally {
-    redactionSaving.value = false;
-  }
-};
+const redactionTask = useSingleTask(
+  async ({ commit }, selection: RedactionSelection) => {
+    const currentSnapshot = snapshot.value;
+    if (!currentSnapshot) return;
+    try {
+      const sourceScreenshot = await screenshotStorage.getItem(
+        currentSnapshot.id,
+      );
+      if (!sourceScreenshot) throw new Error('原始截图不存在');
+      const newId = await getAvailableSnapshotId(
+        Math.max(Date.now(), currentSnapshot.id + 1),
+        (id) => snapshotStorage.hasItem(id),
+      );
+      const nodeRectangles = scaleRedactionRectangles(
+        selection.rectangles,
+        currentSnapshot.screenWidth / selection.imageWidth,
+        currentSnapshot.screenHeight / selection.imageHeight,
+      );
+      const redactedScreenshot = selection.rectangles.length
+        ? await renderRedactedScreenshot(sourceScreenshot, selection.rectangles)
+        : sourceScreenshot;
+      const redactedSnapshot = createRedactedSnapshotCopy(
+        currentSnapshot,
+        newId,
+        nodeRectangles,
+        selection.nodeIds,
+      );
+      await setSnapshot(redactedSnapshot, redactedScreenshot);
+      commit(() => {
+        setRedactionVisible(false);
+        showCreatedSnapshotResult(currentSnapshot.id, newId);
+      });
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  },
+);
+const createRedactedCopy = redactionTask.run;
 </script>
 
 <template>
@@ -199,6 +203,7 @@ const createRedactedCopy = async (selection: RedactionSelection) => {
       :sourceUrl="screenshotUrl"
       :imageWidth="snapshot.screenWidth"
       :imageHeight="snapshot.screenHeight"
+      :nodes="snapshot.nodes"
       @update:show="setRedactionVisible"
       @apply="createRedactedCopy"
     />
@@ -213,7 +218,7 @@ const createRedactedCopy = async (selection: RedactionSelection) => {
       @update:show="updateCreatedSnapshotResult"
     >
       <div class="flex flex-col gap-[12px]">
-        <div>脱敏副本已创建，原始快照未修改。</div>
+        <div>脱敏副本已创建</div>
         <div class="text-[13px] text-[#64748b]">新快照链接</div>
         <RouterLink
           v-if="createdSnapshotPath"

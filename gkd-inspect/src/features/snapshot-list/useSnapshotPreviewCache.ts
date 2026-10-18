@@ -1,4 +1,10 @@
-import { onBeforeUnmount, shallowReactive, shallowReadonly } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  shallowReactive,
+  shallowReadonly,
+} from 'vue';
+import { useKeyedTask } from '@/shared/lib/latest_task';
 
 interface SnapshotPreviewCacheOptions {
   getScreenshot: (snapshotId: number) => Promise<ArrayBuffer | null>;
@@ -10,9 +16,6 @@ export const useSnapshotPreviewCache = (
 ) => {
   const maxEntries = Math.max(1, options.maxEntries ?? 12);
   const urlData = shallowReactive<Record<number, string>>({});
-  const loadingData = shallowReactive<Record<number, boolean>>({});
-  const errorData = shallowReactive<Record<number, string>>({});
-  const revisions = new Map<number, number>();
   const order: number[] = [];
   let disposed = false;
 
@@ -22,12 +25,10 @@ export const useSnapshotPreviewCache = (
   };
 
   const clearPreview = (snapshotId: number) => {
-    revisions.set(snapshotId, (revisions.get(snapshotId) ?? 0) + 1);
+    previewTask.cancel(snapshotId);
     const url = urlData[snapshotId];
     if (url) URL.revokeObjectURL(url);
     delete urlData[snapshotId];
-    delete loadingData[snapshotId];
-    delete errorData[snapshotId];
     removeOrderEntry(snapshotId);
   };
 
@@ -41,55 +42,55 @@ export const useSnapshotPreviewCache = (
     }
   };
 
+  const previewTask = useKeyedTask(
+    async ({ commit, isCurrent }, snapshotId: number) => {
+      let screenshot: ArrayBuffer | null;
+      try {
+        screenshot = await options.getScreenshot(snapshotId);
+      } catch {
+        throw new Error('预览加载失败');
+      }
+      if (!isCurrent()) return;
+      if (!screenshot) throw new Error('暂无预览图');
+      commit(() => {
+        urlData[snapshotId] = URL.createObjectURL(new Blob([screenshot]));
+        touch(snapshotId);
+      });
+    },
+  );
   const loadPreview = async (snapshotId: number) => {
     if (disposed) return;
     if (urlData[snapshotId]) {
       touch(snapshotId);
       return;
     }
-    if (loadingData[snapshotId]) return;
-
-    const revision = (revisions.get(snapshotId) ?? 0) + 1;
-    revisions.set(snapshotId, revision);
-    loadingData[snapshotId] = true;
-    delete errorData[snapshotId];
-    try {
-      const screenshot = await options.getScreenshot(snapshotId);
-      if (disposed || revisions.get(snapshotId) !== revision) return;
-      if (!screenshot) {
-        errorData[snapshotId] = '暂无预览图';
-        return;
-      }
-      const url = URL.createObjectURL(new Blob([screenshot]));
-      if (disposed || revisions.get(snapshotId) !== revision) {
-        URL.revokeObjectURL(url);
-        return;
-      }
-      urlData[snapshotId] = url;
-      touch(snapshotId);
-    } catch {
-      if (!disposed && revisions.get(snapshotId) === revision) {
-        errorData[snapshotId] = '预览加载失败';
-      }
-    } finally {
-      if (!disposed && revisions.get(snapshotId) === revision) {
-        delete loadingData[snapshotId];
-      }
-    }
+    await previewTask.run(snapshotId);
   };
 
   const dispose = () => {
     if (disposed) return;
     disposed = true;
     [...order].forEach(clearPreview);
-    revisions.clear();
+    previewTask.cancelAll();
   };
   onBeforeUnmount(dispose);
+  const errors = computed(() =>
+    Object.fromEntries(
+      Object.entries(previewTask.errors.value).map(([key, error]) => [
+        key,
+        error?.message,
+      ]),
+    ),
+  );
 
   return {
     urls: shallowReadonly(urlData),
-    loading: shallowReadonly(loadingData),
-    errors: shallowReadonly(errorData),
+    get loading() {
+      return previewTask.loading.value;
+    },
+    get errors() {
+      return errors.value;
+    },
     loadPreview,
     clearPreview,
     dispose,

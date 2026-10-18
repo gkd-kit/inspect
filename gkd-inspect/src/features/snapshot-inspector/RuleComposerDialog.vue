@@ -330,7 +330,7 @@ const resetDialogState = () => {
       </NSwitch>
     </div>
 
-    <div class="app-divider" />
+    <div class="h-px my-[10px] mx-0 bg-(--app-border)" />
 
     <div
       class="grid grid-cols-[minmax(320px,0.9fr)_minmax(380px,1.1fr)] gap-[12px]"
@@ -368,7 +368,7 @@ const resetDialogState = () => {
             :style="markerStyle"
           />
         </div>
-        <div class="mt-[6px] break-all gkd_code text-[12px] text-[#64748b]">
+        <div class="mt-[6px] break-all font-mono! text-[12px] text-[#64748b]">
           {{ positionText }}
         </div>
       </div>
@@ -385,7 +385,7 @@ const resetDialogState = () => {
           type="textarea"
           readonly
           :resizable="false"
-          class="h-[340px] gkd_code"
+          class="h-[340px] font-mono!"
         />
         <NAlert
           v-if="diagnostic.status != 'empty'"

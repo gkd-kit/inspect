@@ -96,9 +96,9 @@ const highlightedRanges = computed(() =>
         </div>
       </div>
       <NScrollbar
-        class="self-stretch flex-1 text-[20px] leading-[28px] gkd_code"
+        class="self-stretch flex-1 text-[20px] leading-[28px] font-mono!"
       >
-        <div class="app-subtle mb-[24px] break-all px-[4px] py-[2px]">
+        <div class="bg-(--app-subtle)! mb-[24px] break-all px-[4px] py-[2px]">
           <SelectorText
             :source="selector.source"
             :tokens="selector.tokens"

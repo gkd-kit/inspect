@@ -29,6 +29,7 @@ import type { StackRetraceTextState } from './useLogRetrace';
 
 defineProps<{
   archive: LogArchive;
+  resourceKey: symbol;
   appNames: Record<string, string>;
   appsData?: AppsPreviewData;
   appsView: `users` | `raw`;
@@ -129,7 +130,11 @@ const emit = defineEmits<{
     </div>
 
     <div name="preview-body" class="min-h-0 flex-1 p-[12px]">
-      <NSpin v-if="previewLoading" show class="h-full w-full" />
+      <NSpin
+        v-if="previewLoading && previewKind == 'none'"
+        show
+        class="h-full w-full"
+      />
       <NEmpty
         v-else-if="previewKind == 'none'"
         description="该日志包没有可预览内容"
@@ -186,6 +191,7 @@ const emit = defineEmits<{
       </div>
       <LogStartupPreview
         v-else-if="previewKind == 'startup-directory'"
+        :key="resourceKey"
         :archive="archive"
       />
       <LogDiagnosticPreview
@@ -260,7 +266,7 @@ const emit = defineEmits<{
       />
       <SqlitePreview
         v-else-if="previewKind == 'database' && databaseData"
-        :key="selectedPath"
+        :key="resourceKey"
         :database="databaseData"
         :wal="walData"
         :app-names="appNames"

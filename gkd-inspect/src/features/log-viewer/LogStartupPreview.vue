@@ -2,6 +2,7 @@
 import { NAlert, NDataTable, NInput, NSpin } from 'naive-ui';
 import { computed, onBeforeUnmount, onMounted, shallowRef } from 'vue';
 
+import { useLatestTask } from '@/shared/lib/latest_task';
 import pLimit from 'p-limit';
 import {
   asRecord,
@@ -23,7 +24,6 @@ import TextViewer from './text_viewer/TextViewer.vue';
 
 const props = defineProps<{ archive: LogArchive }>();
 const items = shallowRef<StartupSummary[]>([]);
-const loading = shallowRef(false);
 const selected = shallowRef<StartupSummary>();
 const detail = shallowRef<{
   raw: string;
@@ -31,10 +31,7 @@ const detail = shallowRef<{
   error?: string;
   structured?: boolean;
 }>();
-const detailLoading = shallowRef(false);
 const query = shallowRef(``);
-let sequence = 0;
-let disposed = false;
 const setQuery = (value: string) => {
   query.value = value;
 };
@@ -61,8 +58,7 @@ const columns = [
   { key: `path`, title: `文件` },
   { key: `error`, title: `读取问题` },
 ];
-const loadSummaries = async () => {
-  loading.value = true;
+const summariesTask = useLatestTask(async ({ commit }) => {
   const limit = pLimit(4);
   const results = await Promise.all(
     props.archive.entries
@@ -84,45 +80,44 @@ const loadSummaries = async () => {
         }),
       ),
   );
-  if (disposed) return;
-  items.value = results.sort(
-    (a, b) => b.timestamp - a.timestamp || b.path.localeCompare(a.path),
-  );
-  loading.value = false;
-};
-const openDetail = async (item: StartupSummary) => {
-  const current = ++sequence;
-  selected.value = item;
-  detail.value = undefined;
-  detailLoading.value = true;
+  commit(() => {
+    items.value = results.sort(
+      (a, b) => b.timestamp - a.timestamp || b.path.localeCompare(a.path),
+    );
+  });
+});
+const loading = summariesTask.loading;
+const detailTask = useLatestTask(async ({ commit }, item: StartupSummary) => {
+  let result: NonNullable<typeof detail.value>;
   try {
     const entry = props.archive.entryMap.get(item.path);
     if (!entry || entry.kind != `json`) throw new Error(`不支持的启动记录格式`);
     const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
-    if (disposed || current != sequence) return;
     try {
       const value: unknown = JSON.parse(raw);
-      detail.value = {
+      result = {
         raw,
         value,
         structured:
           Object.keys(asRecord(value)).length > 0 && !isJsonTreeTooLarge(value),
       };
     } catch (error) {
-      detail.value = { raw, error: `JSON 解析失败：${String(error)}` };
+      result = { raw, error: `JSON 解析失败：${String(error)}` };
     }
   } catch (error) {
-    if (!disposed && current == sequence)
-      detail.value = { raw: ``, error: String(error) };
-  } finally {
-    if (!disposed && current == sequence) detailLoading.value = false;
+    result = { raw: '', error: String(error) };
   }
-};
+  commit(() => {
+    selected.value = item;
+    detail.value = result;
+  });
+});
+const detailLoading = detailTask.loading;
+const openDetail = detailTask.run;
 const showList = () => {
-  sequence++;
+  detailTask.cancel();
   selected.value = undefined;
   detail.value = undefined;
-  detailLoading.value = false;
 };
 const rowProps = (item: StartupSummary) => ({
   class: `cursor-pointer`,
@@ -130,12 +125,13 @@ const rowProps = (item: StartupSummary) => ({
     void openDetail(item);
   },
 });
-const dispose = () => {
-  disposed = true;
-  sequence++;
-};
-onMounted(loadSummaries);
-onBeforeUnmount(dispose);
+onMounted(() => {
+  void summariesTask.run();
+});
+onBeforeUnmount(() => {
+  summariesTask.cancel();
+  detailTask.cancel();
+});
 </script>
 
 <template>

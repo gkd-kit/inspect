@@ -13,15 +13,18 @@ import {
 } from '@/features/snapshot-management/export';
 import { DELETE_TIMEOUT, withTimeout } from '@/shared/lib/async';
 import { snapshotStorage } from '@/entities/snapshot/storage';
-import { useTask } from '@/shared/lib/task';
+import { useSingleTask } from '@/shared/lib/latest_task';
 import { getImagUrl, getImportUrl } from '@/entities/snapshot/urls';
+
+interface BatchActionOptions {
+  prepareAfterDelete?: () => Promise<() => void>;
+  beforeDeleteItem?: (id: number) => Promise<unknown>;
+  isCurrent?: () => boolean;
+}
 
 export const useBatchActions = (
   checkedRowKeys: Ref<number[]>,
-  options: {
-    onAfterDelete?: () => void | Promise<void>;
-    beforeDeleteItem?: (id: number) => Promise<unknown>;
-  } = {},
+  options: BatchActionOptions | (() => BatchActionOptions) = {},
 ) => {
   // Devicepage暂不支持批量操作
   const checkedSnapshots = () => {
@@ -32,11 +35,14 @@ export const useBatchActions = (
     );
   };
 
-  const batchDelete = useTask(async () => {
+  const batchDelete = useSingleTask(async ({ commit }) => {
+    const currentOptions = typeof options === 'function' ? options() : options;
+    const ids = [...checkedRowKeys.value];
+    let failedIds: number[];
     await new Promise((res, rej) => {
       dialog.error({
         title: `删除`,
-        content: `是否批量删除 ${checkedRowKeys.value.length} 个快照`,
+        content: `是否批量删除 ${ids.length} 个快照`,
         negativeText: `取消`,
         positiveText: `确认`,
         onClose: rej,
@@ -46,14 +52,15 @@ export const useBatchActions = (
         onPositiveClick: res,
       });
     });
-    if (options.beforeDeleteItem) {
+    if (currentOptions.isCurrent && !currentOptions.isCurrent()) return;
+    if (currentOptions.beforeDeleteItem) {
       const remoteResults = await Promise.allSettled(
-        checkedRowKeys.value.map((k) => options.beforeDeleteItem!(k)),
+        ids.map((k) => currentOptions.beforeDeleteItem!(k)),
       );
-      const remoteFailedIds = checkedRowKeys.value.filter(
+      const remoteFailedIds = ids.filter(
         (_, i) => remoteResults[i].status === 'rejected',
       );
-      const remoteSuccessIds = checkedRowKeys.value.filter(
+      const remoteSuccessIds = ids.filter(
         (_, i) => remoteResults[i].status === 'fulfilled',
       );
       const localResults = await Promise.allSettled(
@@ -83,10 +90,10 @@ export const useBatchActions = (
           `远程删除失败 ${remoteFailCount} 个，本地删除失败 ${localFailCount} 个`,
         );
       }
-      checkedRowKeys.value = allFailedIds;
+      failedIds = allFailedIds;
     } else {
       const localResults = await Promise.allSettled(
-        checkedRowKeys.value.map((k) =>
+        ids.map((k) =>
           withTimeout(
             () => snapshotStorage.removeItem(k),
             DELETE_TIMEOUT,
@@ -94,10 +101,10 @@ export const useBatchActions = (
           ),
         ),
       );
-      const localFailedIds = checkedRowKeys.value.filter(
+      const localFailedIds = ids.filter(
         (_, i) => localResults[i].status === 'rejected',
       );
-      const localSuccessIds = checkedRowKeys.value.filter(
+      const localSuccessIds = ids.filter(
         (_, i) => localResults[i].status === 'fulfilled',
       );
       if (localFailedIds.length) {
@@ -107,20 +114,25 @@ export const useBatchActions = (
       } else {
         message.success(`删除成功 ${localSuccessIds.length} 个`);
       }
-      checkedRowKeys.value = localFailedIds;
+      failedIds = localFailedIds;
     }
-    await options.onAfterDelete?.();
+    const apply = await currentOptions.prepareAfterDelete?.();
+    if (currentOptions.isCurrent && !currentOptions.isCurrent()) return;
+    commit(() => {
+      apply?.();
+      checkedRowKeys.value = failedIds;
+    });
   });
 
-  const batchDownloadImage = useTask(async () => {
+  const batchDownloadImage = useSingleTask(async () => {
     await batchImageDownloadZip(await checkedSnapshots());
   });
 
-  const batchDownloadZip = useTask(async () => {
+  const batchDownloadZip = useSingleTask(async () => {
     await batchZipDownloadZip(await checkedSnapshots());
   });
 
-  const batchShareImageUrl = useTask(async () => {
+  const batchShareImageUrl = useSingleTask(async () => {
     await waitShareAgree();
     const imageIds = await batchCreateImageId(await checkedSnapshots());
     showTextDLg({
@@ -128,7 +140,7 @@ export const useBatchActions = (
     });
   });
 
-  const batchShareZipUrl = useTask(async () => {
+  const batchShareZipUrl = useSingleTask(async () => {
     await waitShareAgree();
     const zipUrls = await batchCreateZipUrl(await checkedSnapshots());
     showTextDLg({

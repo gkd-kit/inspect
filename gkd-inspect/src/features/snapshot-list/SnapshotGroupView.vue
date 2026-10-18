@@ -190,7 +190,7 @@ const getDeviceText = (snapshot: Snapshot) => {
                 "
               />
               <NTag type="info" size="small">应用</NTag>
-              <span class="gkd_code font-semibold">
+              <span class="font-mono! font-semibold">
                 {{ `${group.appName} (${group.appId})` }}
               </span>
               <NTag size="small">{{ group.snapshotCount }} 个快照</NTag>
@@ -223,7 +223,7 @@ const getDeviceText = (snapshot: Snapshot) => {
                     "
                   />
                   <NTag type="success" size="small">Activity</NTag>
-                  <span class="gkd_code">{{ activity.activityId }}</span>
+                  <span class="font-mono!">{{ activity.activityId }}</span>
                   <NTag size="small">
                     {{ activity.snapshots.length }} 个快照
                   </NTag>

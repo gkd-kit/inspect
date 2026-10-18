@@ -122,7 +122,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="selector-syntax-field app-panel w-full overflow-hidden rounded-[6px] border transition-colors duration-200 focus-within:border-[#18a058]"
+    class="selector-syntax-field border-(--app-border)! bg-(--app-panel)! text-(--app-text) w-full overflow-hidden rounded-[6px] border transition-colors duration-200 focus-within:border-[#18a058]"
     :class="{
       'selector-syntax-field--invalid': diagnostic.status == 'invalid',
     }"
@@ -130,7 +130,7 @@ onBeforeUnmount(() => {
     <div ref="rootRef" class="selector-syntax-input relative">
       <NInput
         :value="value"
-        class="gkd_code"
+        class="font-mono!"
         type="textarea"
         :placeholder="placeholder"
         :autosize="autosize"

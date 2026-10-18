@@ -42,7 +42,7 @@ const closeSettings = () => emit('update:show', false);
         @update:value="setThemeMode"
       />
     </div>
-    <div class="app-divider" />
+    <div class="h-px my-[10px] mx-0 bg-(--app-border)" />
     <div class="flex items-center justify-between gap-[24px]">
       <span>关闭生成分享链接弹窗提醒</span>
       <NSwitch
@@ -52,9 +52,9 @@ const closeSettings = () => emit('update:show', false);
         @update:value="settingsActions.update({ ignoreUploadWarn: $event })"
       />
     </div>
-    <div class="app-divider" />
+    <div class="h-px my-[10px] mx-0 bg-(--app-border)" />
     <div class="flex items-center justify-between gap-[24px]">
-      <span>打开快照页面自动生成分享链接（请确保不含隐私）</span>
+      <span>打开快照页面自动生成分享链接（链接公开可访问）</span>
       <NSwitch
         :value="settingsStore.autoUploadImport"
         aria-label="打开快照页面自动生成分享链接"

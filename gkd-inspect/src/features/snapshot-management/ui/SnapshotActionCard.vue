@@ -20,7 +20,7 @@ import {
 import { DELETE_TIMEOUT, delay, withTimeout } from '@/shared/lib/async';
 import { buildEmptyFn } from '@/shared/lib/function';
 import { snapshotStorage } from '@/entities/snapshot/storage';
-import { useTask } from '@/shared/lib/task';
+import { useSingleTask } from '@/shared/lib/latest_task';
 import { getImportUrl, getImagUrl } from '@/entities/snapshot/urls';
 import { useSnapshotMetadataStore } from '@/entities/snapshot/metadataStore';
 
@@ -54,8 +54,12 @@ const router = useRouter();
 const { snapshotImportId, snapshotImageId } = useSnapshotMetadataStore();
 
 // 1. 基础下载任务
-const exportJpg = useTask(async () => exportSnapshotAsImage(props.snapshot));
-const exportZip = useTask(async () => exportSnapshotAsZip(props.snapshot));
+const exportJpg = useSingleTask(async () =>
+  exportSnapshotAsImage(props.snapshot),
+);
+const exportZip = useSingleTask(async () =>
+  exportSnapshotAsZip(props.snapshot),
+);
 
 // 2. 获取已缓存的导入/图片 URL（若无则返回空字符串）
 const snapshotImportUrl = computed(() => {
@@ -80,24 +84,32 @@ const previewUrl = computed(() => {
 });
 
 // 4. 远程生成并展示链接
-const exportJpgUrl = useTask(async () => {
+const exportJpgUrl = useSingleTask(async ({ commit }) => {
+  const snapshot = props.snapshot;
   await waitShareAgree();
-  const imageId = await exportSnapshotAsImageId(props.snapshot);
-  showTextDLg({ title: `分享链接`, content: getImagUrl(imageId) });
+  const imageId = await exportSnapshotAsImageId(snapshot);
+  commit(() => {
+    showTextDLg({ title: `分享链接`, content: getImagUrl(imageId) });
+  });
 });
 
-const exportZipUrl = useTask(async () => {
+const exportZipUrl = useSingleTask(async ({ commit }) => {
+  const snapshot = props.snapshot;
   await waitShareAgree();
-  const importId = await exportSnapshotAsImportId(props.snapshot);
-  showTextDLg({ title: `分享链接`, content: getImportUrl(importId) }); // 修复了原本手写拼接路径的重复逻辑
+  const importId = await exportSnapshotAsImportId(snapshot);
+  commit(() => {
+    showTextDLg({ title: `分享链接`, content: getImportUrl(importId) });
+  });
 });
 
 // 5. 删除逻辑
-const deleteSnapshot = useTask(async () => {
+const deleteSnapshot = useSingleTask(async () => {
+  const snapshot = props.snapshot;
+  const onDelete = props.onDelete;
   // 远程
   if (props.onBeforeDelete) {
     try {
-      await props.onBeforeDelete!(props.snapshot);
+      await props.onBeforeDelete!(snapshot);
     } catch {
       // src\utils\api.ts已经做出提示
       return;
@@ -106,7 +118,7 @@ const deleteSnapshot = useTask(async () => {
   // 本地
   try {
     await withTimeout(
-      () => snapshotStorage.removeItem(props.snapshot.id),
+      () => snapshotStorage.removeItem(snapshot.id),
       DELETE_TIMEOUT,
       `本地删除超时`,
     );
@@ -115,7 +127,7 @@ const deleteSnapshot = useTask(async () => {
     return;
   }
   await delay(500);
-  props.onDelete();
+  onDelete();
 });
 
 // 6. 复制链接逻辑
@@ -157,10 +169,10 @@ const copy = async (content: string) => {
         </NButton>
       </template>
       <NSpace vertical>
-        <NButton :loading="exportZip.loading" @click="exportZip.invoke"
+        <NButton :loading="exportZip.loading.value" @click="exportZip.run"
           >下载-快照</NButton
         >
-        <NButton :loading="exportJpg.loading" @click="exportJpg.invoke"
+        <NButton :loading="exportJpg.loading.value" @click="exportJpg.run"
           >下载-图片</NButton
         >
       </NSpace>
@@ -180,8 +192,8 @@ const copy = async (content: string) => {
         >
         <NButton
           v-else
-          :loading="exportZipUrl.loading"
-          @click="exportZipUrl.invoke"
+          :loading="exportZipUrl.loading.value"
+          @click="exportZipUrl.run"
           >生成链接-快照</NButton
         >
 
@@ -190,8 +202,8 @@ const copy = async (content: string) => {
         >
         <NButton
           v-else
-          :loading="exportJpgUrl.loading"
-          @click="exportJpgUrl.invoke"
+          :loading="exportJpgUrl.loading.value"
+          @click="exportJpgUrl.run"
           >生成链接-图片</NButton
         >
       </NSpace>
@@ -201,9 +213,9 @@ const copy = async (content: string) => {
       v-if="showDelete"
       :positive-button-props="{
         type: 'error',
-        loading: deleteSnapshot.loading,
+        loading: deleteSnapshot.loading.value,
       }"
-      @positiveClick="deleteSnapshot.invoke"
+      @positiveClick="deleteSnapshot.run"
     >
       <template #icon><GkSvg class="text-red-400" name="warn" /></template>
       <span style="color: #d03050; white-space: pre-line">{{

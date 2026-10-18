@@ -95,7 +95,7 @@ const toggleResult = (key: number) => {
             @click="toggleResult(result.key)"
           >
             <span
-              class="app-subtle break-all px-[4px] leading-[20px] gkd_code"
+              class="bg-(--app-subtle)! break-all px-[4px] leading-[20px] font-mono!"
               :title="result.gkd ? `选择器` : `搜索字符`"
             >
               <SelectorText

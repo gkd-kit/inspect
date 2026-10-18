@@ -152,7 +152,7 @@ export const useSnapshotColumns = () => {
     },
     render(row) {
       return (
-        <div class="whitespace-nowrap text-left direction-rtl">
+        <div class="whitespace-nowrap text-left [direction:rtl]">
           <NEllipsis>{row.activityId}</NEllipsis>
         </div>
       );

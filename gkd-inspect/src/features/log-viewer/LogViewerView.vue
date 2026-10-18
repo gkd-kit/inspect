@@ -8,9 +8,10 @@ import {
   shallowRef,
   useTemplateRef,
 } from 'vue';
-import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useEventListener } from '@vueuse/core';
 
+import { useLatestTask } from '@/shared/lib/latest_task';
 import { message } from '@/shared/services/feedback';
 import {
   getLogPathSource,
@@ -88,9 +89,6 @@ const route = useRoute();
 const router = useRouter();
 const archive = shallowRef<LogArchive>();
 const selectedPath = shallowRef(``);
-const archiveLoading = shallowRef(false);
-const previewLoading = shallowRef(false);
-const errorText = shallowRef(``);
 const inputUrl = shallowRef(``);
 const previewKind = shallowRef<PreviewKind>(`none`);
 const previewText = shallowRef(``);
@@ -98,50 +96,45 @@ const jsonValue = shallowRef<unknown>();
 const appsData = shallowRef<AppsPreviewData>();
 const appsView = shallowRef<`users` | `raw`>(`users`);
 const clearError = () => {
-  errorText.value = ``;
+  archiveTask.clearError();
+  previewTask.clearError();
 };
 const updateAppsView = (value: `users` | `raw`) => {
   appsView.value = value;
 };
 const crashItems = shallowRef<CrashSummary[]>([]);
 const crashDetail = shallowRef<CrashDetail>();
-const crashDetailLoading = shallowRef(false);
 const logItems = shallowRef<LogFileSummary[]>([]);
 const logDetailPath = shallowRef(``);
 const logDetailText = shallowRef<string>();
-const logDetailError = shallowRef(``);
-const logDetailLoading = shallowRef(false);
 const sourceLinkContext = shallowRef<SourceLinkContext>();
 const logVersionInfo = shallowRef<LogVersionInfo>();
 const logBuildKey = shallowRef<string>();
 const subscriptionItems = shallowRef<SubscriptionFileSummary[]>([]);
 const subscriptionDetail = shallowRef<SubscriptionFileDetail>();
 const subscriptionDetailStructured = shallowRef(false);
-const subscriptionDetailLoading = shallowRef(false);
 const jsonError = shallowRef(``);
+const previewResourceKey = shallowRef(Symbol());
 const databaseData = shallowRef<Uint8Array>();
 const walData = shallowRef<Uint8Array>();
 const appNames = shallowRef<Record<string, string>>({});
 const subscriptionNames = shallowRef<Record<string, string>>({});
 const filePanelCollapsed = shallowRef(false);
 const logToolbarRef = useTemplateRef('logToolbarRef');
-let loadSequence = 0;
-let previewSequence = 0;
-let crashDetailSequence = 0;
-let crashSummaryTask: Promise<CrashSummary[]> | undefined;
-let logDetailSequence = 0;
-let subscriptionDetailSequence = 0;
-let subscriptionSummaryTask: Promise<SubscriptionFileSummary[]> | undefined;
 let activeFetchController: AbortController | undefined;
+let localNavigation = false;
 
 const {
   autoRetraceText,
   crashRetraceState,
+  setCrashRetraceState,
   getRetraceStateText,
   getCachedRetraceTextState,
   getRetraceTextState,
   logRetraceState,
+  setLogRetraceState,
   previewRetraceState,
+  setPreviewRetraceState,
   resetBuildRetrace,
   toggleCrashRetrace,
   toggleLogRetrace,
@@ -158,53 +151,30 @@ const selectedEntry = computed(() =>
 );
 
 const clearCrashDetail = () => {
-  crashDetailSequence++;
+  crashTask.cancel();
   crashDetail.value = undefined;
-  crashRetraceState.value = undefined;
-  crashDetailLoading.value = false;
+  setCrashRetraceState(undefined);
 };
-
-const resetCrashData = () => {
-  crashSummaryTask = undefined;
-  crashItems.value = [];
-  clearCrashDetail();
-};
-
 const clearLogDetail = () => {
-  logDetailSequence++;
-  logDetailPath.value = ``;
+  logTask.cancel();
+  logDetailPath.value = '';
   logDetailText.value = undefined;
-  logRetraceState.value = undefined;
-  logDetailError.value = ``;
-  logDetailLoading.value = false;
+  setLogRetraceState(undefined);
 };
-
 const clearSubscriptionDetail = () => {
-  subscriptionDetailSequence++;
+  subscriptionTask.cancel();
   subscriptionDetail.value = undefined;
   subscriptionDetailStructured.value = false;
-  subscriptionDetailLoading.value = false;
 };
-
-const resetDirectoryData = () => {
-  logItems.value = [];
-  sourceLinkContext.value = undefined;
-  logVersionInfo.value = undefined;
-  subscriptionItems.value = [];
-  subscriptionSummaryTask = undefined;
-  clearLogDetail();
-  clearSubscriptionDetail();
-};
-
 const clearPreview = () => {
-  previewLoading.value = false;
-  previewKind.value = `none`;
-  previewText.value = ``;
-  previewRetraceState.value = undefined;
+  previewResourceKey.value = Symbol();
+  previewKind.value = 'none';
+  previewText.value = '';
+  setPreviewRetraceState(undefined);
   jsonValue.value = undefined;
   appsData.value = undefined;
-  appsView.value = `users`;
-  jsonError.value = ``;
+  appsView.value = 'users';
+  jsonError.value = '';
   databaseData.value = undefined;
   walData.value = undefined;
   appNames.value = {};
@@ -213,406 +183,347 @@ const clearPreview = () => {
   clearLogDetail();
   clearSubscriptionDetail();
 };
-
-const showEntry = async (entry: LogEntry | undefined) => {
-  const sequence = ++previewSequence;
-  errorText.value = ``;
-  clearPreview();
-  if (!entry) return;
-  selectedPath.value = entry.path;
-  previewLoading.value = true;
-  try {
-    if (entry.kind == `database`) {
-      if (!archive.value) return;
-      const [files, resolvedAppNames, resolvedSubscriptionNames] =
-        await Promise.all([
-          getDatabaseFiles(archive.value, entry),
-          getLogAppNames(archive.value),
-          getLogSubscriptionNames(archive.value),
-        ]);
-      if (sequence != previewSequence) return;
+const preparePreview = async (
+  current: LogArchive,
+  path: string,
+): Promise<() => void> => {
+  if (path === CRASH_TREE_KEY) {
+    const items = await loadCrashSummaries(
+      getCrashEntries(current.entries),
+      async (entry) =>
+        decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE)),
+    );
+    return () => {
+      crashItems.value = markRaw(items);
+      previewKind.value = 'crash';
+    };
+  }
+  if (path === LOG_TREE_KEY) {
+    const items = getLogFileSummaries(getLogDirectoryEntries(current.entries));
+    return () => {
+      logItems.value = markRaw(items);
+      previewKind.value = 'log-directory';
+    };
+  }
+  if (path === SUBSCRIPTION_TREE_KEY) {
+    const items = await loadSubscriptionFileSummaries(
+      getSubscriptionDirectoryEntries(current.entries),
+      async (entry) =>
+        decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE)),
+    );
+    return () => {
+      subscriptionItems.value = markRaw(items);
+      previewKind.value = 'subscription-directory';
+    };
+  }
+  if (path === STARTUP_TREE_KEY)
+    return () => {
+      previewKind.value = 'startup-directory';
+    };
+  const entry = current.entryMap.get(path);
+  if (!entry) return () => {};
+  if (entry.kind === 'database') {
+    const [files, apps, subscriptions] = await Promise.all([
+      getDatabaseFiles(current, entry),
+      getLogAppNames(current),
+      getLogSubscriptionNames(current),
+    ]);
+    return () => {
       databaseData.value = markRaw(files.database);
       walData.value = files.wal ? markRaw(files.wal) : undefined;
-      appNames.value = markRaw(resolvedAppNames);
-      subscriptionNames.value = markRaw(resolvedSubscriptionNames);
-      previewKind.value = `database`;
-      return;
-    }
-    if (entry.kind == `text`) {
-      const bytes = await readEntryBytes(entry);
-      if (sequence != previewSequence) return;
-      const text = decodeLogText(bytes);
-      const state = getRetraceTextState(`text:${entry.path}`, text);
-      previewRetraceState.value = state;
+      appNames.value = markRaw(apps);
+      subscriptionNames.value = markRaw(subscriptions);
+      previewKind.value = 'database';
+    };
+  }
+  if (entry.kind === 'text') {
+    const text = decodeLogText(await readEntryBytes(entry));
+    return () => {
+      const state = getRetraceTextState('text:' + entry.path, text);
+      setPreviewRetraceState(state);
       previewText.value = getRetraceStateText(state);
-      previewKind.value = `text`;
-      autoRetraceText(
-        state,
-        `log`,
-        () => previewRetraceState.value == state,
-        (retracedText) => {
-          if (previewRetraceState.value == state) {
-            previewText.value = retracedText;
-          }
-        },
-      );
-      return;
-    }
-    if (entry.kind == `json`) {
-      const bytes = await readEntryBytes(entry, MAX_JSON_SIZE);
-      const raw = decodeLogText(bytes);
-      if (sequence != previewSequence) return;
-      previewText.value = raw;
-      try {
-        const value: unknown = JSON.parse(raw);
-        jsonValue.value = value;
-        const structureTooLarge = isJsonTreeTooLarge(value);
-        const isAppsFile =
-          entry.path.toLowerCase().split(`/`).at(-1) == `apps.json`;
-        const resolvedAppsData =
-          isAppsFile && !structureTooLarge
-            ? getAppsPreviewData(value)
-            : undefined;
-        if (
-          !structureTooLarge &&
-          getDiagnosticKind(entry.path) &&
-          value != null &&
-          typeof value == `object` &&
-          !Array.isArray(value)
-        ) {
-          previewKind.value = `diagnostic`;
-        } else if (resolvedAppsData) {
-          appsData.value = markRaw(resolvedAppsData);
-          previewKind.value = `apps`;
-        } else if (
-          !structureTooLarge &&
-          shouldUseSubscriptionPreview(entry, value)
-        ) {
-          previewKind.value = `subscription`;
-        } else {
-          previewKind.value = `json`;
-        }
-      } catch (error) {
-        jsonError.value =
-          error instanceof Error ? error.message : String(error);
-        previewKind.value = `invalid-json`;
-      }
-      return;
-    }
-    previewKind.value = `unsupported`;
-  } catch (error) {
-    if (sequence != previewSequence) return;
-    errorText.value = error instanceof Error ? error.message : String(error);
-    previewKind.value = `unsupported`;
-  } finally {
-    if (sequence == previewSequence) previewLoading.value = false;
+      previewKind.value = 'text';
+    };
   }
-};
-
-const showCrashPreview = async () => {
-  const currentArchive = archive.value;
-  if (!currentArchive) return;
-  const entries = getCrashEntries(currentArchive.entries);
-  if (entries.length == 0) return;
-  const sequence = ++previewSequence;
-  errorText.value = ``;
-  clearPreview();
-  selectedPath.value = CRASH_TREE_KEY;
-  previewKind.value = `crash`;
-  if (crashItems.value.length == entries.length) return;
-  previewLoading.value = true;
-  try {
-    crashSummaryTask ||= loadCrashSummaries(entries, async (entry) => {
-      return decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
-    });
-    const items = await crashSummaryTask;
-    if (
-      sequence != previewSequence ||
-      currentArchive != archive.value ||
-      selectedPath.value != CRASH_TREE_KEY
-    ) {
-      return;
-    }
-    crashItems.value = markRaw(items);
-  } catch (error) {
-    if (sequence != previewSequence) return;
-    errorText.value = error instanceof Error ? error.message : String(error);
-    previewKind.value = `unsupported`;
-  } finally {
-    if (sequence == previewSequence) previewLoading.value = false;
-  }
-};
-
-const loadCrashDetail = async (path: string) => {
-  const currentArchive = archive.value;
-  const entry = currentArchive?.entryMap.get(path);
-  if (!currentArchive || !entry || !isCrashPath(entry.path)) return;
-  const sequence = ++crashDetailSequence;
-  crashDetail.value = undefined;
-  crashRetraceState.value = undefined;
-  crashDetailLoading.value = true;
-  if (!isCrashJsonPath(entry.path)) {
-    crashDetail.value = markRaw(getUnsupportedCrashDetail(entry.path));
-    crashDetailLoading.value = false;
-    return;
-  }
-  try {
+  if (entry.kind === 'json') {
     const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
-    if (
-      sequence != crashDetailSequence ||
-      currentArchive != archive.value ||
-      previewKind.value != `crash`
-    ) {
-      return;
+    try {
+      const value: unknown = JSON.parse(raw);
+      const tooLarge = isJsonTreeTooLarge(value);
+      const apps =
+        entry.path.toLowerCase().split('/').at(-1) === 'apps.json' && !tooLarge
+          ? getAppsPreviewData(value)
+          : undefined;
+      const kind: PreviewKind =
+        !tooLarge &&
+        getDiagnosticKind(entry.path) &&
+        value != null &&
+        typeof value === 'object' &&
+        !Array.isArray(value)
+          ? 'diagnostic'
+          : apps
+            ? 'apps'
+            : !tooLarge && shouldUseSubscriptionPreview(entry, value)
+              ? 'subscription'
+              : 'json';
+      return () => {
+        previewText.value = raw;
+        jsonValue.value = value;
+        appsData.value = apps ? markRaw(apps) : undefined;
+        previewKind.value = kind;
+      };
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      return () => {
+        previewText.value = raw;
+        jsonError.value = detail;
+        previewKind.value = 'invalid-json';
+      };
     }
-    const detail = parseCrashDetail(raw, entry.path);
-    if (detail.stackTrace) {
-      const state = getRetraceTextState(
-        `crash:${entry.path}`,
-        detail.stackTrace,
-      );
-      crashRetraceState.value = state;
-      crashDetail.value = markRaw({
-        ...detail,
-        stackTrace: getRetraceStateText(state),
-      });
-      autoRetraceText(
-        state,
-        `crash`,
-        () => crashRetraceState.value == state,
-        (stackTrace) => {
-          if (crashRetraceState.value != state || !crashDetail.value) return;
-          crashDetail.value = markRaw({ ...crashDetail.value, stackTrace });
-        },
-      );
-    } else {
-      crashDetail.value = markRaw(detail);
-    }
-  } catch (error) {
-    if (sequence != crashDetailSequence) return;
-    crashDetail.value = markRaw(getUnreadableCrashDetail(entry.path, error));
-  } finally {
-    if (sequence == crashDetailSequence) crashDetailLoading.value = false;
   }
+  return () => {
+    previewKind.value = 'unsupported';
+  };
 };
-
-const showLogDirectoryPreview = () => {
-  const currentArchive = archive.value;
-  if (!currentArchive) return;
-  const entries = getLogDirectoryEntries(currentArchive.entries);
-  if (entries.length == 0) return;
-  previewSequence++;
-  errorText.value = ``;
-  clearPreview();
-  selectedPath.value = LOG_TREE_KEY;
-  logItems.value = markRaw(getLogFileSummaries(entries));
-  previewKind.value = `log-directory`;
+const startPreviewRetrace = () => {
+  const state = previewRetraceState.value;
+  autoRetraceText(
+    state,
+    'log',
+    () => previewRetraceState.value === state,
+    (text) => {
+      previewText.value = text;
+    },
+  );
 };
-
-const loadLogFileDetail = async (path: string) => {
-  const currentArchive = archive.value;
-  const entry = currentArchive?.entryMap.get(path);
-  if (!currentArchive || !entry || !isLogDirectoryPath(entry.path)) return;
+const previewTask = useLatestTask(async ({ commit }, path: string) => {
+  const current = archive.value;
+  if (!current) return;
+  const apply = await preparePreview(current, path);
   if (
-    logDetailPath.value == path &&
-    (logDetailLoading.value || logDetailText.value !== undefined)
+    commit(() => {
+      clearPreview();
+      selectedPath.value = path;
+      apply();
+    })
+  )
+    startPreviewRetrace();
+});
+const previewLoading = previewTask.loading;
+const showEntry = (entry: LogEntry | undefined) =>
+  entry && previewTask.run(entry.path);
+const showCrashPreview = () => previewTask.run(CRASH_TREE_KEY);
+const showLogDirectoryPreview = () => previewTask.run(LOG_TREE_KEY);
+const showSubscriptionDirectoryPreview = () =>
+  previewTask.run(SUBSCRIPTION_TREE_KEY);
+const showStartupPreview = () => previewTask.run(STARTUP_TREE_KEY);
+
+const crashTask = useLatestTask(async ({ commit }, path: string) => {
+  const entry = archive.value?.entryMap.get(path);
+  if (!entry || !isCrashPath(entry.path)) return;
+  let detail: CrashDetail;
+  try {
+    detail = isCrashJsonPath(path)
+      ? parseCrashDetail(
+          decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE)),
+          path,
+        )
+      : getUnsupportedCrashDetail(path);
+  } catch (error) {
+    detail = getUnreadableCrashDetail(path, error);
+  }
+  if (
+    !commit(() => {
+      const state = detail.stackTrace
+        ? getRetraceTextState('crash:' + path, detail.stackTrace)
+        : undefined;
+      setCrashRetraceState(state);
+      crashDetail.value = markRaw(
+        state ? { ...detail, stackTrace: getRetraceStateText(state) } : detail,
+      );
+    })
   )
     return;
-  const cached = getCachedRetraceTextState(`log:${entry.path}`);
-  const sequence = ++logDetailSequence;
-  logDetailPath.value = entry.path;
-  logDetailText.value = undefined;
-  logRetraceState.value = undefined;
-  logDetailError.value = ``;
-  logDetailLoading.value = !cached;
-  try {
-    const text =
-      cached?.originalText ?? decodeLogText(await readEntryBytes(entry));
-    if (
-      sequence != logDetailSequence ||
-      currentArchive != archive.value ||
-      previewKind.value != `log-directory`
-    ) {
-      return;
-    }
-    const state = getRetraceTextState(`log:${entry.path}`, text);
-    logRetraceState.value = state;
-    logDetailText.value = getRetraceStateText(state);
-    autoRetraceText(
-      state,
-      `log`,
-      () => logRetraceState.value == state,
-      (retracedText) => {
-        if (logRetraceState.value == state) logDetailText.value = retracedText;
-      },
-    );
-  } catch (error) {
-    if (sequence != logDetailSequence) return;
-    logDetailError.value =
-      error instanceof Error ? error.message : String(error);
-  } finally {
-    if (sequence == logDetailSequence) logDetailLoading.value = false;
-  }
-};
-
-const showSubscriptionDirectoryPreview = async () => {
-  const currentArchive = archive.value;
-  if (!currentArchive) return;
-  const entries = getSubscriptionDirectoryEntries(currentArchive.entries);
-  if (entries.length == 0) return;
-  const sequence = ++previewSequence;
-  errorText.value = ``;
-  clearPreview();
-  selectedPath.value = SUBSCRIPTION_TREE_KEY;
-  previewKind.value = `subscription-directory`;
-  if (subscriptionItems.value.length == entries.length) return;
-  previewLoading.value = true;
-  try {
-    subscriptionSummaryTask ||= loadSubscriptionFileSummaries(
-      entries,
-      async (entry) => {
-        return decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
-      },
-    );
-    const items = await subscriptionSummaryTask;
-    if (
-      sequence != previewSequence ||
-      currentArchive != archive.value ||
-      selectedPath.value != SUBSCRIPTION_TREE_KEY
-    ) {
-      return;
-    }
-    subscriptionItems.value = markRaw(items);
-  } catch (error) {
-    if (sequence != previewSequence) return;
-    errorText.value = error instanceof Error ? error.message : String(error);
-    previewKind.value = `unsupported`;
-  } finally {
-    if (sequence == previewSequence) previewLoading.value = false;
-  }
-};
-
-const loadSubscriptionDetail = async (path: string) => {
-  const currentArchive = archive.value;
-  const entry = currentArchive?.entryMap.get(path);
-  if (!currentArchive || !entry || !isSubscriptionDirectoryPath(entry.path)) {
+  const state = crashRetraceState.value;
+  autoRetraceText(
+    state,
+    'crash',
+    () => crashRetraceState.value === state,
+    (stackTrace) => {
+      if (crashDetail.value)
+        crashDetail.value = markRaw({ ...crashDetail.value, stackTrace });
+    },
+  );
+});
+const loadCrashDetail = crashTask.run;
+const crashDetailLoading = crashTask.loading;
+const logTask = useLatestTask(async ({ commit }, path: string) => {
+  const entry = archive.value?.entryMap.get(path);
+  if (!entry || !isLogDirectoryPath(path)) return;
+  const cached = getCachedRetraceTextState('log:' + path);
+  const text =
+    cached?.originalText ?? decodeLogText(await readEntryBytes(entry));
+  if (
+    !commit(() => {
+      const state = getRetraceTextState('log:' + path, text);
+      logDetailPath.value = path;
+      setLogRetraceState(state);
+      logDetailText.value = getRetraceStateText(state);
+    })
+  )
     return;
-  }
-  const sequence = ++subscriptionDetailSequence;
-  subscriptionDetail.value = undefined;
-  subscriptionDetailStructured.value = false;
-  subscriptionDetailLoading.value = true;
-  if (!isSubscriptionJsonPath(entry.path)) {
-    subscriptionDetail.value = markRaw(
-      getUnsupportedSubscriptionDetail(entry.path),
-    );
-    subscriptionDetailLoading.value = false;
-    return;
-  }
+  const state = logRetraceState.value;
+  autoRetraceText(
+    state,
+    'log',
+    () => logRetraceState.value === state,
+    (text) => {
+      logDetailText.value = text;
+    },
+  );
+});
+const loadLogFileDetail = logTask.run;
+const logDetailLoading = logTask.loading;
+const logDetailError = computed(() => logTask.error.value?.message || '');
+const subscriptionTask = useLatestTask(async ({ commit }, path: string) => {
+  const entry = archive.value?.entryMap.get(path);
+  if (!entry || !isSubscriptionDirectoryPath(path)) return;
+  let detail: SubscriptionFileDetail;
   try {
-    const raw = decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE));
-    if (
-      sequence != subscriptionDetailSequence ||
-      currentArchive != archive.value ||
-      previewKind.value != `subscription-directory`
-    ) {
-      return;
-    }
-    const detail = parseSubscriptionFileDetail(raw, entry.path);
+    detail = isSubscriptionJsonPath(path)
+      ? parseSubscriptionFileDetail(
+          decodeLogText(await readEntryBytes(entry, MAX_JSON_SIZE)),
+          path,
+        )
+      : getUnsupportedSubscriptionDetail(path);
+  } catch (error) {
+    detail = getUnreadableSubscriptionDetail(path, error);
+  }
+  commit(() => {
     subscriptionDetail.value = markRaw(detail);
     subscriptionDetailStructured.value =
       detail.parsed && isRawSubscription(detail.value);
-  } catch (error) {
-    if (sequence != subscriptionDetailSequence) return;
-    subscriptionDetail.value = markRaw(
-      getUnreadableSubscriptionDetail(entry.path, error),
-    );
-  } finally {
-    if (sequence == subscriptionDetailSequence) {
-      subscriptionDetailLoading.value = false;
-    }
-  }
-};
+  });
+});
+const loadSubscriptionDetail = subscriptionTask.run;
+const subscriptionDetailLoading = subscriptionTask.loading;
 
-const loadArchive = async (
+const prepareArchive = async (
   data: Blob | ArrayBuffer | Uint8Array,
   name: string,
-  sequence = ++loadSequence,
 ) => {
-  resetBuildRetrace();
-  previewSequence++;
-  resetCrashData();
-  resetDirectoryData();
-  archiveLoading.value = true;
-  errorText.value = ``;
-  clearPreview();
-  archive.value = undefined;
-  selectedPath.value = ``;
-  try {
-    const result = await loadLogArchive(data, name || `log.zip`);
-    if (sequence != loadSequence) return;
-    const [resolvedVersionInfo, resolvedSourceLinkContext, resolvedBuildKey] =
-      await Promise.all([
-        getLogVersionInfo(result),
-        getArchiveSourceLinkContext(result),
-        getLogBuildKey(result),
-      ]);
-    if (sequence != loadSequence) return;
+  const result = await loadLogArchive(data, name || 'log.zip');
+  const initial = getDefaultLogEntry(result);
+  const path = initial
+    ? isLogDirectoryPath(initial.path)
+      ? LOG_TREE_KEY
+      : isCrashPath(initial.path)
+        ? CRASH_TREE_KEY
+        : isSubscriptionDirectoryPath(initial.path)
+          ? SUBSCRIPTION_TREE_KEY
+          : initial.path
+    : getLogDirectoryEntries(result.entries).length
+      ? LOG_TREE_KEY
+      : getCrashEntries(result.entries).length
+        ? CRASH_TREE_KEY
+        : getSubscriptionDirectoryEntries(result.entries).length
+          ? SUBSCRIPTION_TREE_KEY
+          : '';
+  const [version, source, build, preview] = await Promise.all([
+    getLogVersionInfo(result),
+    getArchiveSourceLinkContext(result),
+    getLogBuildKey(result),
+    preparePreview(result, path),
+  ]);
+  return () => {
+    previewTask.cancel();
+    clearPreview();
+    resetBuildRetrace();
+    crashItems.value = [];
+    logItems.value = [];
+    subscriptionItems.value = [];
     archive.value = result;
-    logVersionInfo.value = resolvedVersionInfo
-      ? markRaw(resolvedVersionInfo)
-      : undefined;
-    sourceLinkContext.value = resolvedSourceLinkContext
-      ? markRaw(resolvedSourceLinkContext)
-      : undefined;
-    logBuildKey.value = resolvedBuildKey;
-    const initialEntry = getDefaultLogEntry(result);
-    if (initialEntry && isLogDirectoryPath(initialEntry.path)) {
-      showLogDirectoryPreview();
-    } else if (initialEntry && isCrashPath(initialEntry.path)) {
-      await showCrashPreview();
-    } else if (initialEntry && isSubscriptionDirectoryPath(initialEntry.path)) {
-      await showSubscriptionDirectoryPreview();
-    } else if (initialEntry) {
-      await showEntry(initialEntry);
-    } else if (getLogDirectoryEntries(result.entries).length) {
-      showLogDirectoryPreview();
-    } else if (getCrashEntries(result.entries).length) {
-      await showCrashPreview();
-    } else if (getSubscriptionDirectoryEntries(result.entries).length) {
-      await showSubscriptionDirectoryPreview();
+    selectedPath.value = path;
+    logVersionInfo.value = version ? markRaw(version) : undefined;
+    sourceLinkContext.value = source ? markRaw(source) : undefined;
+    logBuildKey.value = build;
+    preview();
+  };
+};
+const archiveTask = useLatestTask(
+  async (
+    { commit, isCurrent },
+    input:
+      | { file: File }
+      | { source: LogSource; controller: AbortController }
+      | undefined,
+  ) => {
+    if (!input) {
+      commit(() => {
+        previewTask.cancel();
+        clearPreview();
+        resetBuildRetrace();
+        archive.value = undefined;
+        selectedPath.value = '';
+        inputUrl.value = '';
+        crashItems.value = [];
+        logItems.value = [];
+        subscriptionItems.value = [];
+        sourceLinkContext.value = undefined;
+        logVersionInfo.value = undefined;
+      });
+      return;
     }
-    return sequence == loadSequence;
-  } catch (error) {
-    if (sequence != loadSequence) return;
-    errorText.value = error instanceof Error ? error.message : String(error);
-    return false;
-  } finally {
-    if (sequence == loadSequence) archiveLoading.value = false;
-  }
-};
-
-const fetchArchive = async (
-  source: LogSource,
-  sequence: number,
-  controller: AbortController,
-) => {
-  const cached = await getLogArchiveCache(source.url);
-  if (sequence != loadSequence) return;
-  if (cached) {
-    const loaded = await loadArchive(cached.data, cached.name, sequence);
-    if (loaded) return;
-    if (sequence != loadSequence) return;
-    await removeLogArchiveCache(source.url);
-    archiveLoading.value = true;
-    errorText.value = ``;
-  }
-
-  const { data, name } = await downloadLogArchive(source, controller);
-  if (sequence != loadSequence) return;
-  const loaded = await loadArchive(data, name, sequence);
-  if (loaded) void setLogArchiveCache(source.url, name, data);
-};
+    let apply: () => void;
+    if ('file' in input) {
+      apply = await prepareArchive(input.file, input.file.name);
+      if (!isCurrent()) return;
+      if (route.fullPath !== '/log') {
+        localNavigation = true;
+        try {
+          if (await router.replace('/log')) return;
+        } finally {
+          localNavigation = false;
+        }
+      }
+    } else {
+      const cached = await getLogArchiveCache(input.source.url);
+      if (!isCurrent()) return;
+      let cachedApply: (() => void) | undefined;
+      if (cached) {
+        try {
+          cachedApply = await prepareArchive(cached.data, cached.name);
+        } catch {
+          if (!isCurrent()) return;
+          await removeLogArchiveCache(input.source.url);
+        }
+      }
+      if (!isCurrent()) return;
+      if (cachedApply) apply = cachedApply;
+      else {
+        const { data, name } = await downloadLogArchive(
+          input.source,
+          input.controller,
+        );
+        if (!isCurrent()) return;
+        apply = await prepareArchive(data, name);
+        if (isCurrent()) void setLogArchiveCache(input.source.url, name, data);
+      }
+    }
+    if (
+      commit(() => {
+        apply();
+        inputUrl.value = 'source' in input ? input.source.url : '';
+      })
+    )
+      startPreviewRetrace();
+  },
+);
+const archiveLoading = archiveTask.loading;
+const errorText = computed(
+  () =>
+    archiveTask.error.value?.message || previewTask.error.value?.message || '',
+);
 
 const getRouteSource = (
   target: Pick<RouteLocationNormalized, 'path' | 'query' | 'params'>,
@@ -625,39 +536,32 @@ const loadFromRoute = async (
   target: Pick<RouteLocationNormalized, 'path' | 'query' | 'params'> = route,
 ) => {
   activeFetchController?.abort();
-  resetBuildRetrace();
   const controller = new AbortController();
   activeFetchController = controller;
   const source = getRouteSource(target);
-  const sequence = ++loadSequence;
-  previewSequence++;
-  resetCrashData();
-  resetDirectoryData();
-  archive.value = undefined;
-  selectedPath.value = ``;
-  clearPreview();
-  errorText.value = ``;
-  if (!source) {
-    archiveLoading.value = false;
-    inputUrl.value = ``;
-    return;
-  }
-  inputUrl.value = source.url;
-  archiveLoading.value = true;
-  try {
-    await fetchArchive(source, sequence, controller);
-  } catch (error) {
-    if (sequence != loadSequence) return;
-    errorText.value = error instanceof Error ? error.message : String(error);
-    archiveLoading.value = false;
-  }
+  await archiveTask.run(source ? { source, controller } : undefined);
 };
-
-onMounted(() => loadFromRoute(route));
-onBeforeRouteUpdate((to) => loadFromRoute(to));
-
+onMounted(() => {
+  void loadFromRoute(route);
+});
+const removeRouteHook = router.afterEach((to, _from, failure) => {
+  if (failure) return;
+  if (localNavigation && to.fullPath === '/log') return;
+  if (to.path === '/log' || to.path.startsWith('/log/')) void loadFromRoute(to);
+  else {
+    activeFetchController?.abort();
+    archiveTask.cancel();
+    previewTask.cancel();
+  }
+});
 onBeforeUnmount(() => {
+  removeRouteHook();
   activeFetchController?.abort();
+  archiveTask.cancel();
+  previewTask.cancel();
+  crashTask.cancel();
+  logTask.cancel();
+  subscriptionTask.cancel();
   resetBuildRetrace();
 });
 
@@ -677,10 +581,7 @@ const importLocalFile = async (files: File[]) => {
   if (!file) return;
   activeFetchController?.abort();
   activeFetchController = undefined;
-  loadSequence++;
-  if (route.fullPath != `/log`) await router.replace(`/log`);
-  inputUrl.value = ``;
-  await loadArchive(file, file.name);
+  await archiveTask.run({ file });
 };
 
 const openLocalFile = () => logToolbarRef.value?.openLocalFile();
@@ -703,14 +604,6 @@ useEventListener(document.body, `drop`, (event) => {
 });
 
 const treeData = computed(() => buildLogTreeData(archive.value));
-
-const showStartupPreview = () => {
-  previewSequence++;
-  errorText.value = ``;
-  clearPreview();
-  selectedPath.value = STARTUP_TREE_KEY;
-  previewKind.value = `startup-directory`;
-};
 
 const updateSelectedKeys = (keys: Array<string | number>) => {
   const path = String(keys[0] || ``);
@@ -738,7 +631,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
 <template>
   <div
     name="log-page"
-    class="box-border flex min-h-[700px] min-w-[1200px] flex-col gap-[10px] bg-[#f8fafc] p-[10px] page-size"
+    class="box-border flex min-h-[700px] min-w-[1200px] flex-col gap-[10px] bg-[#f8fafc] p-[10px] w-(--gkd-w) h-(--gkd-h)"
   >
     <LogToolbar
       ref="logToolbarRef"
@@ -770,6 +663,7 @@ const updateSelectedKeys = (keys: Array<string | number>) => {
 
       <LogPreviewPanel
         :archive="archive"
+        :resourceKey="previewResourceKey"
         :selectedEntry="selectedEntry"
         :selectedPath="selectedPath"
         :previewKind="previewKind"

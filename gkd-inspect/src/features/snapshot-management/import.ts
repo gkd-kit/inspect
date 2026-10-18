@@ -68,6 +68,28 @@ export const importFromLocal = async (
   return importNum > 0;
 };
 
+export const readSnapshotFromNetwork = async (url: string) => {
+  const resp = await enhanceFetch(url);
+  const bf = await resp.arrayBuffer();
+  let snapshot: Snapshot;
+  let screenshotBf: ArrayBuffer;
+  if (isZipBf(bf)) {
+    const zip = await loadAsync(bf);
+    const [snapshotFile] = zip.filter((p) => p.endsWith(`.json`));
+    const [screenshotFile] = zip.filter(
+      (p) => p.endsWith(`.png`) || p.endsWith(`.webp`),
+    );
+    if (!snapshotFile || !screenshotFile) {
+      return;
+    }
+    screenshotBf = await screenshotFile.async('arraybuffer');
+    snapshot = JSON.parse(await snapshotFile.async('string')) as Snapshot;
+  } else {
+    throw new Error(`file must be png or zip`);
+  }
+  return { snapshot, screenshotBf };
+};
+
 const limit = pLimit(2);
 export const importFromNetwork = async (
   urls: string[] | string = [],
@@ -98,28 +120,12 @@ export const importFromNetwork = async (
             return snapshot;
           }
         }
-        const resp = await enhanceFetch(url).catch((e) => {
-          message.error(`网络异常: ${new URL(url).host} / ${e.message || ''}`);
-          console.warn([`download failed`, url, e]);
+        const data = await readSnapshotFromNetwork(url).catch((e) => {
+          message.error(`导入失败: ${new URL(url).host} / ${e.message || ''}`);
           throw e;
         });
-        const bf = await resp.arrayBuffer();
-        let snapshot: Snapshot;
-        let screenshotBf: ArrayBuffer;
-        if (isZipBf(bf)) {
-          const zip = await loadAsync(bf);
-          const [snapshotFile] = zip.filter((p) => p.endsWith(`.json`));
-          const [screenshotFile] = zip.filter(
-            (p) => p.endsWith(`.png`) || p.endsWith(`.webp`),
-          );
-          if (!snapshotFile || !screenshotFile) {
-            return;
-          }
-          screenshotBf = await screenshotFile.async('arraybuffer');
-          snapshot = JSON.parse(await snapshotFile.async('string')) as Snapshot;
-        } else {
-          throw new Error(`file must be png or zip`);
-        }
+        if (!data) return;
+        const { snapshot, screenshotBf } = data;
         await setSnapshot(snapshot, screenshotBf);
         snapshots.push(snapshot);
         return snapshot;

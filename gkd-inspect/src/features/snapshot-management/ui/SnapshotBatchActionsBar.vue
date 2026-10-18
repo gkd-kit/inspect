@@ -1,15 +1,19 @@
 <script setup lang="tsx">
 import { NButton, NPopover, NSpace } from 'naive-ui';
 
-import type { TaskLike } from '@/shared/lib/task';
+import type { useSingleTask } from '@/shared/lib/latest_task';
+type BatchTask = Pick<
+  ReturnType<typeof useSingleTask<[], void>>,
+  'loading' | 'run'
+>;
 
 defineProps<{
   checkedCount: number;
-  batchDelete: TaskLike;
-  batchDownloadImage?: TaskLike;
-  batchDownloadZip?: TaskLike;
-  batchShareImageUrl?: TaskLike;
-  batchShareZipUrl?: TaskLike;
+  batchDelete: BatchTask;
+  batchDownloadImage?: BatchTask;
+  batchDownloadZip?: BatchTask;
+  batchShareImageUrl?: BatchTask;
+  batchShareZipUrl?: BatchTask;
 }>();
 </script>
 <template>
@@ -21,15 +25,15 @@ defineProps<{
       <NSpace vertical>
         <NButton
           v-if="batchDownloadZip"
-          :loading="batchDownloadZip.loading"
-          @click="batchDownloadZip.invoke"
+          :loading="batchDownloadZip.loading.value"
+          @click="batchDownloadZip.run"
         >
           批量下载-快照
         </NButton>
         <NButton
           v-if="batchDownloadImage"
-          :loading="batchDownloadImage.loading"
-          @click="batchDownloadImage.invoke"
+          :loading="batchDownloadImage.loading.value"
+          @click="batchDownloadImage.run"
         >
           批量下载-图片
         </NButton>
@@ -42,24 +46,24 @@ defineProps<{
       <NSpace vertical>
         <NButton
           v-if="batchShareZipUrl"
-          :loading="batchShareZipUrl.loading"
-          @click="batchShareZipUrl.invoke"
+          :loading="batchShareZipUrl.loading.value"
+          @click="batchShareZipUrl.run"
         >
           批量生成链接-快照
         </NButton>
         <NButton
           v-if="batchShareImageUrl"
-          :loading="batchShareImageUrl.loading"
-          @click="batchShareImageUrl.invoke"
+          :loading="batchShareImageUrl.loading.value"
+          @click="batchShareImageUrl.run"
         >
           批量生成链接-图片
         </NButton>
       </NSpace>
     </NPopover>
     <NButton
-      :loading="batchDelete.loading"
+      :loading="batchDelete.loading.value"
       :theme-overrides="{ color: '#D03050', textColor: 'white' }"
-      @click="batchDelete.invoke"
+      @click="batchDelete.run"
     >
       批量删除
     </NButton>

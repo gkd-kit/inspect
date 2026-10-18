@@ -71,7 +71,7 @@ useEventListener('keydown', (e: KeyboardEvent) => {
 <template>
   <Teleport v-if="actualShow" to="body">
     <div
-      class="GkFullscreenDialog absolute top-0 left-0 page-size"
+      class="GkFullscreenDialog absolute top-0 left-0 w-(--gkd-w) h-(--gkd-h)"
       :style="{
         '--duration': duration + 'ms',
         'z-index': zIndex,

@@ -31,6 +31,7 @@ import {
   selectorLibrary,
   selectorLibraryActions,
 } from '@/features/selector-library/store';
+import { useSingleTask, useKeyedTask } from '@/shared/lib/latest_task';
 import { message } from '@/shared/services/feedback';
 import { copy } from '@/shared/lib/clipboard';
 import SelectorLibraryTransfer from './ui/SelectorLibraryTransfer.vue';
@@ -75,7 +76,6 @@ const createInitialForm = () => ({
   activityId: '',
 });
 const form = shallowReactive(createInitialForm());
-const savePending = shallowRef(false);
 let editorRevision = 0;
 
 const scopeFilterOptions = [
@@ -158,13 +158,11 @@ const getFormInput = (): SelectorPresetInput => ({
   appId: form.appId,
   activityId: form.activityId,
 });
-const savePreset = async () => {
-  if (savePending.value) return;
+const saveTask = useSingleTask(async ({ commit }) => {
   const revision = editorRevision;
   const id = form.id;
   const updatedAt = form.updatedAt;
   const input = getFormInput();
-  savePending.value = true;
   try {
     const editing = Boolean(id);
     const saved = id
@@ -175,44 +173,55 @@ const savePreset = async () => {
       return;
     }
     message.success(editing ? '选择器已更新' : '选择器已收藏');
-    if (revision == editorRevision) {
-      resetEditor();
-    } else if (saved && form.id == id) {
-      form.updatedAt = saved.updatedAt;
-    } else if (
-      saved &&
-      !id &&
-      !form.id &&
-      form.selector.trim() == input.selector.trim()
-    ) {
-      form.id = saved.id;
-      form.updatedAt = saved.updatedAt;
-    }
+    commit(() => {
+      if (revision == editorRevision) {
+        resetEditor();
+      } else if (saved && form.id == id) {
+        form.updatedAt = saved.updatedAt;
+      } else if (
+        saved &&
+        !id &&
+        !form.id &&
+        form.selector.trim() == input.selector.trim()
+      ) {
+        form.id = saved.id;
+        form.updatedAt = saved.updatedAt;
+      }
+    });
   } catch (error) {
     message.error(error instanceof Error ? error.message : String(error));
-  } finally {
-    savePending.value = false;
+    throw error;
   }
-};
-const removePreset = async (id: string) => {
+});
+const savePending = saveTask.loading;
+const savePreset = saveTask.run;
+const removeTask = useKeyedTask(async ({ commit }, id: string) => {
   try {
     await selectorLibraryActions.remove(id);
-    if (form.id == id) resetEditor();
+    commit(() => {
+      if (form.id == id) resetEditor();
+    });
     message.success('选择器已删除');
   } catch (error) {
     message.error(error instanceof Error ? error.message : String(error));
+    throw error;
   }
-};
+});
+const removePreset = removeTask.run;
 const copySelector = (selector: string) => {
   void copy(selector);
 };
-const togglePinned = async (preset: SelectorPreset) => {
-  try {
-    await selectorLibraryActions.setPinned(preset.id, !preset.pinned);
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : String(error));
-  }
-};
+const pinTask = useKeyedTask(
+  async (_context, _id: string, preset: SelectorPreset) => {
+    try {
+      await selectorLibraryActions.setPinned(preset.id, !preset.pinned);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  },
+);
+const togglePinned = (preset: SelectorPreset) => pinTask.run(preset.id, preset);
 </script>
 
 <template>
@@ -333,7 +342,7 @@ const togglePinned = async (preset: SelectorPreset) => {
             <div
               v-for="preset in visibleItems"
               :key="preset.id"
-              class="app-panel rounded-[6px] border p-[12px]"
+              class="border-(--app-border)! bg-(--app-panel)! text-(--app-text) rounded-[6px] border p-[12px]"
             >
               <div class="flex flex-wrap items-center gap-[8px]">
                 <span class="text-[16px] font-semibold">{{ preset.name }}</span>
@@ -361,7 +370,7 @@ const togglePinned = async (preset: SelectorPreset) => {
                 {{ preset.description }}
               </div>
               <div
-                class="app-subtle relative mt-[8px] break-all rounded-[4px] p-[8px] pr-[32px] gkd_code text-[13px]"
+                class="bg-(--app-subtle)! relative mt-[8px] break-all rounded-[4px] p-[8px] pr-[32px] font-mono! text-[13px]"
               >
                 <span :data-selector-code="preset.id">
                   <SelectorText :source="preset.selector" />

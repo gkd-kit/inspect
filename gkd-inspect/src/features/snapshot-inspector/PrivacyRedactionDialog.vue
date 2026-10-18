@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { NButton, NButtonGroup, NModal, NSpin, NTooltip } from 'naive-ui';
+import {
+  NButton,
+  NButtonGroup,
+  NCheckbox,
+  NModal,
+  NSpin,
+  NTooltip,
+} from 'naive-ui';
 import { computed, onBeforeUnmount, shallowRef } from 'vue';
 
+import { useLatestTask } from '@/shared/lib/latest_task';
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { message } from '@/shared/services/feedback';
 import type { RedactionRect, RedactionSelection } from './privacy_redaction';
+import { getOffscreenTextNodes, hasSensitiveText } from './privacy_redaction';
+import type { RawNode } from '@/entities/snapshot/types';
 import {
   commitRedactionRectangles,
   createRedactionHistory,
@@ -18,6 +28,7 @@ const props = defineProps<{
   sourceUrl: string;
   imageWidth: number;
   imageHeight: number;
+  nodes: RawNode[];
 }>();
 
 const emit = defineEmits<{
@@ -32,7 +43,23 @@ const rectangles = computed(() => redactionHistory.value.rectangles);
 const canUndo = computed(() => redactionHistory.value.undoStack.length > 0);
 const canRedo = computed(() => redactionHistory.value.redoStack.length > 0);
 const draftRect = shallowRef<RedactionRect>();
-const loading = shallowRef(false);
+const selectedNodeIds = shallowRef<number[]>([]);
+const offscreenNodes = computed(() =>
+  getOffscreenTextNodes(props.nodes, props.imageWidth, props.imageHeight),
+);
+const hasSelection = computed(
+  () => rectangles.value.length > 0 || selectedNodeIds.value.length > 0,
+);
+const setNodeSelected = (id: number, checked: boolean) => {
+  selectedNodeIds.value = checked
+    ? [...new Set([...selectedNodeIds.value, id])]
+    : selectedNodeIds.value.filter((value) => value !== id);
+};
+const setAllNodesSelected = (checked: boolean) => {
+  selectedNodeIds.value = checked
+    ? offscreenNodes.value.map((node) => node.id)
+    : [];
+};
 let pointerId: number | undefined;
 
 const drawCanvas = () => {
@@ -59,27 +86,27 @@ const drawCanvas = () => {
   }
 };
 
-const loadSourceImage = async () => {
-  loading.value = true;
-  redactionHistory.value = createRedactionHistory();
-  draftRect.value = undefined;
-  try {
-    const image = new Image();
-    await new Promise<void>((resolve, reject) => {
-      image.onload = () => resolve();
-      image.onerror = () => reject(new Error('截图加载失败'));
-      image.src = props.sourceUrl;
-    });
+const sourceTask = useLatestTask(async ({ commit }) => {
+  const image = new Image();
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error('截图加载失败'));
+    image.src = props.sourceUrl;
+  });
+  commit(() => {
+    redactionHistory.value = createRedactionHistory();
+    selectedNodeIds.value = [];
     sourceImage.value = image;
-    const canvas = canvasRef.value;
-    if (!canvas) return;
+    draftRect.value = undefined;
     drawCanvas();
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : String(error));
-  } finally {
-    loading.value = false;
-  }
+  });
+});
+const loading = sourceTask.loading;
+const loadSourceImage = async () => {
+  const result = await sourceTask.run();
+  if (result.status === 'error') message.error(result.error.message);
 };
+onBeforeUnmount(sourceTask.cancel);
 
 const commitRectangles = (value: RedactionRect[]) => {
   redactionHistory.value = commitRedactionRectangles(
@@ -173,6 +200,7 @@ const activateDialog = () => {
 };
 
 const deactivateDialog = () => {
+  sourceTask.cancel();
   window.removeEventListener('keydown', handleHistoryShortcut);
 };
 
@@ -181,11 +209,13 @@ onBeforeUnmount(deactivateDialog);
 const applyRedaction = () => {
   const image = sourceImage.value;
   const canvas = canvasRef.value;
-  if (!rectangles.value.length || !image || !canvas) return;
+  if (!hasSelection.value || loading.value || !canvas) return;
+  if (rectangles.value.length && !image) return;
   emit('apply', {
     imageHeight: canvas.height,
     imageWidth: canvas.width,
     rectangles: rectangles.value,
+    nodeIds: selectedNodeIds.value,
   });
 };
 </script>
@@ -203,29 +233,77 @@ const applyRedaction = () => {
     @update:show="emit('update:show', $event)"
   >
     <div class="mb-[8px] text-[13px] text-[#64748b]">
-      在截图上拖动框选敏感区域。副本会用纯黑色覆盖图片，并将相交节点的
-      text、desc 替换为 ***。
+      拖动框选敏感区域，截图将被涂黑，相交节点的文本将替换为等长星号。
     </div>
-    <NSpin :show="loading">
+    <div
+      class="flex max-h-[calc(100vh-240px)] flex-wrap gap-[16px] overflow-auto"
+    >
+      <NSpin :show="loading">
+        <div class="flex justify-center overflow-auto bg-[#111827]">
+          <canvas
+            ref="canvasRef"
+            :width="imageWidth"
+            :height="imageHeight"
+            class="block max-h-[calc(100vh-260px)] max-w-[calc(100vw-96px)] cursor-crosshair touch-none object-contain"
+            @pointerdown="startRectangle"
+            @pointermove="moveRectangle"
+            @pointerup="finishRectangle"
+            @pointercancel="finishRectangle"
+          />
+        </div>
+      </NSpin>
       <div
-        class="flex max-h-[calc(100vh-210px)] justify-center overflow-auto bg-[#111827]"
+        class="flex h-[calc(100vh-260px)] w-[320px] max-w-full min-w-0 flex-col overflow-hidden"
       >
-        <canvas
-          ref="canvasRef"
-          :width="imageWidth"
-          :height="imageHeight"
-          class="block max-h-[calc(100vh-220px)] max-w-[calc(100vw-96px)] cursor-crosshair touch-none object-contain"
-          @pointerdown="startRectangle"
-          @pointermove="moveRectangle"
-          @pointerup="finishRectangle"
-          @pointercancel="finishRectangle"
-        />
+        <div class="mb-[8px] shrink-0 font-medium">屏幕外节点</div>
+        <div class="mb-[12px] shrink-0 text-[12px] text-[#64748b]">
+          勾选要脱敏的节点，文本将替换为等长星号。
+        </div>
+        <NCheckbox
+          v-if="offscreenNodes.length"
+          class="shrink-0"
+          :checked="selectedNodeIds.length === offscreenNodes.length"
+          :indeterminate="
+            selectedNodeIds.length > 0 &&
+            selectedNodeIds.length < offscreenNodes.length
+          "
+          @update:checked="setAllNodesSelected"
+          >全选（{{ selectedNodeIds.length }}/{{
+            offscreenNodes.length
+          }}）</NCheckbox
+        >
+        <div v-else class="text-[13px] text-[#64748b]">
+          没有需要脱敏的屏幕外节点
+        </div>
+        <div class="mt-[8px] min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div class="flex flex-col gap-[12px]">
+            <NCheckbox
+              v-for="node in offscreenNodes"
+              :key="node.id"
+              :checked="selectedNodeIds.includes(node.id)"
+              @update:checked="setNodeSelected(node.id, $event)"
+            >
+              <div class="break-all whitespace-pre-wrap">
+                <div class="text-[12px] text-[#64748b]">
+                  #{{ node.id }} · {{ node.attr.name.split('.').at(-1) }}
+                </div>
+                <div v-if="hasSensitiveText(node.attr.text)">
+                  text：{{ node.attr.text }}
+                </div>
+                <div v-if="hasSensitiveText(node.attr.desc)">
+                  desc：{{ node.attr.desc }}
+                </div>
+              </div>
+            </NCheckbox>
+          </div>
+        </div>
       </div>
-    </NSpin>
+    </div>
     <template #footer>
-      <div class="flex items-center gap-[8px]">
+      <div class="flex flex-wrap items-center gap-[8px]">
         <span class="mr-auto text-[12px] text-[#64748b]">
-          已选择 {{ rectangles.length }} 个区域；原始快照不会被修改
+          已选择 {{ rectangles.length }} 个区域、{{ selectedNodeIds.length }}
+          个节点
         </span>
         <NButtonGroup>
           <NButton
@@ -267,7 +345,7 @@ const applyRedaction = () => {
         </NTooltip>
         <NButton
           type="primary"
-          :disabled="!rectangles.length || loading"
+          :disabled="!hasSelection || loading"
           @click="applyRedaction"
         >
           创建副本

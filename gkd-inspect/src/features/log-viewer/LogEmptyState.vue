@@ -21,9 +21,6 @@ defineEmits<{ open: [] }>();
         <div name="drop-description" class="mt-[8px] text-[#64748b]">
           或点击选择本地 ZIP 文件
         </div>
-        <div name="privacy-tip" class="mt-[24px] text-[12px] text-[#94a3b8]">
-          文件只在当前浏览器中解析，不会上传；远程日志会在本机缓存最多 7 天
-        </div>
       </div>
     </NSpin>
   </div>

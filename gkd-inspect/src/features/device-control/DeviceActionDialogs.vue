@@ -4,7 +4,7 @@ import { shallowReactive, shallowRef } from 'vue';
 
 import { message } from '@/shared/services/feedback';
 import { errorWrap } from '@/shared/services/error';
-import { useTask } from '@/shared/lib/task';
+import { useSingleTask } from '@/shared/lib/latest_task';
 import JSON5 from 'json5';
 import type { DeviceApi } from './api';
 import SelectorLibraryDialog from '@/features/selector-library/ui/SelectorLibraryDialog.vue';
@@ -60,7 +60,7 @@ const actionOptions: { value?: string; label: string }[] = [
   { value: 'longClickCenter', label: 'longClickCenter' },
 ];
 
-const updateSubscription = useTask(async () => {
+const updateSubscription = useSingleTask(async () => {
   const data = errorWrap(() => JSON5.parse(subscriptionText.value.trim()));
   if (!data) return;
   if (data.categories || data.globalGroups || data.apps) {
@@ -80,7 +80,7 @@ const updateSubscription = useTask(async () => {
   message.success(`修改成功`);
 });
 
-const executeSelector = useTask(async () => {
+const executeSelector = useSingleTask(async () => {
   const result = await props.api.execSelector({
     ...clickAction,
     fastQuery: clickAction.quickFind,
@@ -155,16 +155,16 @@ const subscriptionPlaceholder = `
     :maskClosable="false"
     positiveText="确认"
     :positiveButtonProps="{
-      loading: updateSubscription.loading,
-      onClick: updateSubscription.invoke,
+      loading: updateSubscription.loading.value,
+      onClick: updateSubscription.run,
     }"
     @update:show="emit('update:subscriptionShow', $event)"
   >
     <NInput
       :value="subscriptionText"
-      :disabled="updateSubscription.loading"
+      :disabled="updateSubscription.loading.value"
       type="textarea"
-      class="gkd_code"
+      class="font-mono!"
       :autosize="{ minRows: 20, maxRows: 25 }"
       :placeholder="subscriptionPlaceholder"
       @update:value="updateSubscriptionText"
@@ -179,16 +179,16 @@ const subscriptionPlaceholder = `
     :maskClosable="false"
     positiveText="确认"
     :positiveButtonProps="{
-      loading: executeSelector.loading,
-      onClick: executeSelector.invoke,
+      loading: executeSelector.loading.value,
+      onClick: executeSelector.run,
     }"
     @update:show="emit('update:selectorShow', $event)"
   >
     <NInput
       :value="clickAction.selector"
-      :disabled="executeSelector.loading"
+      :disabled="executeSelector.loading.value"
       type="textarea"
-      class="gkd_code"
+      class="font-mono!"
       :autosize="{ minRows: 4, maxRows: 10 }"
       placeholder="请输入合法的选择器"
       @update:value="updateSelector"

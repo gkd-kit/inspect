@@ -1,4 +1,5 @@
-import { markRaw, reactive, shallowRef } from 'vue';
+import { useKeyedTask } from '@/shared/lib/latest_task';
+import { computed, markRaw, reactive, shallowRef } from 'vue';
 import { message } from '@/shared/services/feedback';
 import type { ShallowRef } from 'vue';
 import type { CrashDetail } from './crash_preview';
@@ -25,10 +26,12 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
   const previewRetraceState = shallowRef<StackRetraceTextState>();
   const crashRetraceState = shallowRef<StackRetraceTextState>();
   const logRetraceState = shallowRef<StackRetraceTextState>();
+  const stateKeys = new WeakMap<StackRetraceTextState, string>();
   const retraceTextStates = new Map<string, StackRetraceTextState>();
   let buildRetracer: LazyBuildRetracer | undefined;
 
   const resetBuildRetrace = () => {
+    retraceTask.cancelAll();
     buildRetracer?.dispose();
     buildRetracer = undefined;
     options.buildKey.value = undefined;
@@ -41,13 +44,17 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
   const getRetraceTextState = (key: string, originalText: string) => {
     const previous = retraceTextStates.get(key);
     if (previous?.originalText == originalText) return previous;
+    if (previous) retraceTask.cancel(key);
     const state = reactive<StackRetraceTextState>({
       originalText,
       available: hasRetraceableStack(originalText),
-      loading: false,
+      get loading() {
+        return Boolean(retraceTask.loading.value[key]);
+      },
       active: false,
       autoAttempted: false,
     });
+    stateKeys.set(state, key);
     retraceTextStates.set(key, state);
     return state;
   };
@@ -59,44 +66,60 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
       ? state.retracedText
       : state.originalText;
 
-  const toggleRetraceText = async (
+  const retraceTask = useKeyedTask(
+    async (
+      { commit, isCurrent: taskCurrent },
+      _key: string,
+      state: StackRetraceTextState,
+      kind: 'crash' | 'log',
+      isCurrent: () => boolean,
+      applyText: (text: string) => void,
+    ) => {
+      const buildKey = options.buildKey.value;
+      if (!state.available || !buildKey) return;
+      try {
+        const active = !state.active;
+        const text = !active
+          ? state.originalText
+          : (state.retracedText ??
+            (await (buildRetracer ||= new LazyBuildRetracer(buildKey)).retrace(
+              state.originalText,
+              kind,
+            )));
+        if (!taskCurrent() || !isCurrent()) return;
+        if (active && text === state.originalText) {
+          message.warning('没有找到与当前 mapping 匹配的堆栈');
+          return;
+        }
+        commit(() => {
+          if (active) state.retracedText = text;
+          state.active = active;
+          applyText(text);
+        });
+      } catch (error) {
+        if (
+          taskCurrent() &&
+          isCurrent() &&
+          !(error instanceof DOMException && error.name === 'AbortError')
+        )
+          message.error(
+            '堆栈还原失败: ' +
+              (error instanceof Error ? error.message : String(error)),
+          );
+        throw error;
+      }
+    },
+  );
+  const toggleRetraceText = (
     state: StackRetraceTextState | undefined,
-    kind: `crash` | `log`,
+    kind: 'crash' | 'log',
     isCurrent: () => boolean,
     applyText: (text: string) => void,
   ) => {
-    const buildKey = options.buildKey.value;
-    if (!state || !state.available || !buildKey || state.loading) return;
-    if (state.active) {
-      state.active = false;
-      applyText(state.originalText);
-      return;
-    }
-    if (state.retracedText != null) {
-      state.active = true;
-      applyText(state.retracedText);
-      return;
-    }
-    const retracer = (buildRetracer ||= new LazyBuildRetracer(buildKey));
-    state.loading = true;
-    try {
-      const result = await retracer.retrace(state.originalText, kind);
-      if (result == state.originalText) {
-        if (isCurrent()) message.warning(`没有找到与当前 mapping 匹配的堆栈`);
-        return;
-      }
-      state.retracedText = result;
-      state.active = true;
-      if (isCurrent()) applyText(result);
-    } catch (error) {
-      if (error instanceof DOMException && error.name == `AbortError`) return;
-      if (!isCurrent()) return;
-      message.error(
-        `堆栈还原失败: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    } finally {
-      state.loading = false;
-    }
+    if (!state) return;
+    const key = stateKeys.get(state);
+    if (key !== undefined)
+      return retraceTask.run(key, state, kind, isCurrent, applyText);
   };
 
   const autoRetraceText = (
@@ -117,8 +140,7 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
       `log`,
       () => previewRetraceState.value == state,
       (text) => {
-        if (previewRetraceState.value == state)
-          options.previewText.value = text;
+        options.previewText.value = text;
       },
     );
   };
@@ -130,7 +152,7 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
       `crash`,
       () => crashRetraceState.value == state,
       (stackTrace) => {
-        if (crashRetraceState.value != state || !options.crashDetail.value) {
+        if (!options.crashDetail.value) {
           return;
         }
         options.crashDetail.value = markRaw({
@@ -148,19 +170,28 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
       `log`,
       () => logRetraceState.value == state,
       (text) => {
-        if (logRetraceState.value == state) options.logDetailText.value = text;
+        options.logDetailText.value = text;
       },
     );
   };
 
   return {
     autoRetraceText,
-    crashRetraceState,
+    crashRetraceState: computed(() => crashRetraceState.value),
+    setCrashRetraceState: (state: StackRetraceTextState | undefined) => {
+      crashRetraceState.value = state;
+    },
     getRetraceStateText,
     getRetraceTextState,
     getCachedRetraceTextState,
-    logRetraceState,
-    previewRetraceState,
+    logRetraceState: computed(() => logRetraceState.value),
+    setLogRetraceState: (state: StackRetraceTextState | undefined) => {
+      logRetraceState.value = state;
+    },
+    previewRetraceState: computed(() => previewRetraceState.value),
+    setPreviewRetraceState: (state: StackRetraceTextState | undefined) => {
+      previewRetraceState.value = state;
+    },
     resetBuildRetrace,
     toggleCrashRetrace,
     toggleLogRetrace,

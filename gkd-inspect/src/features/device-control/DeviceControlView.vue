@@ -1,22 +1,29 @@
 <script setup lang="tsx">
 import { NButton, NDataTable, NInput, NInputGroup, NTooltip } from 'naive-ui';
-import { computed, onMounted, ref, shallowReactive, shallowRef } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowReactive,
+  shallowRef,
+} from 'vue';
 import { useRouter } from 'vue-router';
 
 import type { Snapshot } from '@/entities/snapshot/types';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
+import { useLatestTask } from '@/shared/lib/latest_task';
 import { useDeviceApi } from './api';
 import { toValidURL } from '@/shared/lib/check';
 import { message } from '@/shared/services/feedback';
 import { errorWrap } from '@/shared/services/error';
-import { delay } from '@/shared/lib/async';
 import {
   screenshotStorage,
   snapshotStorage,
 } from '@/entities/snapshot/storage';
 import { useSnapshotColumns } from '@/entities/snapshot/ui/useSnapshotColumns';
-import { useBatchTask, useTask } from '@/shared/lib/task';
+import { useKeyedTask, useSingleTask } from '@/shared/lib/latest_task';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { RowKey, SortState } from 'naive-ui/es/data-table/src/interface';
 import pLimit from 'p-limit';
@@ -27,33 +34,49 @@ import DeviceActionDialogs from './DeviceActionDialogs.vue';
 import PageBackButton from '@/features/navigation/PageBackButton.vue';
 
 const router = useRouter();
-const { api, origin, serverInfo, disconnect } = useDeviceApi();
+const {
+  api,
+  origin,
+  serverInfo,
+  disconnect,
+  prepareConnection,
+  applyConnection,
+} = useDeviceApi();
 const link = shallowRef(localStorage.getItem(`device_link`) || ``);
 const snapshots = shallowRef<Snapshot[]>([]);
-let connectionVersion = 0;
 const updateLink = (value: string) => {
   link.value = value;
 };
-const loadSnapshots = async (version = connectionVersion) => {
-  const result = await api.getSnapshots();
-  if (version != connectionVersion) return;
-  result.sort((a, b) => b.id - a.id);
-  snapshots.value = result;
+const snapshotsTask = useLatestTask(async ({ commit }) => {
+  const currentApi = api.value;
+  const result = await currentApi.getSnapshots();
+  if (currentApi !== api.value) return;
+  commit(() => {
+    snapshots.value = result.sort((a, b) => b.id - a.id);
+  });
+});
+const loadSnapshots = async () => {
+  await snapshotsTask.run();
 };
-const connect = useTask(async () => {
+const connectTask = useLatestTask(async ({ commit }) => {
   if (!link.value) return;
-  const version = ++connectionVersion;
-  origin.value = errorWrap(
+  const address = errorWrap(
     () => new URL(link.value.trim()),
-    () => `非法设备地址`,
+    () => '非法设备地址',
   ).origin;
-  link.value = origin.value;
-  localStorage.setItem(`device_link`, link.value);
-  const result = await api.getServerInfo();
-  if (version != connectionVersion) return;
-  serverInfo.value = result;
-  document.title = serverTitle.value;
-  await loadSnapshots(version);
+  const result = await prepareConnection(address);
+  if (
+    !commit(() => {
+      snapshotsTask.cancel();
+      applyConnection(result);
+      link.value = address;
+      snapshots.value = result.snapshots.sort((a, b) => b.id - a.id);
+      checkedRowKeys.value = [];
+      localStorage.setItem('device_link', address);
+      document.title = serverTitle.value;
+    })
+  )
+    result.controller.abort();
 });
 
 const serverTitle = computed(() => {
@@ -63,23 +86,27 @@ const serverTitle = computed(() => {
   return `${d.manufacturer} Android${d.release} - GKD${g.versionName}`;
 });
 
-onMounted(async () => {
-  await delay(500);
-  if (toValidURL(link.value)) {
-    connect.invoke();
-  }
+onMounted(() => {
+  if (toValidURL(link.value)) void connectTask.run();
+});
+onBeforeUnmount(() => {
+  connectTask.cancel();
+  snapshotsTask.cancel();
+  disconnect();
 });
 
-const captureSnapshot = useTask(async () => {
-  const snapshot = await api.captureSnapshot();
-  const screenshot = await api.getScreenshot({ id: snapshot.id });
+const captureSnapshot = useSingleTask(async () => {
+  const currentApi = api.value;
+  const snapshot = await currentApi.captureSnapshot();
+  const screenshot = await currentApi.getScreenshot({ id: snapshot.id });
   await snapshotStorage.setItem(snapshot.id, snapshot);
   await screenshotStorage.setItem(snapshot.id, screenshot);
   message.success(`捕获并保存快照成功`);
-  await loadSnapshots();
+  if (currentApi === api.value) await loadSnapshots();
 });
-const downloadAllSnapshot = useTask(async () => {
-  const snapshotIds = (await api.getSnapshots()).map((s) => s.id);
+const downloadAllSnapshot = useSingleTask(async () => {
+  const currentApi = api.value;
+  const snapshotIds = (await currentApi.getSnapshots()).map((s) => s.id);
   const existSnapshotIds = new Set(
     (await screenshotStorage.keys()).map((s) => parseInt(s)),
   );
@@ -96,8 +123,8 @@ const downloadAllSnapshot = useTask(async () => {
     unimportSnapshotIds.map((snapshotId) =>
       limit(async () => {
         const [newSnapshot, newScreenshot] = await Promise.all([
-          api.getSnapshot({ id: snapshotId }),
-          api.getScreenshot({ id: snapshotId }),
+          currentApi.getSnapshot({ id: snapshotId }),
+          currentApi.getScreenshot({ id: snapshotId }),
         ] as const);
         if (!newSnapshot.nodes) return;
         await Promise.all([
@@ -125,25 +152,23 @@ const handleSorterChange = (sorter: SortState) => {
     ctimeCol.sortOrder = sorter.order;
   }
 };
-const previewSnapshot = useBatchTask(
-  async (row: Snapshot) => {
-    if (!(await snapshotStorage.hasItem(row.id))) {
-      const obj = await api.getSnapshot({ id: row.id });
-      await snapshotStorage.setItem(row.id, obj);
-    }
-    if (!(await screenshotStorage.hasItem(row.id))) {
-      const bf = await api.getScreenshot({ id: row.id });
-      await screenshotStorage.setItem(row.id, bf);
-    }
-    window.open(
-      router.resolve({
-        name: 'snapshot',
-        params: { snapshotId: row.id },
-      }).href,
-    );
-  },
-  (r) => r.id,
-);
+const previewSnapshot = useKeyedTask(async (_context, snapshotId: number) => {
+  const currentApi = api.value;
+  if (!(await snapshotStorage.hasItem(snapshotId))) {
+    const obj = await currentApi.getSnapshot({ id: snapshotId });
+    await snapshotStorage.setItem(snapshotId, obj);
+  }
+  if (!(await screenshotStorage.hasItem(snapshotId))) {
+    const bf = await currentApi.getScreenshot({ id: snapshotId });
+    await screenshotStorage.setItem(snapshotId, bf);
+  }
+  window.open(
+    router.resolve({
+      name: 'snapshot',
+      params: { snapshotId: snapshotId },
+    }).href,
+  );
+});
 
 const columns: DataTableColumns<Snapshot> = [
   {
@@ -167,9 +192,11 @@ const columns: DataTableColumns<Snapshot> = [
           showExport={false}
           showShare={false}
           deleteConfirmText={`是否确认删除? 此操作不可恢复!\n快照ID:${row.id}`}
-          onPreview={() => previewSnapshot.invoke(row)}
-          previewLoading={previewSnapshot.loading[row.id]}
-          onBeforeDelete={async () => await api.deleteSnapshot({ id: row.id })}
+          onPreview={() => previewSnapshot.run(row.id)}
+          previewLoading={previewSnapshot.loading.value[row.id]}
+          onBeforeDelete={async () =>
+            await api.value.deleteSnapshot({ id: row.id })
+          }
           onDelete={() => {
             snapshots.value = snapshots.value.filter((s) => s.id !== row.id);
           }}
@@ -180,11 +207,19 @@ const columns: DataTableColumns<Snapshot> = [
 ];
 
 const checkedRowKeys = ref<number[]>([]);
-const { batchDelete } = useBatchActions(checkedRowKeys, {
-  beforeDeleteItem: async (id) => await api.deleteSnapshot({ id }),
-  onAfterDelete: async () => {
-    await loadSnapshots();
-  },
+const { batchDelete } = useBatchActions(checkedRowKeys, () => {
+  const currentApi = api.value;
+  return {
+    isCurrent: () => currentApi === api.value,
+    beforeDeleteItem: (id) => currentApi.deleteSnapshot({ id }),
+    prepareAfterDelete: async () => {
+      const result = await currentApi.getSnapshots();
+      return () => {
+        snapshotsTask.cancel();
+        snapshots.value = result.sort((a, b) => b.id - a.id);
+      };
+    },
+  };
 });
 
 const pagination = shallowReactive<PaginationProps>({
@@ -217,7 +252,8 @@ const updateCheckedRowKeys = (keys: RowKey[]) => {
   );
 };
 const stopConnection = () => {
-  connectionVersion++;
+  connectTask.cancel();
+  snapshotsTask.cancel();
   disconnect();
   snapshots.value = [];
   checkedRowKeys.value = [];
@@ -235,16 +271,16 @@ const stopConnection = () => {
     @update:subscriptionShow="setSubscriptionDialogVisible"
     @update:selectorShow="setSelectorDialogVisible"
   />
-  <div class="page-size flex flex-col p-[10px] gap-[10px]">
+  <div class="w-(--gkd-w) h-(--gkd-h) flex flex-col p-[10px] gap-[10px]">
     <div class="flex items-center gap-[24px]">
       <PageBackButton class="ml-[12px]" />
       <NInputGroup>
         <NInput
           :value="link"
           placeholder="请输入设备地址"
-          class="gkd_code"
+          class="font-mono!"
           :style="{ width: `240px` }"
-          @keyup.enter="connect.invoke"
+          @keyup.enter="connectTask.run"
           @update:value="updateLink"
         >
           <template #suffix>
@@ -253,8 +289,8 @@ const stopConnection = () => {
                 <NButton
                   text
                   style="--n-icon-size: 20px"
-                  :loading="connect.loading"
-                  @click="connect.invoke"
+                  :loading="connectTask.loading.value"
+                  @click="connectTask.run"
                 >
                   <template #icon><GkSvg name="refresh" /></template>
                 </NButton>
@@ -264,7 +300,7 @@ const stopConnection = () => {
           </template>
         </NInput>
         <NButton
-          v-if="connect.loading"
+          v-if="connectTask.loading.value"
           secondary
           type="error"
           @click="stopConnection"
@@ -274,7 +310,7 @@ const stopConnection = () => {
 
         <div
           v-if="serverInfo"
-          class="gkd_code pl-[16px] whitespace-nowrap flex items-center"
+          class="font-mono! pl-[16px] whitespace-nowrap flex items-center"
         >
           {{ serverTitle }}
         </div>
@@ -289,8 +325,8 @@ const stopConnection = () => {
             <NButton
               text
               style="--n-icon-size: 24px"
-              :loading="captureSnapshot.loading"
-              @click="captureSnapshot.invoke"
+              :loading="captureSnapshot.loading.value"
+              @click="captureSnapshot.run"
             >
               <template #icon><GkSvg name="Snapshot" /></template>
             </NButton>
@@ -302,8 +338,8 @@ const stopConnection = () => {
             <NButton
               text
               style="--n-icon-size: 24px"
-              :loading="downloadAllSnapshot.loading"
-              @click="downloadAllSnapshot.invoke"
+              :loading="downloadAllSnapshot.loading.value"
+              @click="downloadAllSnapshot.run"
             >
               <template #icon><GkSvg name="Down-all" /></template>
             </NButton>

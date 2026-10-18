@@ -155,11 +155,3 @@ const bodyHoverd = useElementHover(document.body);
     </div>
   </div>
 </template>
-<style>
-body:not(.mobile)::-webkit-scrollbar {
-  display: none;
-}
-html:not(.mobile) {
-  scrollbar-width: none;
-}
-</style>

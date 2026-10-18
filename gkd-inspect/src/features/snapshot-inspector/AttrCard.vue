@@ -145,7 +145,7 @@ const selectText = computed(() => {
       size="small"
       striped
       :singleLine="false"
-      class="gkd_code"
+      class="font-mono!"
       :themeOverrides="{
         thPaddingSmall: '1px 3px',
         tdPaddingSmall: '0px 3px',
@@ -185,7 +185,7 @@ const selectText = computed(() => {
             <NEllipsis
               class="w-[calc(var(--gkd-w)*0.12)]"
               :class="{
-                'text-left direction-rtl': attrx.name == 'id',
+                'text-left [direction:rtl]': attrx.name == 'id',
                 'opacity-50': attrx.value === null,
               }"
             >
@@ -206,7 +206,7 @@ const selectText = computed(() => {
                     </template>
                   </NButton>
                 </template>
-                <div class="max-w-[500px] break-all gkd_code">
+                <div class="max-w-[500px] break-all font-mono!">
                   <SelectorText :source="selectText" />
                 </div>
               </NTooltip>

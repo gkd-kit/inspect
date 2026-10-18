@@ -39,20 +39,28 @@ import {
   renderDevice,
   useSnapshotColumns,
 } from '@/entities/snapshot/ui/useSnapshotColumns';
-import { useTask } from '@/shared/lib/task';
+import { useLatestTask } from '@/shared/lib/latest_task';
+import { useSingleTask } from '@/shared/lib/latest_task';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import type { SortState } from 'naive-ui/es/data-table/src/interface';
 import { useBatchActions } from '@/features/snapshot-management/useBatchActions';
 import SnapshotGroupView from './SnapshotGroupView.vue';
 
 const snapshots = shallowRef<Snapshot[]>([]);
-const loading = shallowRef(true);
+const snapshotsTask = useLatestTask(
+  async ({ commit }, afterApply?: () => void) => {
+    const result = (await shallowSnapshotStorage.getAllItems()).reverse();
+    commit(() => {
+      snapshots.value = result;
+      checkedRowKeys.value = [];
+      updateColumnFilterOptions();
+      afterApply?.();
+    });
+  },
+);
+const loading = snapshotsTask.loading;
 const updateSnapshots = async () => {
-  loading.value = true;
-  snapshots.value = (await shallowSnapshotStorage.getAllItems()).reverse();
-  checkedRowKeys.value = [];
-  updateColumnFilterOptions();
-  loading.value = false;
+  await snapshotsTask.run();
 };
 onMounted(updateSnapshots);
 const filterOption = shallowReactive({
@@ -78,7 +86,7 @@ const filterSnapshots = computed(() => {
   });
 });
 
-const importLocal = useTask(async (_files?: File[]) => {
+const importLocal = useSingleTask(async (_context, _files?: File[]) => {
   if (await importFromLocal(_files)) {
     await updateSnapshots();
   }
@@ -86,7 +94,7 @@ const importLocal = useTask(async (_files?: File[]) => {
 
 useEventListener(document.body, 'drop', async (e) => {
   e.preventDefault();
-  await importLocal.invoke(getDragEventFiles(e));
+  await importLocal.run(getDragEventFiles(e));
 });
 useEventListener(document.body, 'dragover', (e) => {
   e.preventDefault();
@@ -171,8 +179,9 @@ const handleSorterChange = (sorter: SortState) => {
 mtimeCol.sortOrder = `descend`;
 const showImportModal = shallowRef(false);
 const textImportValue = shallowRef(``);
-const importNetwork = useTask(async () => {
-  const urls = textImportValue.value
+const importNetwork = useSingleTask(async () => {
+  const input = textImportValue.value;
+  const urls = input
     .trim()
     .split(`\n`)
     .map((u) => u.trim())
@@ -180,8 +189,9 @@ const importNetwork = useTask(async () => {
   if (urls.length == 0) return;
   const r = await importFromNetwork(urls);
   if (!r) return;
-  await updateSnapshots();
-  textImportValue.value = ``;
+  await snapshotsTask.run(() => {
+    if (textImportValue.value === input) textImportValue.value = ``;
+  });
 });
 
 useEventListener(document.body, 'paste', (e) => {
@@ -213,7 +223,14 @@ const {
   batchShareImageUrl,
   batchShareZipUrl,
 } = useBatchActions(checkedRowKeys, {
-  onAfterDelete: updateSnapshots,
+  prepareAfterDelete: async () => {
+    const result = (await shallowSnapshotStorage.getAllItems()).reverse();
+    return () => {
+      snapshotsTask.cancel();
+      snapshots.value = result;
+      updateColumnFilterOptions();
+    };
+  },
 });
 
 const settingsDlgShow = shallowRef(false);
@@ -228,7 +245,9 @@ const setViewMode = (mode: 'table' | 'group') => {
 const inputImportRef = shallowRef();
 </script>
 <template>
-  <div class="flex flex-col overflow-hidden p-[10px] gap-[10px] page-size">
+  <div
+    class="flex flex-col overflow-hidden p-[10px] gap-[10px] w-(--gkd-w) h-(--gkd-h)"
+  >
     <div class="flex">
       <NSpace>
         <NButtonGroup>
@@ -315,8 +334,8 @@ const inputImportRef = shallowRef();
             <NTooltip placement="left">
               <template #trigger>
                 <NButton
-                  :loading="importLocal.loading"
-                  @click="importLocal.invoke()"
+                  :loading="importLocal.loading.value"
+                  @click="importLocal.run()"
                 >
                   导入本地文件
                 </NButton>
@@ -326,7 +345,7 @@ const inputImportRef = shallowRef();
             <NTooltip placement="left">
               <template #trigger>
                 <NButton
-                  :loading="importNetwork.loading"
+                  :loading="importNetwork.loading.value"
                   @click="showImportModal = true"
                 >
                   导入网络文件
@@ -416,8 +435,8 @@ const inputImportRef = shallowRef();
     positiveText="确认"
     negativeText="取消"
     style="width: 800px"
-    :loading="importNetwork.loading"
-    @positiveClick="importNetwork.invoke"
+    :loading="importNetwork.loading.value"
+    @positiveClick="importNetwork.run"
     @negativeClick="showImportModal = false"
     @close="showImportModal = false"
     @esc="showImportModal = false"
@@ -437,7 +456,7 @@ const inputImportRef = shallowRef();
         style: `white-space: nowrap;`,
       }"
       @update:value="
-        if (!importNetwork.loading) {
+        if (!importNetwork.loading.value) {
           textImportValue = $event;
         }
       "

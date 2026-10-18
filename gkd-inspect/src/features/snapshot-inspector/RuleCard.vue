@@ -77,7 +77,9 @@ const updateRuleText = (value: string) => {
     :show="show"
     @update:value="updateLayout"
   >
-    <div class="app-panel border-[1px] border-solid rounded-[4px] p-[8px]">
+    <div
+      class="border-(--app-border)! bg-(--app-panel)! text-(--app-text) border-[1px] border-solid rounded-[4px] p-[8px]"
+    >
       <div class="flex items-center gap-[8px] mb-[4px] pr-[4px]">
         <div>规则静态诊断</div>
         <NTag size="small" :type="diagnosticPresentation.type">
@@ -106,7 +108,7 @@ const updateRuleText = (value: string) => {
         type="textarea"
         placeholder="粘贴单条规则、规则组、应用配置或订阅中的 apps"
         size="small"
-        class="gkd_code mb-[8px]"
+        class="font-mono! mb-[8px]"
         :autosize="{ minRows: 10, maxRows: 20 }"
         @update:value="updateRuleText"
       />

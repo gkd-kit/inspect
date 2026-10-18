@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { NButton, NTooltip } from 'naive-ui';
-import { onBeforeMount, shallowReactive, shallowRef } from 'vue';
-import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+import { shallowReactive, shallowRef } from 'vue';
+import { useSnapshotRoute } from './snapshot_route';
 
 import GkSvg from '@/shared/ui/GkSvg.vue';
 import { loadingBar, message } from '@/shared/services/feedback';
@@ -12,7 +12,6 @@ import ScreenshotCard from './ScreenshotCard.vue';
 import SearchCard from './SearchCard.vue';
 import WindowCard from './WindowCard.vue';
 import { useSnapshotStore } from './snapshot';
-import { useSnapshotUrlState } from './snapshot_url_state';
 import SelectorTrackCard from '@/entities/selector/ui/SelectorTrackCard.vue';
 import GkFullscreenDialog from '@/shared/ui/GkFullscreenDialog.vue';
 import SettingsModal from '@/features/settings/SettingsModal.vue';
@@ -25,24 +24,20 @@ import {
   type SnapshotPanelName,
 } from './panel_layout';
 
-const route = useRoute();
 const snapshotStore = useSnapshotStore();
 const {
   snapshot,
   screenshotUrl,
   rootNode,
   loading,
-  redirected,
+  searchRevision,
   trackData,
   trackShow,
   loadFromRoute: loadSnapshotFromRoute,
-  applyUrlFocus,
+  cancelLoad,
   closeTrack,
   clearTrack,
 } = snapshotStore;
-const snapshotUrlState = useSnapshotUrlState();
-const searchRevision = shallowRef(0);
-let activePath = ``;
 
 const panelLayouts = shallowReactive(loadSnapshotPanelLayouts());
 const setPanelLayout = (
@@ -54,38 +49,25 @@ const setPanelLayout = (
   panelLayouts[name] = layout;
 };
 
-const loadPageFromRoute = async (
-  target: Pick<RouteLocationNormalized, 'path' | 'params' | 'query'>,
-  initial = false,
-) => {
-  const pathChanged = initial || activePath != target.path;
-  let failed = false;
-  if (pathChanged) loadingBar.start();
-  try {
-    const urlChanged = await snapshotUrlState.loadFromRoute(target);
-    if (snapshotUrlState.error.value) {
-      message.error(snapshotUrlState.error.value.message);
-    }
-    if (pathChanged) {
-      await loadSnapshotFromRoute(target);
-      searchRevision.value += 1;
-    } else if (urlChanged) {
-      await applyUrlFocus();
-      searchRevision.value += 1;
-    }
-    activePath = target.path;
-  } catch (error) {
-    failed = true;
-    message.error(error instanceof Error ? error.message : String(error));
-    if (pathChanged) loadingBar.error();
-  } finally {
-    if (pathChanged && !failed) loadingBar.finish();
+const loadPageFromRoute = async (target: RouteLocationNormalized) => {
+  loadingBar.start();
+  const result = await loadSnapshotFromRoute(target);
+  if (result.status === 'stale') return;
+  if (result.status === 'error') {
+    message.error(result.error.message);
+    loadingBar.error();
+    return;
   }
+  if (result.value) message.error(result.value.message);
+  loadingBar.finish();
 };
-
-onBeforeMount(() => loadPageFromRoute(route, true));
-onBeforeRouteUpdate((to) => loadPageFromRoute(to));
-
+const cancelPageLoad = () => {
+  cancelLoad();
+  loadingBar.finish();
+};
+useSnapshotRoute((target) => {
+  void loadPageFromRoute(target);
+}, cancelPageLoad);
 const getSessionBoolean = (key: string, fallback: boolean) => {
   const value = sessionStorage.getItem(key);
   return value == null ? fallback : value == 'true';
@@ -117,7 +99,7 @@ const setTrackVisible = (visible: boolean) => {
 </script>
 <template>
   <template v-if="snapshot && rootNode">
-    <div class="page-size flex gap-[5px]">
+    <div class="w-(--gkd-w) h-(--gkd-h) flex gap-[5px]">
       <div
         class="[--svg-h:24px] w-[40px] py-[12px] flex flex-col items-center gap-[16px]"
       >
@@ -237,15 +219,15 @@ const setTrackVisible = (visible: boolean) => {
     >
       <SelectorTrackCard
         v-if="trackData"
-        class="app-panel"
+        class="border-(--app-border)! bg-(--app-panel)! text-(--app-text)"
         v-bind="trackData"
         @close="closeTrack"
       />
     </GkFullscreenDialog>
   </template>
   <div
-    v-else-if="!loading && !redirected"
-    class="page-size flex flex-col items-center"
+    v-else-if="!loading"
+    class="w-(--gkd-w) h-(--gkd-h) flex flex-col items-center"
   >
     <div class="mt-[160px]">
       <span>快照数据缺失，</span>

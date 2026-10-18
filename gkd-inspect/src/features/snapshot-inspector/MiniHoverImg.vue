@@ -22,7 +22,7 @@ const {
         left: imgBounding.right.value + 4 + 'px',
         top: imgBounding.top.value + 'px',
       }"
-      class="MiniHoverImg app-panel pointer-events-none fixed overflow-hidden z-2 h-[200px] w-[200px] border-[1px] border-indigo-600 border-dashed"
+      class="MiniHoverImg border-(--app-border)! bg-(--app-panel)! text-(--app-text) pointer-events-none fixed overflow-hidden z-2 h-[200px] w-[200px] border-[1px] border-indigo-600 border-dashed"
     >
       <img
         :src="screenshotUrl"

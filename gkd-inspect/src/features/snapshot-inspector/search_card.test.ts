@@ -47,12 +47,12 @@ test(`搜索框的真实 textarea 与自动高度镜像继承相同字体`, () =
   assert.ok(inputTag, `未找到搜索输入框`);
   assert.match(
     inputTag,
-    /\bclass="gkd_code"/,
+    /\bclass="font-mono!"/,
     `等宽字体必须设置在 NInput 根节点，供 textarea 和测量镜像共同继承`,
   );
   assert.doesNotMatch(
     inputTag,
-    /inputProps[\s\S]*gkd_code/,
+    /inputProps[\s\S]*font-mono!/,
     `不能只给真实 textarea 设置等宽字体，否则软换行高度会少算`,
   );
 });
@@ -113,7 +113,7 @@ test(`选择器库弹窗列表使用语法高亮并为非法数据保留文本�
 test(`选择器库弹窗列表可以确认后删除单条选择器`, () => {
   assert.match(
     selectorLibraryDialogSource,
-    /const removePreset = async \(preset: SelectorPreset\) =>/,
+    /const removePreset = \(preset: SelectorPreset\) =>/,
   );
   assert.match(
     selectorLibraryDialogSource,
@@ -125,7 +125,7 @@ test(`选择器库弹窗列表可以确认后删除单条选择器`, () => {
   );
   assert.match(
     selectorLibraryDialogSource,
-    /:loading="removingPresetId == preset\.id"/,
+    /:loading="removeTask\.loading\.value\[preset\.id\]"/,
   );
 });
 
@@ -209,7 +209,7 @@ test(`规则编排器生成结果使用固定高度的内部滚动文本区`, ()
   assert.ok(outputInput, `未找到规则编排器生成结果文本区`);
   assert.match(outputInput, /type="textarea"/);
   assert.match(outputInput, /:resizable="false"/);
-  assert.match(outputInput, /class="h-\[340px\] gkd_code"/);
+  assert.match(outputInput, /class="h-\[340px\] font-mono!"/);
   assert.doesNotMatch(outputInput, /autosize/);
 });
 

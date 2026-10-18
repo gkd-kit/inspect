@@ -17,6 +17,7 @@ import {
   shallowRef,
 } from 'vue';
 
+import { useLatestTask } from '@/shared/lib/latest_task';
 import { vRect } from '@/shared/lib/directives';
 import type { DataTableColumns } from 'naive-ui';
 import { withDirectives } from 'vue';
@@ -50,10 +51,6 @@ const props = defineProps<{
   subscriptionNames?: Record<string, string>;
 }>();
 
-const loading = shallowRef(true);
-const dataLoading = shallowRef(false);
-const errorText = shallowRef(``);
-const dataErrorText = shallowRef(``);
 const tables = shallowRef<SqliteTableMeta[]>([]);
 const selectedTableName = shallowRef(``);
 const columns = shallowRef<string[]>([]);
@@ -66,7 +63,6 @@ const worker = new Worker(new URL(`./sqlite.worker.ts`, import.meta.url), {
   type: `module`,
 });
 let nextRequestId = 1;
-let dataRequestSequence = 0;
 const pending = new Map<
   number,
   {
@@ -133,74 +129,63 @@ const measureSqliteText = (text: string) => {
   );
 };
 
-const loadData = async () => {
-  if (!selectedTableName.value) return;
-  const requestSequence = ++dataRequestSequence;
-  const table = selectedTableName.value;
-  dataLoading.value = true;
-  dataErrorText.value = ``;
-  try {
-    const result = await requestWorker<SqliteDataResult>({
-      type: `data`,
-      table,
-    });
-    if (
-      requestSequence != dataRequestSequence ||
-      table != selectedTableName.value
-    ) {
-      return;
-    }
-    columnWidths.value = result.columns.map((name) =>
-      getSqliteColumnWidth({
-        title: name,
-        values: [],
-        sortable: isSqliteSortableColumn(name),
-        measureText: measureSqliteText,
-      }),
-    );
-    columns.value = result.columns;
-    rows.value = result.rows;
-  } catch (error) {
-    if (requestSequence != dataRequestSequence) return;
-    dataErrorText.value =
-      error instanceof Error ? error.message : String(error);
-  } finally {
-    if (requestSequence == dataRequestSequence) dataLoading.value = false;
-  }
+const prepareTable = async (table: string) => {
+  const result = table
+    ? await requestWorker<SqliteDataResult>({ type: 'data', table })
+    : { columns: [], rows: [] };
+  const widths = result.columns.map((name) =>
+    getSqliteColumnWidth({
+      title: name,
+      values: [],
+      sortable: isSqliteSortableColumn(name),
+      measureText: measureSqliteText,
+    }),
+  );
+  return { ...result, widths };
 };
-
-const selectTable = async (tableName: string) => {
-  if (selectedTableName.value == tableName) return;
-  selectedTableName.value = tableName;
-  await loadData();
+const applyTable = (
+  table: string,
+  result: Awaited<ReturnType<typeof prepareTable>>,
+) => {
+  selectedTableName.value = table;
+  columns.value = result.columns;
+  rows.value = result.rows;
+  columnWidths.value = result.widths;
 };
-
-const init = async () => {
-  loading.value = true;
-  errorText.value = ``;
-  try {
-    const database = props.database;
-    const wal = props.wal;
-    const transfer: Transferable[] = [database.buffer];
-    if (wal) transfer.push(wal.buffer);
-    const result = await requestWorker<SqliteOpenResult>(
-      { type: `open`, database, wal },
-      transfer,
-    );
+const dataTask = useLatestTask(async ({ commit }, table: string) => {
+  const result = await prepareTable(table);
+  commit(() => {
+    applyTable(table, result);
+  });
+});
+const selectTable = (table: string) => dataTask.run(table);
+const initTask = useLatestTask(async ({ commit }) => {
+  const { database, wal } = props;
+  const transfer: Transferable[] = [database.buffer];
+  if (wal) transfer.push(wal.buffer);
+  const result = await requestWorker<SqliteOpenResult>(
+    { type: 'open', database, wal },
+    transfer,
+  );
+  const table = result.tables[0]?.name || '';
+  const data = await prepareTable(table);
+  commit(() => {
     tables.value = result.tables;
-    selectedTableName.value = result.tables[0]?.name || ``;
-    await loadData();
-  } catch (error) {
-    errorText.value = error instanceof Error ? error.message : String(error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(init);
+    applyTable(table, data);
+  });
+});
+const loading = initTask.loading;
+const dataLoading = dataTask.loading;
+const errorText = computed(() => initTask.error.value?.message || '');
+const dataErrorText = computed(() => dataTask.error.value?.message || '');
+onMounted(() => {
+  void initTask.run();
+});
 onBeforeUnmount(() => {
+  initTask.cancel();
+  dataTask.cancel();
   worker.terminate();
-  for (const task of pending.values()) task.reject(new Error(`组件已卸载`));
+  for (const task of pending.values()) task.reject(new Error('组件已卸载'));
   pending.clear();
 });
 

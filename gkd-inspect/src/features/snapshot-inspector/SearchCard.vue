@@ -329,7 +329,9 @@ const updateExpandedKeys = (keys: number[]) => {
     :show="show"
     @update:value="updateLayout"
   >
-    <div class="app-panel border-[1px] border-solid rounded-[4px] p-[8px]">
+    <div
+      class="border-(--app-border)! bg-(--app-panel)! text-(--app-text) border-[1px] border-solid rounded-[4px] p-[8px]"
+    >
       <div class="flex mb-[4px] pr-[4px]">
         <NRadioGroup
           :value="enableSearchBySelector"

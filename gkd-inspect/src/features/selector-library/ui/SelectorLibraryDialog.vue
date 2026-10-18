@@ -24,6 +24,7 @@ import {
   selectorLibrary,
   selectorLibraryActions,
 } from '@/features/selector-library/store';
+import { useSingleTask, useKeyedTask } from '@/shared/lib/latest_task';
 import { message } from '@/shared/services/feedback';
 import { getSelectorSource } from '@/entities/selector-library/sync';
 
@@ -47,8 +48,6 @@ const draft = shallowReactive({
   name: '',
   scope: (props.appId ? 'app' : 'global') as SelectorPresetScope,
 });
-const savePending = shallowRef(false);
-const removingPresetId = shallowRef<string>();
 let draftRevision = 0;
 
 const context = computed(() => {
@@ -102,31 +101,34 @@ const usePreset = (preset: SelectorPreset) => {
     );
   });
 };
-const removePreset = async (preset: SelectorPreset) => {
-  if (removingPresetId.value) return;
-  removingPresetId.value = preset.id;
-  try {
-    await selectorLibraryActions.remove(preset.id);
-    message.success(`选择器“${preset.name}”已删除`);
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : String(error));
-  } finally {
-    removingPresetId.value = undefined;
-  }
-};
-const togglePinned = async (preset: SelectorPreset) => {
-  try {
-    await selectorLibraryActions.setPinned(preset.id, !preset.pinned);
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : String(error));
-  }
-};
-const saveCurrentSelector = async () => {
-  if (savePending.value) return;
+const removeTask = useKeyedTask(
+  async (_context, _id: string, preset: SelectorPreset) => {
+    try {
+      await selectorLibraryActions.remove(preset.id);
+      message.success(`选择器“${preset.name}”已删除`);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  },
+);
+const removePreset = (preset: SelectorPreset) =>
+  removeTask.run(preset.id, preset);
+const pinTask = useKeyedTask(
+  async (_context, _id: string, preset: SelectorPreset) => {
+    try {
+      await selectorLibraryActions.setPinned(preset.id, !preset.pinned);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  },
+);
+const togglePinned = (preset: SelectorPreset) => pinTask.run(preset.id, preset);
+const saveTask = useSingleTask(async ({ commit }) => {
   const selector = props.initialSelector?.trim();
   if (!selector) return;
   const revision = draftRevision;
-  savePending.value = true;
   try {
     await selectorLibraryActions.save({
       name: draft.name,
@@ -135,20 +137,23 @@ const saveCurrentSelector = async () => {
       appId: props.appId,
       activityId: props.activityId,
     });
-    if (
-      revision == draftRevision &&
-      selector == props.initialSelector?.trim()
-    ) {
-      draft.name = '';
-      draftRevision += 1;
-      message.success('选择器已收藏');
-    }
+    commit(() => {
+      if (
+        revision == draftRevision &&
+        selector == props.initialSelector?.trim()
+      ) {
+        draft.name = '';
+        draftRevision += 1;
+        message.success('选择器已收藏');
+      }
+    });
   } catch (error) {
     message.error(error instanceof Error ? error.message : String(error));
-  } finally {
-    savePending.value = false;
+    throw error;
   }
-};
+});
+const savePending = saveTask.loading;
+const saveCurrentSelector = saveTask.run;
 </script>
 
 <template>
@@ -169,7 +174,7 @@ const saveCurrentSelector = async () => {
     />
 
     <template v-if="canQuickSave">
-      <div class="app-divider" />
+      <div class="h-px my-[10px] mx-0 bg-(--app-border)" />
       <div class="flex items-center gap-[8px]">
         <NInput
           :value="draft.name"
@@ -194,21 +199,21 @@ const saveCurrentSelector = async () => {
         </NButton>
       </div>
       <NEllipsis
-        class="mt-[6px] block gkd_code text-[12px]"
+        class="mt-[6px] block font-mono! text-[12px]"
         style="color: var(--app-muted)"
       >
         <SelectorText :source="initialSelector || ''" />
       </NEllipsis>
     </template>
 
-    <div class="app-divider" />
+    <div class="h-px my-[10px] mx-0 bg-(--app-border)" />
 
     <NScrollbar class="max-h-[420px]">
       <div v-if="visibleItems.length" class="flex flex-col gap-[8px] pr-[8px]">
         <div
           v-for="preset in visibleItems"
           :key="preset.id"
-          class="app-panel rounded-[6px] border p-[10px]"
+          class="border-(--app-border)! bg-(--app-panel)! text-(--app-text) rounded-[6px] border p-[10px]"
         >
           <div class="flex items-center gap-[8px]">
             <span class="font-semibold">{{ preset.name }}</span>
@@ -226,7 +231,7 @@ const saveCurrentSelector = async () => {
             </span>
           </div>
           <div
-            class="app-subtle mt-[5px] break-all rounded-[4px] p-[8px] gkd_code text-[13px]"
+            class="bg-(--app-subtle)! mt-[5px] break-all rounded-[4px] p-[8px] font-mono! text-[13px]"
           >
             <SelectorText :source="preset.selector" />
           </div>
@@ -250,7 +255,7 @@ const saveCurrentSelector = async () => {
                   size="small"
                   type="error"
                   secondary
-                  :loading="removingPresetId == preset.id"
+                  :loading="removeTask.loading.value[preset.id]"
                   >删除</NButton
                 >
               </template>

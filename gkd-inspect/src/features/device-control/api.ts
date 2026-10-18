@@ -1,4 +1,4 @@
-import { shallowRef } from 'vue';
+import { computed, shallowRef } from 'vue';
 import type { Snapshot } from '@/entities/snapshot/types';
 import type { RpcSuccess, ServerInfo } from '@/features/device-control/types';
 import { readRpcResponse, RpcException } from './rpc';
@@ -10,28 +10,23 @@ interface Reqid {
   id: number;
 }
 
-export const useDeviceApi = (initOrigin?: string) => {
-  const origin = shallowRef(initOrigin);
-  const serverInfo = shallowRef<ServerInfo>();
-  let requestController = new AbortController();
-  const disconnect = () => {
-    requestController.abort();
-    requestController = new AbortController();
-    origin.value = undefined;
-    serverInfo.value = undefined;
-  };
+const createDeviceApi = (
+  origin: string | undefined,
+  signal: AbortSignal,
+  getServerInfo: () => ServerInfo | undefined,
+) => {
   const request = async (
     name: string,
     init?: RequestInit,
     xhrDetails?: (arg: GmXhrOptions) => GmXhrOptions,
   ) => {
-    if (!origin.value) {
+    if (!origin) {
       throw new Error(`origin must exist`);
     }
-    const u = new URL(`/api/` + name, origin.value);
+    const u = new URL(`/api/` + name, origin);
     const response = await enhanceFetch(
       u,
-      { ...init, signal: requestController.signal },
+      { ...init, signal },
       xhrDetails,
     ).catch((e) => {
       if (!(e instanceof DOMException && e.name == 'AbortError')) {
@@ -83,7 +78,7 @@ export const useDeviceApi = (initOrigin?: string) => {
   const api = {
     getServerInfo: async () => jsonRpc<ServerInfo>(`getServerInfo`),
     getSnapshot: async (data: Reqid): Promise<Snapshot> => {
-      if (serverInfo.value?.gkdAppInfo?.versionName === '1.10.4') {
+      if (getServerInfo()?.gkdAppInfo?.versionName === '1.10.4') {
         // 兼容旧版本 BUG
         // https://github.com/gkd-kit/gkd/blob/v1.10.4/app/src/main/kotlin/li/songe/gkd/debug/HttpService.kt#L198
         return request('snapshot?id=' + data.id).then((r) => r.json());
@@ -119,7 +114,52 @@ export const useDeviceApi = (initOrigin?: string) => {
       return jsonRpc<RpcSuccess>(`deleteSnapshot`, data);
     },
   };
-  return { origin, api, serverInfo, disconnect };
+  return api;
 };
 
-export type DeviceApi = ReturnType<typeof useDeviceApi>['api'];
+export type DeviceApi = ReturnType<typeof createDeviceApi>;
+export const useDeviceApi = () => {
+  const connection = shallowRef<{
+    origin: string;
+    serverInfo: ServerInfo;
+    api: DeviceApi;
+    controller: AbortController;
+  }>();
+  const disconnectedApi = createDeviceApi(
+    undefined,
+    new AbortController().signal,
+    () => undefined,
+  );
+  const prepareConnection = async (origin: string) => {
+    const controller = new AbortController();
+    let serverInfo: ServerInfo | undefined;
+    const api = createDeviceApi(origin, controller.signal, () => serverInfo);
+    try {
+      const [info, snapshots] = await Promise.all([
+        api.getServerInfo(),
+        api.getSnapshots(),
+      ]);
+      serverInfo = info;
+      return { origin, serverInfo: info, snapshots, api, controller };
+    } catch (error) {
+      controller.abort();
+      throw error;
+    }
+  };
+  const applyConnection = (value: NonNullable<typeof connection.value>) => {
+    connection.value?.controller.abort();
+    connection.value = value;
+  };
+  const disconnect = () => {
+    connection.value?.controller.abort();
+    connection.value = undefined;
+  };
+  return {
+    origin: computed(() => connection.value?.origin),
+    serverInfo: computed(() => connection.value?.serverInfo),
+    api: computed(() => connection.value?.api ?? disconnectedApi),
+    prepareConnection,
+    applyConnection,
+    disconnect,
+  };
+};

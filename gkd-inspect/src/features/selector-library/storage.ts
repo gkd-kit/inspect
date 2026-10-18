@@ -1,3 +1,4 @@
+import { useLatestTask, useSerialTask } from '@/shared/lib/latest_task';
 import localforage from 'localforage';
 import {
   parseLibraryBackup,
@@ -119,45 +120,48 @@ interface SelectorLibraryStateSyncOptions<T> {
 export const createSelectorLibraryStateSync = <T = SelectorPreset[]>(
   options: SelectorLibraryStateSyncOptions<T>,
 ) => {
-  let refreshRevision = 0;
-  let pendingCommitCount = 0;
   let refreshRequested = false;
-
-  const refresh = async (): Promise<void> => {
-    if (pendingCommitCount > 0) {
-      refreshRequested = true;
-      return;
-    }
-    const revision = ++refreshRevision;
+  const refreshTask = useLatestTask(async ({ commit }) => {
     const items = await options.load();
-    if (pendingCommitCount > 0) {
-      refreshRequested = true;
-    } else if (revision == refreshRevision) {
-      options.apply(items);
-    }
-  };
-
-  const commit = async (updater: (state: T) => T) => {
-    pendingCommitCount += 1;
-    refreshRevision += 1;
-    try {
+    if (writeTask.loading.value) refreshRequested = true;
+    else
+      commit(() => {
+        options.apply(items);
+      });
+  });
+  const writeTask = useSerialTask(
+    async ({ commit }, updater: (state: T) => T) => {
       let changed = false;
       const items = await options.update((current) => {
         const next = updater(current);
         changed = next !== current;
         return next;
       });
-      options.apply(items);
+      commit(() => {
+        options.apply(items);
+      });
       if (changed) options.broadcast();
       return items;
-    } finally {
-      pendingCommitCount -= 1;
-      if (pendingCommitCount == 0 && refreshRequested) {
-        refreshRequested = false;
-        void refresh().catch(() => undefined);
-      }
+    },
+  );
+  const refresh = async (): Promise<void> => {
+    if (writeTask.loading.value) {
+      refreshRequested = true;
+      return;
     }
+    const result = await refreshTask.run();
+    if (result.status === 'error') throw result.error;
   };
-
+  const commit = async (updater: (state: T) => T): Promise<T> => {
+    if (refreshTask.loading.value) refreshRequested = true;
+    refreshTask.cancel();
+    const result = await writeTask.run(updater);
+    if (!writeTask.loading.value && refreshRequested) {
+      refreshRequested = false;
+      void refresh().catch(() => undefined);
+    }
+    if (result.status === 'error') throw result.error;
+    return result.value;
+  };
   return { commit, refresh };
 };

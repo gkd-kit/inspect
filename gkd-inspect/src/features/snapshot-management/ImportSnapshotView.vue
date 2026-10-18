@@ -1,7 +1,8 @@
 <script setup lang="tsx">
-import { onMounted, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { useSingleTask } from '@/shared/lib/latest_task';
 import { loadingBar, message } from '@/shared/services/feedback';
 import { gmOk } from '@/shared/api/gm';
 import { importFromNetwork } from '@/features/snapshot-management/import';
@@ -15,11 +16,8 @@ import { useSnapshotMetadataStore } from '@/entities/snapshot/metadataStore';
 const route = useRoute();
 const router = useRouter();
 
-const loading = shallowRef(true);
-const tip = shallowRef(`加载中...`);
-
 const goToSnapshot = async (snapshotId: number) => {
-  router.replace({
+  return router.replace({
     name: 'snapshot',
     params: { snapshotId },
     query: filterQuery(route.query, ['state', 'str', 'gkd']),
@@ -31,11 +29,12 @@ const importId = getImportId(url);
 const { importSnapshotId, actions: snapshotMetadataActions } =
   useSnapshotMetadataStore();
 
-onMounted(async () => {
+const importTask = useSingleTask(async ({ commit, isCurrent }) => {
   if (!isValidUrl(url)) {
     message.error(`非法URL参数`);
     await delay(1000);
-    router.replace({
+    if (!isCurrent()) return;
+    await router.replace({
       path: `/`,
     });
     return;
@@ -44,11 +43,10 @@ onMounted(async () => {
     const snapshotId = importSnapshotId[importId];
     if (snapshotId) {
       const snapshot = await snapshotStorage.getItem(snapshotId);
+      if (!isCurrent()) return;
       if (snapshot) {
-        goToSnapshot(snapshotId);
+        await goToSnapshot(snapshotId);
         return;
-      } else {
-        snapshotMetadataActions.setSnapshotId(importId);
       }
     }
   }
@@ -60,25 +58,34 @@ onMounted(async () => {
     if (snapshot) {
       loadingBar.finish();
       if (snapshot?.id) {
-        if (importId) {
-          snapshotMetadataActions.setSnapshotId(importId, snapshot.id);
-          snapshotMetadataActions.setImportId(snapshot.id, importId);
-        }
-        loading.value = false;
+        commit(() => {
+          if (importId) {
+            snapshotMetadataActions.setSnapshotId(importId, snapshot.id);
+            snapshotMetadataActions.setImportId(snapshot.id, importId);
+          }
+        });
         await delay(500);
-        goToSnapshot(snapshot.id);
+        if (isCurrent()) await goToSnapshot(snapshot.id);
       } else {
-        tip.value = `获取资源失败`;
+        throw new Error(`获取资源失败`);
       }
-    }
-  } catch {
+    } else throw new Error(`获取资源失败`);
+  } catch (error) {
     loadingBar.error();
-    tip.value = `加载资源失败`;
+    throw new Error(`加载资源失败`, { cause: error });
   }
 });
+const loading = importTask.loading;
+const tip = computed(() => importTask.error.value?.message || `加载中...`);
+onMounted(() => {
+  void importTask.run();
+});
+onBeforeUnmount(importTask.cancel);
 </script>
 <template>
-  <div class="page-size flex gap-[5px] pt-[40px] flex-col items-center">
+  <div
+    class="w-(--gkd-w) h-(--gkd-h) flex gap-[5px] pt-[40px] flex-col items-center"
+  >
     <div v-if="!gmOk()" class="mb-[20px]">
       建议安装并启用
       <a
@@ -90,7 +97,7 @@ onMounted(async () => {
       </a>
       获取更快加载速度
     </div>
-    <div v-show="loading">
+    <div v-show="loading || importTask.error.value">
       {{ tip }}
     </div>
   </div>

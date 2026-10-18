@@ -1,10 +1,16 @@
-import { computed, nextTick, shallowReadonly, shallowRef } from 'vue';
+import {
+  computed,
+  nextTick,
+  onScopeDispose,
+  shallowReadonly,
+  shallowRef,
+} from 'vue';
 import {
   createSharedComposable,
   useElementBounding,
   useElementSize,
 } from '@vueuse/core';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, type RouteLocationNormalized } from 'vue-router';
 import type { RawNode, Snapshot } from '@/entities/snapshot/types';
 import type { Position } from '@/shared/types/common';
 import {
@@ -13,13 +19,14 @@ import {
   exportSnapshotAsImportId,
 } from '@/features/snapshot-management/export';
 import { gmOk } from '@/shared/api/gm';
-import { importFromNetwork } from '@/features/snapshot-management/import';
+import { readSnapshotFromNetwork } from '@/features/snapshot-management/import';
 import {
   findNodesByXy,
   getAppInfo,
   listToTree,
 } from '@/entities/snapshot/node';
 import { toFixedNumber, toInteger } from '@/shared/lib/number';
+import { useLatestTask, type TaskContext } from '@/shared/lib/latest_task';
 import type { ResolvedSelector } from '@/entities/selector/parser';
 import type { SelectorTrackData } from '@/entities/selector/types';
 import {
@@ -29,7 +36,6 @@ import {
 import { getImportFileUrl } from '@/entities/snapshot/urls';
 import { getSnapshotImportId } from '@/entities/snapshot/api';
 import type { SelectorMatch } from '@gkd-kit/selector';
-import type { RouteLocationNormalized } from 'vue-router';
 import {
   importSnapshotId,
   snapshotImageId,
@@ -40,9 +46,7 @@ import { settingsStore } from '@/features/settings/store';
 import { useSnapshotUrlState } from './snapshot_url_state';
 
 if (import.meta.hot) {
-  import.meta.hot.accept(() => {
-    location.reload();
-  });
+  import.meta.hot.accept(() => location.reload());
 }
 
 type SnapshotRouteSource =
@@ -50,176 +54,58 @@ type SnapshotRouteSource =
   | { type: 'import'; importId: number }
   | undefined;
 
-const getGithubAssetId = (v: unknown): number | undefined => {
-  return toInteger(String(v).match(/^\d+/)?.[0]);
-};
-
 const getRouteSource = (
   target: Pick<RouteLocationNormalized, 'params'>,
 ): SnapshotRouteSource => {
   const snapshotId = toInteger(target.params.snapshotId);
   if (snapshotId) return { type: 'snapshot', snapshotId };
-  const importId = getGithubAssetId(target.params.github_asset_id);
+  const importId = toInteger(
+    String(target.params.github_asset_id).match(/^\d+/)?.[0],
+  );
   if (importId) return { type: 'import', importId };
+};
+
+type SnapshotFrame = {
+  snapshot?: Snapshot;
+  screenshotUrl?: string;
+  nodes: RawNode[];
+  rootNode?: RawNode;
+};
+
+type SnapshotData = {
+  snapshot?: Snapshot;
+  screenshot?: ArrayBuffer;
+  importId?: number;
+  imported?: boolean;
 };
 
 export const useSnapshotStore = createSharedComposable(() => {
   const route = useRoute();
   const router = useRouter();
   const snapshotUrlState = useSnapshotUrlState();
-
-  const routeSource = computed(() => getRouteSource(route));
-  const snapshotId = shallowRef<number>();
-  const importId = computed(() => {
-    if (snapshotId.value) {
-      return snapshotImportId[snapshotId.value];
-    }
-    if (routeSource.value?.type == 'import') {
-      return routeSource.value.importId;
-    }
-    return undefined;
-  });
-  const imageId = computed(() => {
-    if (snapshotId.value) return snapshotImageId[snapshotId.value];
-    return undefined;
-  });
-  const snapshot = shallowRef<Snapshot>();
-  const screenshot = shallowRef<ArrayBuffer>();
-  const screenshotUrl = computed(() => {
-    if (screenshot.value) {
-      return URL.createObjectURL(new Blob([screenshot.value]));
-    }
-    return undefined;
-  });
-  const redirected = shallowRef(false);
-  const resetSnapshot = () => {
-    snapshotId.value = undefined;
-    snapshot.value = undefined;
-    screenshot.value = undefined;
-  };
-  let loadRevision = 0;
-  const loading = shallowRef(false);
-  const loadLocalSnapshot = async (id: number, revision: number) => {
-    const [localSnapshot, localScreenshot] = await Promise.all([
-      snapshotStorage.getItem(id),
-      screenshotStorage.getItem(id),
-    ]);
-    if (revision != loadRevision) return false;
-    snapshotId.value = id;
-    snapshot.value = localSnapshot || undefined;
-    screenshot.value = localSnapshot ? localScreenshot || undefined : undefined;
-    return Boolean(localSnapshot);
-  };
-  const findSnapshotIdByImportId = (id: number) => {
-    const entry = Object.entries(snapshotImportId).find(([, v]) => v == id);
-    return toInteger(entry?.[0]);
-  };
-  const loadImportSnapshot = async (id: number, revision: number) => {
-    const localSnapshotId =
-      importSnapshotId[id] || findSnapshotIdByImportId(id);
-    if (localSnapshotId) {
-      const hasSnapshot = await loadLocalSnapshot(localSnapshotId, revision);
-      if (revision != loadRevision) return false;
-      if (hasSnapshot) {
-        snapshotMetadataActions.setSnapshotId(id, localSnapshotId);
-        snapshotMetadataActions.setImportId(localSnapshotId, id);
-        return true;
-      }
-      snapshotMetadataActions.setSnapshotId(id);
-      if (snapshotImportId[localSnapshotId] == id) {
-        snapshotMetadataActions.setImportId(localSnapshotId);
-      }
-    }
-
-    const [remoteSnapshot] =
-      (await importFromNetwork(getImportFileUrl(id))) || [];
-    if (revision != loadRevision) return false;
-    if (remoteSnapshot?.id) {
-      snapshotMetadataActions.setSnapshotId(id, remoteSnapshot.id);
-      snapshotMetadataActions.setImportId(remoteSnapshot.id, id);
-      await loadLocalSnapshot(remoteSnapshot.id, revision);
-      return true;
-    }
-    if (revision == loadRevision) resetSnapshot();
-    return false;
-  };
-  const update = async (source: SnapshotRouteSource, revision: number) => {
-    redirected.value = false;
-    if (!source) {
-      resetSnapshot();
-      return;
-    }
-
-    if (source.type == 'snapshot') {
-      const hasSnapshot = await loadLocalSnapshot(source.snapshotId, revision);
-      if (revision != loadRevision) return;
-      const localImportId = snapshotImportId[source.snapshotId];
-      if (localImportId) {
-        snapshotMetadataActions.setSnapshotId(localImportId, source.snapshotId);
-        redirected.value = !hasSnapshot;
-        router.replace({
-          path: '/i/' + localImportId,
-          query: route.query,
-        });
-        if (!hasSnapshot) {
-          await loadImportSnapshot(localImportId, revision);
-          redirected.value = false;
-        }
-        return;
-      }
-
-      if (!hasSnapshot) {
-        const remoteImportId = await getSnapshotImportId(
-          source.snapshotId,
-        ).catch(() => null);
-        if (revision != loadRevision) return;
-        if (remoteImportId && Number.isSafeInteger(remoteImportId)) {
-          redirected.value = true;
-          router.replace({
-            path: '/i/' + remoteImportId,
-            query: route.query,
-          });
-          await loadImportSnapshot(remoteImportId, revision);
-          redirected.value = false;
-          return;
-        }
-      }
-      return;
-    }
-
-    await loadImportSnapshot(source.importId, revision);
-  };
-  const autoUpload = computed(() => {
-    return gmOk() && settingsStore.autoUploadImport;
-  });
-  const nodes = computed(() => {
-    if (snapshot.value) {
-      if (snapshot.value.nodes.length <= settingsStore.maxShowNodeSize) {
-        return structuredClone(snapshot.value.nodes);
-      } else {
-        return structuredClone(
-          snapshot.value.nodes.slice(0, settingsStore.maxShowNodeSize),
-        );
-      }
-    }
-    return [];
-  });
-  const rootNode = computed(() => {
-    if (nodes.value.length) {
-      return listToTree(nodes.value);
-    }
-    return undefined;
-  });
-  const missNodeSize = computed(() => {
-    if (snapshot.value) {
-      return snapshot.value.nodes.length - settingsStore.maxShowNodeSize;
-    }
-    return 0;
-  });
+  const frame = shallowRef<SnapshotFrame>({ nodes: [] });
+  const snapshot = computed(() => frame.value.snapshot);
+  const snapshotId = computed(() => snapshot.value?.id);
+  const screenshotUrl = computed(() => frame.value.screenshotUrl);
+  const nodes = computed(() => frame.value.nodes);
+  const rootNode = computed(() => frame.value.rootNode);
+  const importId = computed(() =>
+    snapshotId.value ? snapshotImportId[snapshotId.value] : undefined,
+  );
+  const imageId = computed(() =>
+    snapshotId.value ? snapshotImageId[snapshotId.value] : undefined,
+  );
+  const missNodeSize = computed(() =>
+    Math.max(0, (snapshot.value?.nodes.length ?? 0) - nodes.value.length),
+  );
   const focusNode = shallowRef<RawNode>();
   const focusTime = shallowRef(0);
   const focusPosition = shallowRef<Position>();
   const overlapNodes = shallowRef<RawNode[]>();
+  const trackShow = shallowRef(false);
+  const trackData = shallowRef<SelectorTrackData>();
+  const searchRevision = shallowRef(0);
+  let activePath = '';
   type FocusListener = (node: RawNode, scrollTree: boolean) => void;
   const focusListeners = new Set<FocusListener>();
   const subscribeFocus = (listener: FocusListener) => {
@@ -227,120 +113,258 @@ export const useSnapshotStore = createSharedComposable(() => {
     if (focusNode.value) listener(focusNode.value, false);
     return () => focusListeners.delete(listener);
   };
-  const updateFocusNode = async (
+  const notifyFocus = (scrollTree: boolean) => {
+    const node = focusNode.value;
+    if (node) focusListeners.forEach((listener) => listener(node, scrollTree));
+  };
+  const updateFocusNode = (
     node: RawNode,
     options: { syncUrl?: boolean; scrollTree?: boolean } = {},
   ) => {
-    const { syncUrl = true, scrollTree = true } = options;
     focusNode.value = node;
     focusTime.value = Date.now();
-    if (syncUrl) {
-      snapshotUrlState.setFocusNodeId(
-        node.id == rootNode.value?.id ? undefined : node.id,
-      );
-    }
-    focusListeners.forEach((listener) => listener(node, scrollTree));
-    await nextTick();
     if (overlapNodes.value && !overlapNodes.value.includes(node)) {
       focusPosition.value = undefined;
       overlapNodes.value = undefined;
     }
-  };
-  const applyUrlFocus = async () => {
-    const root = rootNode.value;
-    if (!root || !snapshotUrlState.ready.value) return;
-    const focusNodeId = snapshotUrlState.state.value.focusNodeId;
-    const targetNode =
-      nodes.value.find((node) => node.id == focusNodeId) || root;
-    if (focusNode.value !== targetNode) {
-      await updateFocusNode(targetNode, { syncUrl: false });
-    }
-    const canonicalFocusNodeId =
-      targetNode.id == root.id ? undefined : targetNode.id;
-    if (focusNodeId != canonicalFocusNodeId) {
-      snapshotUrlState.setFocusNodeId(canonicalFocusNodeId);
-    }
+    if (options.syncUrl !== false)
+      snapshotUrlState.setFocusNodeId(
+        node.id === rootNode.value?.id ? undefined : node.id,
+      );
+    notifyFocus(options.scrollTree !== false);
   };
 
-  const runPostLoadActions = async (
+  const readLocalSnapshot = async (id: number): Promise<SnapshotData> => {
+    const [snapshot, screenshot] = await Promise.all([
+      snapshotStorage.getItem(id),
+      screenshotStorage.getItem(id),
+    ]);
+    return {
+      snapshot: snapshot || undefined,
+      screenshot: screenshot || undefined,
+    };
+  };
+  const findSnapshotIdByImportId = (id: number) =>
+    importSnapshotId[id] ||
+    toInteger(
+      Object.entries(snapshotImportId).find(([, value]) => value === id)?.[0],
+    );
+
+  const readImportSnapshot = async (
+    id: number,
+    context: TaskContext,
+  ): Promise<SnapshotData> => {
+    const localId = findSnapshotIdByImportId(id);
+    if (localId) {
+      const data = await readLocalSnapshot(localId);
+      if (data.snapshot || !context.isCurrent())
+        return { ...data, importId: id };
+    }
+    const remote = await readSnapshotFromNetwork(getImportFileUrl(id));
+    if (!context.isCurrent() || !remote) return { importId: id };
+    await Promise.all([
+      snapshotStorage.setItem(remote.snapshot.id, remote.snapshot),
+      screenshotStorage.setItem(remote.snapshot.id, remote.screenshotBf),
+    ]);
+    return {
+      snapshot: remote.snapshot,
+      screenshot: remote.screenshotBf,
+      importId: id,
+      imported: true,
+    };
+  };
+  const readSnapshot = async (
     source: SnapshotRouteSource,
-    revision: number,
-  ) => {
-    const currentSnapshot = snapshot.value;
-    if (!currentSnapshot || revision != loadRevision) return;
-    snapshotMetadataActions.setViewedTime(currentSnapshot.id, Date.now());
-    document.title =
-      '快照-' + (getAppInfo(currentSnapshot).name || currentSnapshot.appId);
-    await applyUrlFocus();
+    context: TaskContext,
+  ): Promise<SnapshotData> => {
+    if (!source) return {};
+    if (source.type === 'import')
+      return readImportSnapshot(source.importId, context);
+    const data = await readLocalSnapshot(source.snapshotId);
+    if (!context.isCurrent()) return {};
+    const knownImportId = snapshotImportId[source.snapshotId];
+    if (data.snapshot) return { ...data, importId: knownImportId };
+    const remoteImportId =
+      knownImportId ||
+      (await getSnapshotImportId(source.snapshotId).catch(() => null));
+    if (!context.isCurrent()) return {};
+    return remoteImportId && Number.isSafeInteger(remoteImportId)
+      ? readImportSnapshot(remoteImportId, context)
+      : {};
+  };
 
-    let currentImportId = importId.value;
-    if (autoUpload.value) {
-      const tasks: Promise<unknown>[] = [];
-      if (!imageId.value) tasks.push(exportSnapshotAsImageId(currentSnapshot));
-      if (!currentImportId) {
-        tasks.push(
-          exportSnapshotAsImportId(currentSnapshot).then((id) => {
-            currentImportId = id;
-          }),
-        );
+  const postLoadTask = useLatestTask(
+    async (
+      context,
+      currentSnapshot: Snapshot,
+      source: SnapshotRouteSource,
+      path: string,
+    ) => {
+      let currentImportId = snapshotImportId[currentSnapshot.id];
+      if (gmOk() && settingsStore.autoUploadImport) {
+        const tasks: Promise<unknown>[] = [];
+        if (!snapshotImageId[currentSnapshot.id])
+          tasks.push(exportSnapshotAsImageId(currentSnapshot));
+        if (!currentImportId)
+          tasks.push(
+            exportSnapshotAsImportId(currentSnapshot).then((id) => {
+              currentImportId = id;
+            }),
+          );
+        await Promise.allSettled(tasks);
       }
-      await Promise.allSettled(tasks);
-    }
-    if (revision != loadRevision) return;
-    currentImportId = importId.value || currentImportId;
-    if (currentImportId && !importSnapshotId[currentImportId]) {
-      void detectSnapshot(currentSnapshot.id, currentImportId);
-    }
-    if (source?.type == 'snapshot' && currentImportId) {
-      await router.replace({
-        path: '/i/' + currentImportId,
-        query: route.query,
-      });
-    }
-  };
+      if (!context.isCurrent() || route.path !== path) return;
+      currentImportId = snapshotImportId[currentSnapshot.id] || currentImportId;
+      if (currentImportId && !importSnapshotId[currentImportId])
+        void detectSnapshot(currentSnapshot.id, currentImportId);
+      if (source?.type === 'snapshot' && currentImportId) {
+        await router.replace({
+          path: '/i/' + currentImportId,
+          query: route.query,
+        });
+      }
+    },
+  );
 
-  const loadFromRoute = async (
-    target: Pick<RouteLocationNormalized, 'params'> = route,
-  ) => {
-    const source = getRouteSource(target);
-    const revision = ++loadRevision;
-    loading.value = true;
-    resetSnapshot();
-    try {
-      await update(source, revision);
-      if (revision == loadRevision) void runPostLoadActions(source, revision);
-    } finally {
-      if (revision == loadRevision) loading.value = false;
-    }
+  const loadTask = useLatestTask(
+    async (
+      context,
+      target: Pick<RouteLocationNormalized, 'path' | 'params' | 'query'>,
+    ) => {
+      postLoadTask.cancel();
+      const source = getRouteSource(target);
+      const preparedUrl = await snapshotUrlState.prepareFromRoute(target);
+      if (!context.isCurrent()) return;
+      const pathChanged = activePath !== target.path;
+      const sameSnapshot =
+        source?.type === 'snapshot'
+          ? source.snapshotId === snapshotId.value
+          : source?.type === 'import' &&
+            findSnapshotIdByImportId(source.importId) === snapshotId.value;
+      const replaceFrame = pathChanged && (!sameSnapshot || !snapshot.value);
+      let nextFrame = frame.value;
+      let data: SnapshotData = {
+        snapshot: snapshot.value,
+        importId: source?.type === 'import' ? source.importId : importId.value,
+      };
+      let preparedImageUrl: string | undefined;
+      let committed = false;
+      try {
+        if (replaceFrame) {
+          data = await readSnapshot(source, context);
+          if (!context.isCurrent()) return;
+          const preparedNodes = structuredClone(
+            data.snapshot?.nodes.slice(0, settingsStore.maxShowNodeSize) ?? [],
+          );
+          const preparedRoot = preparedNodes.length
+            ? listToTree(preparedNodes)
+            : undefined;
+          if (data.snapshot && data.screenshot) {
+            preparedImageUrl = URL.createObjectURL(new Blob([data.screenshot]));
+            const image = new Image();
+            image.src = preparedImageUrl;
+            await image.decode();
+            if (!context.isCurrent()) return;
+          }
+          nextFrame = {
+            snapshot: data.snapshot,
+            screenshotUrl: preparedImageUrl,
+            nodes: preparedNodes,
+            rootNode: preparedRoot,
+          };
+        }
+        const nextFocus =
+          nextFrame.nodes.find(
+            (node) => node.id === preparedUrl.state.focusNodeId,
+          ) || nextFrame.rootNode;
+        const canonicalFocusId =
+          nextFocus?.id === nextFrame.rootNode?.id ? undefined : nextFocus?.id;
+        const canonicalize =
+          preparedUrl.canonicalize ||
+          preparedUrl.state.focusNodeId !== canonicalFocusId;
+        const oldUrl = frame.value.screenshotUrl;
+        committed = context.commit(() => {
+          const urlChanged = snapshotUrlState.commitPreparedState({
+            ...preparedUrl.state,
+            focusNodeId: canonicalFocusId,
+          });
+          frame.value = nextFrame;
+          focusNode.value = nextFocus;
+          focusTime.value = Date.now();
+          if (pathChanged) {
+            focusPosition.value = undefined;
+            overlapNodes.value = undefined;
+            trackShow.value = false;
+            trackData.value = undefined;
+          }
+          if (pathChanged || urlChanged) searchRevision.value += 1;
+          activePath = target.path;
+          if (data.snapshot) {
+            if (data.imported) {
+              const id = data.snapshot.id;
+              Object.entries(importSnapshotId).forEach(([key, value]) => {
+                if (value === id && Number(key) !== data.importId)
+                  snapshotMetadataActions.setSnapshotId(key);
+              });
+              snapshotMetadataActions.setImageId(id);
+              snapshotMetadataActions.setImportTime(id, Date.now());
+            }
+            if (data.importId) {
+              snapshotMetadataActions.setSnapshotId(
+                data.importId,
+                data.snapshot.id,
+              );
+              snapshotMetadataActions.setImportId(
+                data.snapshot.id,
+                data.importId,
+              );
+            }
+            snapshotMetadataActions.setViewedTime(data.snapshot.id, Date.now());
+          }
+          notifyFocus(false);
+        });
+        if (!committed) return;
+        if (data.snapshot)
+          document.title =
+            '快照-' + (getAppInfo(data.snapshot).name || data.snapshot.appId);
+        await nextTick();
+        if (oldUrl && oldUrl !== screenshotUrl.value)
+          URL.revokeObjectURL(oldUrl);
+        if (!context.isCurrent()) return;
+        if (canonicalize) await snapshotUrlState.syncToRoute(target.path);
+        if (context.isCurrent() && data.snapshot)
+          void postLoadTask.run(data.snapshot, source, target.path);
+        return preparedUrl.error;
+      } finally {
+        if (!committed && preparedImageUrl)
+          URL.revokeObjectURL(preparedImageUrl);
+      }
+    },
+  );
+  const cancelLoad = () => {
+    loadTask.cancel();
+    postLoadTask.cancel();
+    snapshotUrlState.cancel();
   };
+  onScopeDispose(() => {
+    cancelLoad();
+    if (screenshotUrl.value) URL.revokeObjectURL(screenshotUrl.value);
+  });
   const updatePosition = (position: Position) => {
+    const resultNodes = findNodesByXy(nodes.value, position);
     focusPosition.value = position;
-    const resultNodes = findNodesByXy(nodes.value, focusPosition.value);
-    if (resultNodes.length) {
-      updateFocusNode(resultNodes[0]);
-    }
-    if (resultNodes.length > 1) {
-      overlapNodes.value = resultNodes;
-    } else {
-      overlapNodes.value = undefined;
-    }
+    overlapNodes.value = resultNodes.length > 1 ? resultNodes : undefined;
+    if (resultNodes[0]) updateFocusNode(resultNodes[0]);
   };
   const closeOverlap = () => {
     overlapNodes.value = undefined;
   };
-
-  const trackShow = shallowRef(false);
-  const trackData = shallowRef<SelectorTrackData>();
   const showTrack = (
     selector: ResolvedSelector,
     result: SelectorMatch<RawNode>,
   ) => {
     trackShow.value = true;
-    trackData.value = {
-      selector,
-      nodes: nodes.value,
-      queryResult: result,
-    };
+    trackData.value = { selector, nodes: nodes.value, queryResult: result };
   };
   const closeTrack = () => {
     trackShow.value = false;
@@ -348,20 +372,25 @@ export const useSnapshotStore = createSharedComposable(() => {
   const clearTrack = () => {
     trackData.value = undefined;
   };
-
   return {
-    snapshotId: shallowReadonly(snapshotId),
-    snapshot: shallowReadonly(snapshot),
+    snapshotId,
+    snapshot,
     rootNode,
     screenshotUrl,
-    loading: shallowReadonly(loading),
-    loadFromRoute,
-    redirected: shallowReadonly(redirected),
+    loading: loadTask.loading,
+    error: computed(
+      () =>
+        loadTask.error.value ||
+        snapshotUrlState.error.value ||
+        postLoadTask.error.value,
+    ),
+    loadFromRoute: loadTask.run,
+    cancelLoad,
+    searchRevision: shallowReadonly(searchRevision),
     importId,
     imageId,
     focusNode: shallowReadonly(focusNode),
     updateFocusNode,
-    applyUrlFocus,
     focusTime: shallowReadonly(focusTime),
     subscribeFocus,
     overlapNodes: shallowReadonly(overlapNodes),
@@ -376,7 +405,6 @@ export const useSnapshotStore = createSharedComposable(() => {
     clearTrack,
   };
 });
-
 export const useSharedSnapshotHoverImg = createSharedComposable(() => {
   const { updatePosition, focusNode } = useSnapshotStore();
 

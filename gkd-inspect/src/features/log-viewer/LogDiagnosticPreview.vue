@@ -58,7 +58,7 @@ const columns = [
     />
     <div v-else class="min-h-0 flex-1 overflow-auto">
       <NAlert v-if="kind == 'permission'" type="info" class="mb-[12px]"
-        >这是日志包中保存的检查结果，并非实时权限状态。</NAlert
+        >日志记录的权限状态</NAlert
       >
       <table class="mb-[16px] w-full border-collapse text-[13px]">
         <tbody>

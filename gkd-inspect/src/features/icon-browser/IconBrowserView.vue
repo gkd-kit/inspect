@@ -27,7 +27,7 @@ const copy = async (text: string) => {
 };
 </script>
 <template>
-  <div class="page-size">
+  <div class="w-(--gkd-w) h-(--gkd-h)">
     <div class="px-[16px] pt-[16px] flex items-center gap-[16px]">
       <NInput
         v-model="search"

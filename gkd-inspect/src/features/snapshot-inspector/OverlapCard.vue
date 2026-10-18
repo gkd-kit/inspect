@@ -48,7 +48,7 @@ const updateLayout = (value: GkDraggableCardValue) => {
       <template #header>
         <div :ref="onRef" class="cursor-move">
           位置
-          <span class="app-subtle px-[2px]">{{
+          <span class="bg-(--app-subtle)! px-[2px]">{{
             `${focusPosition.x.toFixed(0)},${focusPosition.y.toFixed(0)}`
           }}</span>
           存在 {{ overlapNodes.length }} 个层叠节点
@@ -56,7 +56,6 @@ const updateLayout = (value: GkDraggableCardValue) => {
       </template>
       <NSpace
         style="max-height: 400px; overflow-y: scroll; padding-bottom: 10px"
-        class="scrollbar-hidden"
       >
         <NButton
           v-for="resultNode in overlapNodes"

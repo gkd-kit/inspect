@@ -138,7 +138,7 @@ const gkdVersionName = computed(() => {
 <template>
   <div class="flex flex-col overflow-hidden">
     <div class="flex items-center px-[8px]">
-      <GkGapList class="flex flex-wrap items-center gap-[8px] gkd_code">
+      <GkGapList class="flex flex-wrap items-center gap-[8px] font-mono!">
         <template #gap>
           <div class="w-[1px] bg-gray-400 h-[12px]" />
         </template>
@@ -230,7 +230,7 @@ const gkdVersionName = computed(() => {
         @delete="onDelete"
       />
     </div>
-    <div class="app-border-line h-[1px] mt-[4px]" />
+    <div class="bg-(--app-border) h-[1px] mt-[4px]" />
     <div ref="treeContainerRef" class="flex-1 min-h-0">
       <NTree
         ref="treeRef"

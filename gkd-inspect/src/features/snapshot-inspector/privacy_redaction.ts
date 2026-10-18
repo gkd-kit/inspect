@@ -6,7 +6,35 @@ export interface RedactionSelection {
   imageHeight: number;
   imageWidth: number;
   rectangles: RedactionRect[];
+  nodeIds: number[];
 }
+
+export const hasSensitiveText = (value: string | undefined | null) => {
+  const text = value?.trim();
+  return Boolean(
+    text && !/^[*\s]+$/.test(text) && !/^[\p{Nd}\p{P}]$/u.test(text),
+  );
+};
+
+export const getOffscreenTextNodes = (
+  nodes: RawNode[],
+  width: number,
+  height: number,
+) =>
+  nodes.filter(({ attr }) => {
+    const visible =
+      attr.right > attr.left &&
+      attr.bottom > attr.top &&
+      intersectsRedactionRect(attr, {
+        left: 0,
+        top: 0,
+        right: width,
+        bottom: height,
+      });
+    return (
+      !visible && (hasSensitiveText(attr.text) || hasSensitiveText(attr.desc))
+    );
+  });
 
 const normalizeRect = (rect: RedactionRect): RedactionRect => ({
   left: Math.min(rect.left, rect.right),
@@ -47,11 +75,15 @@ export const createRedactedSnapshotCopy = (
   source: Snapshot,
   id: number,
   rectangles: RedactionRect[],
+  nodeIds: number[] = [],
 ): Snapshot => ({
   ...source,
   id,
   nodes: source.nodes.map((node) => {
     const redact = shouldRedactNode(node, rectangles);
+    const selected = nodeIds.includes(node.id);
+    const redactText = redact || (selected && hasSensitiveText(node.attr.text));
+    const redactDesc = redact || (selected && hasSensitiveText(node.attr.desc));
     return {
       id: node.id,
       pid: node.pid,
@@ -61,10 +93,22 @@ export const createRedactedSnapshotCopy = (
       children: [],
       attr: {
         ...node.attr,
-        text: redact && node.attr.text ? '***' : node.attr.text,
-        textLen: redact && node.attr.text ? 3 : node.attr.textLen,
-        desc: redact && node.attr.desc ? '***' : node.attr.desc,
-        descLen: redact && node.attr.desc ? 3 : node.attr.descLen,
+        text:
+          redactText && node.attr.text
+            ? '*'.repeat(node.attr.text.length)
+            : node.attr.text,
+        textLen:
+          redactText && node.attr.text
+            ? node.attr.text.length
+            : node.attr.textLen,
+        desc:
+          redactDesc && node.attr.desc
+            ? '*'.repeat(node.attr.desc.length)
+            : node.attr.desc,
+        descLen:
+          redactDesc && node.attr.desc
+            ? node.attr.desc.length
+            : node.attr.descLen,
       },
     };
   }),

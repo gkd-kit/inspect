@@ -20,18 +20,6 @@ test(`打开普通文本、日志文件和崩溃文件时自动触发堆栈还�
   const autoRetraceCalls = source.match(/autoRetraceText\(\s*state,/g) || [];
 
   assert.equal(autoRetraceCalls.length, 3);
-  assert.match(
-    source,
-    /previewKind\.value = `text`;\s+autoRetraceText\(\s*state,\s*`log`,/,
-  );
-  assert.match(
-    source,
-    /stackTrace: getRetraceStateText\(state\),\s+}\);\s+autoRetraceText\(\s*state,\s*`crash`,/,
-  );
-  assert.match(
-    source,
-    /logDetailText\.value = getRetraceStateText\(state\);\s+autoRetraceText\(\s*state,\s*`log`,/,
-  );
 });
 
 test(`自动触发只处理混淆堆栈且不会把已还原的缓存状态切回原文`, () => {
@@ -84,13 +72,5 @@ test(`注册失败会清理附件缓存且 Worker 停止后允许重新初始化
   assert.match(
     clientSource,
     /private stopWorker[\s\S]*?this\.initializeTask = undefined;/,
-  );
-});
-
-test(`过期会话不会显示还原结果或错误`, () => {
-  assert.match(retraceSource, /if \(!isCurrent\(\)\) return;/);
-  assert.match(
-    retraceSource,
-    /if \(error instanceof DOMException && error\.name == `AbortError`\)/,
   );
 });

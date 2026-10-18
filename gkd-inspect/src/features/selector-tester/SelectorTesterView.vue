@@ -75,7 +75,7 @@ const error = computed(() => {
       :value="inputText"
       type="textarea"
       placeholder="请输入选择器"
-      class="gkd_code py-[4px]"
+      class="font-mono! py-[4px]"
       style="--n-font-size: 20px; --n-line-height-textarea: 28px"
       :autosize="{
         minRows: 3,
@@ -85,10 +85,10 @@ const error = computed(() => {
     />
     <div class="h-[20px]" />
     <div
-      class="max-w-full mb-[8px] p-[4px] gkd_code transition-colors"
+      class="max-w-full mb-[8px] p-[4px] font-mono! transition-colors"
       :class="error ? `bg-red-200` : `bg-[oklch(96.32%_0.0034_247.86)]`"
     >
-      <div class="overflow-x-auto scrollbar-hidden">
+      <div class="overflow-x-auto">
         <SelectorText :source="text" />
       </div>
       <div
@@ -104,7 +104,7 @@ const error = computed(() => {
         ><span>{{ error.segments.after }}</span>
       </div>
     </div>
-    <div v-if="error" class="p-[4px] bg-red-300 gkd_code">
+    <div v-if="error" class="p-[4px] bg-red-300 font-mono!">
       {{ error.message }}
     </div>
   </div>
