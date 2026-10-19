@@ -5,7 +5,6 @@ export const isValidUrl = (url: string): URL | undefined => {
 };
 
 const corsOkOrigins = new Set([
-  location.origin,
   `https://cdn.jsdelivr.net`,
   `https://fastly.jsdelivr.net`,
   `https://raw.githubusercontent.com`,
@@ -16,10 +15,14 @@ const corsOkOrigins = new Set([
 
 export const isAllowCorsUrl = (targetUrl: string | URL) => {
   targetUrl = new URL(targetUrl);
+  if (typeof location !== 'undefined' && targetUrl.origin === location.origin) {
+    return true;
+  }
   if (targetUrl.hostname == `127.0.0.1` || targetUrl.hostname == `localhost`) {
     return true;
   }
   if (
+    typeof location !== 'undefined' &&
     location.protocol == `http:` &&
     targetUrl.protocol == `http:` &&
     targetUrl.hostname

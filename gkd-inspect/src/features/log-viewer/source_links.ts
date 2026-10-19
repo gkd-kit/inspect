@@ -73,12 +73,20 @@ const parseGitHubCommitUrl = (
       .split(`/`)
       .filter(Boolean)
       .map(decodeURIComponent);
-    if (parts.length != 4 || parts[2]?.toLowerCase() != `commit`) return;
-    const [owner, repository, , commitId] = parts;
+    const [owner, repository, kind, ref] = parts;
+    const isCommit = kind?.toLowerCase() === 'commit';
+    const isTree = kind?.toLowerCase() === 'tree';
+    if (
+      !ref ||
+      (isCommit ? parts.length !== 4 : !isTree) ||
+      (isTree && typeof declaredCommitId !== 'string')
+    )
+      return;
+    const commitId = isCommit ? ref : declaredCommitId;
     if (
       !owner ||
       !repository ||
-      !commitId ||
+      typeof commitId !== 'string' ||
       !githubNameRegex.test(owner) ||
       !githubNameRegex.test(repository) ||
       !gitCommitRegex.test(commitId)
@@ -95,7 +103,9 @@ const parseGitHubCommitUrl = (
     return {
       repositoryUrl: `https://github.com/${owner}/${repository}`,
       commitId,
-      commitUrl: `https://github.com/${owner}/${repository}/commit/${commitId}`,
+      commitUrl: isTree
+        ? `https://github.com/${owner}/${repository}/tree/${parts.slice(3).map(encodeURIComponent).join('/')}`
+        : `https://github.com/${owner}/${repository}/commit/${commitId}`,
     };
   } catch {}
 };
@@ -198,7 +208,11 @@ const getSourceUrl = (
   lineNumber: number,
 ) => {
   const encodedPath = path.split(`/`).map(encodeURIComponent).join(`/`);
-  return `${context.repositoryUrl}/blob/${context.commitId}/${encodedPath}#L${lineNumber}`;
+  const sourceBaseUrl = context.commitUrl.replace(
+    `${context.repositoryUrl}/commit/`,
+    `${context.repositoryUrl}/blob/`,
+  );
+  return `${sourceBaseUrl}/${encodedPath}#L${lineNumber}`;
 };
 
 export const getShortestUniquePathLabels = (paths: readonly string[]) => {

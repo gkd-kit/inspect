@@ -17,6 +17,39 @@ const versionRaw = JSON.stringify({
   versionCode: 92,
 });
 
+test('发布版保留 tree 标签地址生成源码行链接', () => {
+  const commitId = 'eba5d8eff690a26f3b88c9ec49db07b54b916532';
+  const metadata = {
+    commitId,
+    commitUrl: 'https://github.com/gkd-kit/gkd/tree/v1.13.0-beta-2',
+    versionName: '1.13.0-beta-2',
+    versionCode: 94,
+  };
+  const path =
+    'gkd-app/src/androidMain/kotlin/li/gkd/app/priv/CompatTaskStackListener.kt';
+  const raw = JSON.stringify(metadata);
+  const context = createSourceLinkContext(raw, path);
+  assert.ok(context);
+  const tokens = getSourceLineTokens(
+    'priv.CompatTaskStackListener.onTaskStackChanged(CompatTaskStackListener.kt:28)',
+    context,
+  );
+  assert.equal(
+    tokens.find((token) => token.sourceTargets)?.sourceTargets?.[0]?.url,
+    `${metadata.commitUrl}/${path}#L28`,
+  );
+  assert.equal(parseLogVersionInfo(raw)?.commitUrl, metadata.commitUrl);
+  for (const invalid of [undefined, '', 'v1.13.0-beta-2']) {
+    assert.equal(
+      createSourceLinkContext(
+        JSON.stringify({ ...metadata, commitId: invalid }),
+        path,
+      ),
+      undefined,
+    );
+  }
+});
+
 test(`识别日志包版本信息文件`, () => {
   assert.equal(isLogVersionPath(`gkd.json`), true);
   assert.equal(isLogVersionPath(`GKD.JSON`), true);

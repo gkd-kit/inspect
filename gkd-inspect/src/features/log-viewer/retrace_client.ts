@@ -1,4 +1,4 @@
-import { getWorkersProxyUrl } from '../../shared/api/workers.ts';
+import { enhanceFetch } from '@/features/network-access/enhanceFetch';
 import { getBuildAsset } from './build_asset_api.ts';
 import {
   getBuildAssetCache,
@@ -28,19 +28,44 @@ const getError = (error: unknown) => {
   return error instanceof Error ? error : new Error(String(error));
 };
 
-const downloadBuildAssetZip = async (assetId: number, signal: AbortSignal) => {
-  const targetUrl = `https://f.gkd.li/${assetId}`;
-  const proxyUrl = getWorkersProxyUrl(targetUrl);
-  if (!proxyUrl) throw new Error(`无法生成构建附件下载地址`);
-  const response = await fetch(proxyUrl, { credentials: `omit`, signal });
+export const downloadBuildAssetZip = async (
+  assetId: number,
+  signal: AbortSignal,
+) => {
+  const targetUrl = `https://github.com/user-attachments/files/${assetId}/file.zip`;
+  const response = await enhanceFetch(
+    targetUrl,
+    { credentials: `omit`, signal },
+    (details) => ({ ...details, anonymous: true }),
+  );
   if (!response.ok)
     throw new Error(`构建附件下载失败: HTTP ${response.status}`);
   const declaredSize = Number(response.headers.get(`content-length`) || 0);
-  if (declaredSize > MAX_BUILD_ASSET_ZIP_SIZE) {
+  let rangeSize: number | undefined;
+  if (response.status === 206) {
+    const range = response.headers
+      .get('content-range')
+      ?.match(/^bytes 0-(\d+)\/(\d+)$/);
+    rangeSize = range ? Number(range[2]) : undefined;
+    if (
+      !range ||
+      !Number.isSafeInteger(rangeSize) ||
+      Number(range[1]) + 1 !== rangeSize
+    ) {
+      await response.body?.cancel();
+      throw new Error('构建附件下载不完整：服务器返回了部分内容，请重试');
+    }
+  }
+  if (Math.max(declaredSize, rangeSize ?? 0) > MAX_BUILD_ASSET_ZIP_SIZE) {
+    await response.body?.cancel();
     throw new Error(`构建附件 ZIP 超过大小限制`);
   }
   try {
-    return await readLimitedResponse(response, MAX_BUILD_ASSET_ZIP_SIZE);
+    const data = await readLimitedResponse(response, MAX_BUILD_ASSET_ZIP_SIZE);
+    if (rangeSize !== undefined && data.byteLength !== rangeSize) {
+      throw new Error('构建附件下载不完整：实际长度与服务器声明不一致，请重试');
+    }
+    return data;
   } catch (error) {
     if (error instanceof Error && error.message == `响应内容超过大小限制`) {
       throw new Error(`构建附件 ZIP 超过大小限制`, { cause: error });

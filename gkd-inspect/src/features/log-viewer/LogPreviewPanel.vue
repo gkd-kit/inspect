@@ -156,6 +156,7 @@ const emit = defineEmits<{
           :key="selectedEntry?.path"
           :value="previewText"
           :documentKey="selectedEntry?.path"
+          :sourceLinkContext="sourceLinkContext"
           search-placeholder="搜索当前文件"
           allow-wrap
           copyable

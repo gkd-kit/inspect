@@ -15,7 +15,10 @@ export const GM_xmlhttpRequest = proxyFc(
 );
 
 export const gmOk = () => {
-  return !!window.__NetworkExtension__?.GM_xmlhttpRequest;
+  return (
+    typeof window !== 'undefined' &&
+    !!window.__NetworkExtension__?.GM_xmlhttpRequest
+  );
 };
 
 /**

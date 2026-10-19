@@ -1,4 +1,5 @@
 import { normalizeSourceUrl } from '../../entities/selector-library/sync.ts';
+import { networkFetch } from '@/shared/api/network';
 
 export const fetchSelectorLibrary = async (
   url: string,
@@ -6,7 +7,7 @@ export const fetchSelectorLibrary = async (
 ): Promise<unknown> => {
   const timeout = AbortSignal.timeout(20_000);
   try {
-    const response = await fetch(normalizeSourceUrl(url), {
+    const response = await networkFetch(normalizeSourceUrl(url), {
       signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
       credentials: 'omit',
       cache: 'no-cache',

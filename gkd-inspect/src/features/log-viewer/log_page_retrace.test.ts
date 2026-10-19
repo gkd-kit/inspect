@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { test } from 'vitest';
+import { test, vi } from 'vitest';
+vi.mock('@/features/network-access/enhanceFetch', () => ({
+  enhanceFetch: vi.fn(),
+}));
 import { createSharedTaskPool } from './retrace_client.ts';
 
 const source = readFileSync(
@@ -34,7 +37,7 @@ test(`构建附件只共享进行中的任务并支持会话取消`, () => {
   assert.match(clientSource, /getBuildAsset\(buildKey, signal\)/);
   assert.match(
     clientSource,
-    /fetch\(proxyUrl, \{ credentials: `omit`, signal \}\)/,
+    /enhanceFetch\(\s*targetUrl,\s*\{ credentials: `omit`, signal \}/,
   );
 });
 
