@@ -191,5 +191,11 @@ export const useKeyedTask = <
             .map(([key, task]) => [key, task.error.value!]),
         ) as Readonly<Partial<Record<Key, Error>>>,
     ),
+    progress: computed(
+      () =>
+        Object.fromEntries(
+          [...tasks].map(([key, task]) => [key, task.progress.value]),
+        ) as Readonly<Partial<Record<Key, Readonly<TaskProgress>>>>,
+    ),
   };
 };

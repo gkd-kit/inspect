@@ -1,10 +1,4 @@
 import { loadAsync } from 'jszip';
-import {
-  createRetracer,
-  defaultRegex,
-  disposeRetracer,
-  retraceWith,
-} from 'retrace-wasm';
 import { retraceCrashText, retraceLogText } from './retrace_text';
 import { assertSafeZipStructure } from './zip_limits';
 
@@ -19,11 +13,20 @@ export type RetraceWorkerRequest =
 
 export type RetraceWorkerResponse =
   | { type: `ready` }
+  | { type: `progress`; stage: string }
   | { id: number; result: { mapId: string } | string }
   | { id: number; error: string };
 
 let activeRetracerId: number | undefined;
 let activeMapId = ``;
+
+const reportStage = (stage: string) => {
+  self.postMessage({ type: 'progress', stage } satisfies RetraceWorkerResponse);
+};
+
+reportStage('正在加载并初始化 WASM 还原引擎');
+const { createRetracer, defaultRegex, disposeRetracer, retraceWith } =
+  await import('retrace-wasm');
 
 const disposeActiveRetracer = () => {
   if (activeRetracerId == null) return;
@@ -33,6 +36,7 @@ const disposeActiveRetracer = () => {
 };
 
 const registerMapping = async (data: ArrayBuffer) => {
+  reportStage('正在解压并读取映射文件');
   const bytes = new Uint8Array(data);
   assertSafeZipStructure(bytes, {
     maxEntries: MAX_BUILD_ASSET_ENTRY_COUNT,
@@ -54,6 +58,7 @@ const registerMapping = async (data: ArrayBuffer) => {
     ?.toLowerCase();
   if (!mapId) throw new Error(`mapping.txt 缺少有效的 pg_map_id`);
   disposeActiveRetracer();
+  reportStage('正在解析映射文件');
   activeRetracerId = createRetracer(mapping, defaultRegex(), false);
   activeMapId = mapId;
   return { mapId };

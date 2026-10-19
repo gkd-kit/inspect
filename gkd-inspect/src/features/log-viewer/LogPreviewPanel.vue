@@ -183,6 +183,7 @@ const emit = defineEmits<{
             <StackRetraceButton
               :available="!!logBuildKey && !!previewRetraceState?.available"
               :loading="previewRetraceState?.loading"
+              :stage="previewRetraceState?.stage"
               :retraced="previewRetraceState?.active"
               @toggle="emit('togglePreviewRetrace')"
             />
@@ -219,6 +220,7 @@ const emit = defineEmits<{
         :detailLoading="crashDetailLoading"
         :retraceAvailable="!!logBuildKey && !!crashRetraceState?.available"
         :retraceLoading="crashRetraceState?.loading"
+        :retraceStage="crashRetraceState?.stage"
         :retraceActive="crashRetraceState?.active"
         :sourceLinkContext="sourceLinkContext"
         @select="emit('selectCrash', $event)"
@@ -234,6 +236,7 @@ const emit = defineEmits<{
         :detailLoading="logDetailLoading"
         :retraceAvailable="!!logBuildKey && !!logRetraceState?.available"
         :retraceLoading="logRetraceState?.loading"
+        :retraceStage="logRetraceState?.stage"
         :retraceActive="logRetraceState?.active"
         :sourceLinkContext="sourceLinkContext"
         @select="emit('selectLog', $event)"

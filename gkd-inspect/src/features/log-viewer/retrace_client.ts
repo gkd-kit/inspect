@@ -124,6 +124,13 @@ export class LazyBuildRetracer {
   private releaseBuildAssetTask: (() => void) | undefined;
   private nextRequestId = 1;
   private disposed = false;
+  private initializeStage = '正在获取构建附件（查询、缓存或下载）';
+  private readonly stageListeners = new Set<(stage: string) => void>();
+
+  private reportInitializeStage(stage: string) {
+    this.initializeStage = stage;
+    for (const listener of this.stageListeners) listener(stage);
+  }
   private readonly pendingRequests = new Map<
     number,
     {
@@ -144,9 +151,20 @@ export class LazyBuildRetracer {
     this.stopWorker(new DOMException(`Retrace session disposed`, `AbortError`));
   }
 
-  async retrace(text: string, kind: `crash` | `log`) {
+  async retrace(
+    text: string,
+    kind: `crash` | `log`,
+    reportStage: (stage: string) => void = () => {},
+  ) {
     if (this.disposed || !hasRetraceableStack(text)) return text;
-    await this.ensureInitialized();
+    this.stageListeners.add(reportStage);
+    reportStage(this.initializeStage);
+    try {
+      await this.ensureInitialized();
+    } finally {
+      this.stageListeners.delete(reportStage);
+    }
+    reportStage('正在还原堆栈');
     return this.request<string>({
       type: kind == `crash` ? `retrace-crash` : `retrace-log`,
       text,
@@ -165,6 +183,7 @@ export class LazyBuildRetracer {
   }
 
   private async initialize() {
+    this.reportInitializeStage('正在获取构建附件（查询、缓存或下载）');
     const lease = acquireBuildAssetZipTask(this.buildKey);
     this.releaseBuildAssetTask = lease.release;
     let asset: BuildAssetZip | undefined;
@@ -202,6 +221,7 @@ export class LazyBuildRetracer {
     const worker = new Worker(new URL(`./retrace.worker.ts`, import.meta.url), {
       type: `module`,
     });
+    this.reportInitializeStage('正在加载还原引擎脚本');
     let resolveWorkerReady: (() => void) | undefined;
     this.workerReadyTask = new Promise<void>((resolve, reject) => {
       resolveWorkerReady = resolve;
@@ -210,6 +230,10 @@ export class LazyBuildRetracer {
     worker.onmessage = (event: MessageEvent<RetraceWorkerResponse>) => {
       const response = event.data;
       if (`type` in response) {
+        if (response.type === 'progress') {
+          this.reportInitializeStage(response.stage);
+          return;
+        }
         resolveWorkerReady?.();
         resolveWorkerReady = undefined;
         this.rejectWorkerReady = undefined;

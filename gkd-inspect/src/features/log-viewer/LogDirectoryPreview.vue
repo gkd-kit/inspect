@@ -20,6 +20,7 @@ const props = defineProps<{
   detailLoading?: boolean;
   retraceAvailable?: boolean;
   retraceLoading?: boolean;
+  retraceStage?: string;
   retraceActive?: boolean;
   sourceLinkContext?: SourceLinkContext;
 }>();
@@ -139,6 +140,7 @@ const rowProps = (item: LogFileSummary) => ({
           <StackRetraceButton
             :available="retraceAvailable"
             :loading="retraceLoading"
+            :stage="retraceStage"
             :retraced="retraceActive"
             @toggle="emit('toggleRetrace')"
           />

@@ -11,6 +11,7 @@ export type StackRetraceTextState = {
   retracedText?: string;
   available: boolean;
   loading: boolean;
+  stage?: string;
   active: boolean;
   autoAttempted: boolean;
 };
@@ -51,6 +52,9 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
       get loading() {
         return Boolean(retraceTask.loading.value[key]);
       },
+      get stage() {
+        return retraceTask.progress.value[key]?.stage;
+      },
       active: false,
       autoAttempted: false,
     });
@@ -68,7 +72,7 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
 
   const retraceTask = useKeyedTask(
     async (
-      { commit, isCurrent: taskCurrent },
+      { commit, isCurrent: taskCurrent, reportProgress },
       _key: string,
       state: StackRetraceTextState,
       kind: 'crash' | 'log',
@@ -85,6 +89,9 @@ export const useLogRetrace = (options: LogRetraceOptions) => {
             (await (buildRetracer ||= new LazyBuildRetracer(buildKey)).retrace(
               state.originalText,
               kind,
+              (stage) => {
+                if (isCurrent()) reportProgress({ stage });
+              },
             )));
         if (!taskCurrent() || !isCurrent()) return;
         if (active && text === state.originalText) {

@@ -32,6 +32,32 @@ const createRetrace = () =>
     previewText: shallowRef(''),
   });
 
+test('retrace stages are isolated and cancelled tasks cannot publish progress', async () => {
+  const pending = Promise.withResolvers<string>();
+  const reporters = new Map<string, (stage: string) => void>();
+  mocks.retrace.mockImplementation(
+    (text: string, _kind: string, report: (stage: string) => void) => {
+      reporters.set(text, report);
+      report('正在加载引擎');
+      return pending.promise;
+    },
+  );
+  const retrace = createRetrace();
+  const a = retrace.getRetraceTextState('a', 'stack A');
+  const b = retrace.getRetraceTextState('b', 'stack B');
+  retrace.autoRetraceText(a, 'log', () => true, vi.fn());
+  retrace.autoRetraceText(b, 'log', () => true, vi.fn());
+  reporters.get('stack A')!('正在还原堆栈');
+  assert.equal(a.stage, '正在还原堆栈');
+  assert.equal(b.stage, '正在加载引擎');
+  retrace.resetBuildRetrace();
+  reporters.get('stack A')!('过期阶段');
+  assert.equal(a.stage, undefined);
+  assert.equal(a.loading, false);
+  pending.resolve('restored');
+  await new Promise((resolve) => setImmediate(resolve));
+});
+
 test('retrace loading is isolated by text ID and repeated automatic requests are deduplicated', async () => {
   const first = Promise.withResolvers<string>();
   const second = Promise.withResolvers<string>();
