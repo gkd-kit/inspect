@@ -27,13 +27,11 @@ export const mirror = (): Plugin => {
         },
         experimental: {
           renderBuiltUrl(filename) {
+            const url = mirrorBaseUrl + '/' + filename;
             if (filename.startsWith(workerEntryPrefix)) {
-              const sameOriginPath = `/${filename}`;
-              return {
-                runtime: `globalThis.location.origin + ${JSON.stringify(sameOriginPath)}`,
-              };
+              return `data:text/javascript,${encodeURIComponent(`import ${JSON.stringify(url)};`)}`;
             }
-            return mirrorBaseUrl + '/' + filename;
+            return url;
           },
         },
       };

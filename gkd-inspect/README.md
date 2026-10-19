@@ -50,7 +50,7 @@ pnpm preview       # 本地预览构建产物
 pnpm build:mirror  # 镜像构建，同时更新前端 package.json 的版本号
 ```
 
-镜像构建将大部分资源地址指向对应 npm 版本的 npmmirror 路径，Worker 入口仍使用同源地址。本地构建和预览使用 `pnpm build`。
+镜像构建将资源地址指向对应 npm 版本的 npmmirror 路径，Worker 使用内联 Data URL 入口导入镜像上的模块。本地构建和预览使用 `pnpm build`。
 
 [deploy-inspect.yml](../.github/workflows/deploy-inspect.yml) 在 `main` 分支的前端、共享依赖或该工作流文件变化时触发，也支持手动运行。流程执行镜像构建、发布 `@gkd-kit/inspect` 到 npm，再部署到 Cloudflare Pages 和 Netlify。
 
