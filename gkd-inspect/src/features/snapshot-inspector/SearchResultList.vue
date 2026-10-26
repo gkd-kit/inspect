@@ -69,6 +69,14 @@ const toggleResult = (key: number) => {
       : [...props.expandedKeys, key],
   );
 };
+const handleResultToggle = (event: MouseEvent, key: number) => {
+  // 如果当前操作是在选中文字，就不要触发展开/收起
+  if (window.getSelection()?.toString()) {
+    event.preventDefault();
+    return;
+  }
+  toggleResult(key);
+};
 </script>
 
 <template>
@@ -92,10 +100,10 @@ const toggleResult = (key: number) => {
             class="result-toggle"
             :aria-expanded="expandedKeys.includes(result.key)"
             :aria-label="`${expandedKeys.includes(result.key) ? '收起' : '展开'} ${result.nodes.length} 个节点`"
-            @click="toggleResult(result.key)"
+            @click="handleResultToggle($event, result.key)"
           >
             <span
-              class="bg-(--app-subtle)! break-all px-[4px] leading-[20px] font-mono!"
+              class="selector-result-text bg-(--app-subtle)! break-all px-[4px] leading-[20px] font-mono!"
               :title="result.gkd ? `选择器` : `搜索字符`"
             >
               <SelectorText
@@ -259,6 +267,10 @@ const toggleResult = (key: number) => {
   font: inherit;
   text-align: left;
   cursor: pointer;
+
+  /* 允许选择器文本被鼠标选中 */
+  user-select: text;
+  -webkit-user-select: text;
 }
 .result-toggle:focus-visible {
   outline: 2px solid #18a058;
