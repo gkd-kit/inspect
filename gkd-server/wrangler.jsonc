@@ -1,6 +1,6 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "gkd-kit-workers",
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "gkd-workers",
   "main": "./src/index.ts",
   "compatibility_date": "2026-08-19",
   "workers_dev": true,
