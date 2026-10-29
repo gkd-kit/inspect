@@ -15,9 +15,9 @@ jobs:
   delete-comments:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/setup@v2
+      - uses: pnpm/setup@v3
 
       - run: pnpm run delete-issue-comments
         env:
