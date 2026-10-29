@@ -18,7 +18,7 @@ import {
 
 type HonoEnv = {
   Bindings: Env & {
-    GKD_API_AUTH_TOKEN?: string;
+    GKD_SERVER_TOKEN?: string;
   };
 };
 
@@ -116,10 +116,7 @@ app.get("/build-asset/getBuildAssetList", async (context) =>
   }),
 );
 app.post("/build-asset/createBuildAsset", async (context) => {
-  assertAuthorization(
-    context.req.raw,
-    context.env.GKD_API_AUTH_TOKEN,
-  );
+  assertAuthorization(context.req.raw, context.env.GKD_SERVER_TOKEN);
   return context.json(await createBuildAsset(context.req.raw, context.env.DB), {
     headers: NO_STORE_HEADERS,
   });

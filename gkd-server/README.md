@@ -32,10 +32,10 @@ gkd-server/
 
 ## 认证配置
 
-在 Cloudflare 控制台的 Worker 设置中，将共享的 `GKD_API_AUTH_TOKEN` 配置为明文变量。Wrangler 已设置 `keep_vars`，部署时会保留控制台管理的变量。本地开发时，在已被 Git 忽略的 `gkd-server/.dev.vars` 中配置：
+在 Cloudflare 控制台的 Worker 设置中，将共享的 `GKD_SERVER_TOKEN` 配置为明文变量。Wrangler 已设置 `keep_vars`，部署时会保留控制台管理的变量。本地开发时，在已被 Git 忽略的 `gkd-server/.dev.vars` 中配置：
 
 ```dotenv
-GKD_API_AUTH_TOKEN=local-development-token
+GKD_SERVER_TOKEN=local-development-token
 ```
 
 调用需要认证的接口时，将该值作为 Bearer token 发送。缺失、格式错误或不匹配的凭据会在解析请求体或修改 D1 之前被拒绝。

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getBuildAssetList } from "../src/build-asset";
 import app from "../src/index";
 
-const GKD_API_AUTH_TOKEN = "test-gkd-api-auth-token";
+const GKD_SERVER_TOKEN = "test-gkd-api-auth-token";
 const TEST_COMMIT_ID = "0123456789abcdef0123456789abcdef01234567";
 
 const makeSnapshotZip = (id: number): Uint8Array => {
@@ -42,7 +42,7 @@ const postBuildAsset = (
   body: BodyInit,
   contentType?: string,
   query = "",
-  authorization: string | null = `Bearer ${GKD_API_AUTH_TOKEN}`,
+  authorization: string | null = `Bearer ${GKD_SERVER_TOKEN}`,
 ): Promise<Response> => {
   const headers = new Headers();
   if (contentType) headers.set("Content-Type", contentType);
@@ -375,7 +375,7 @@ describe("build assets", () => {
       null,
       "",
       "Bearer wrong-token",
-      `Token ${GKD_API_AUTH_TOKEN}`,
+      `Token ${GKD_SERVER_TOKEN}`,
     ]) {
       const response = await postBuildAsset(
         JSON.stringify({ buildKey: "unauthorized", assetId: 123 }),
@@ -405,7 +405,7 @@ describe("build assets", () => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GKD_API_AUTH_TOKEN}`,
+          Authorization: `Bearer ${GKD_SERVER_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ buildKey: "unconfigured", assetId: 123 }),
